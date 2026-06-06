@@ -21,44 +21,44 @@ export default function App() {
       <Route
         path="/dashboard"
         element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <DashboardLayout>
               <Dashboard />
             </DashboardLayout>
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/records"
         element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <DashboardLayout>
               <Records />
             </DashboardLayout>
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/intake"
         element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <DashboardLayout>
               <Intake />
             </DashboardLayout>
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/profile"
         element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <DashboardLayout>
               <Profile />
             </DashboardLayout>
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }
       />
     </Routes>
