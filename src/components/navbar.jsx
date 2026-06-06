@@ -28,7 +28,7 @@ export default function Navbar() {
           <Link to="/login" className="text-sm text-gray-200 hover:text-aeviora-gold">
             Login
           </Link>
-          <Link to="/registration" className="btn-gold">
+          <Link to="/register" className="btn-gold">
             Patient Portal
           </Link>
         </nav>
