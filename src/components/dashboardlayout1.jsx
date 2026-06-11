@@ -8,7 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-export default function DashboardLayout() {
+export default function DashboardLayout1() {
   const navigate = useNavigate();
 
   function logout() {
@@ -24,8 +24,8 @@ export default function DashboardLayout() {
   ];
 
   return (
-    <div class="min-h-screen bg-aeviora-cream">
-    <div class="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
+    <div className="min-h-screen bg-aeviora-cream">
+    <div className="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
 
       {/* <!-- Left Aside Menu --> */}
       <aside className="bg-aeviora-black text-white md:min-h-screen">
@@ -53,6 +53,18 @@ export default function DashboardLayout() {
               {link.label}
             </Link>
           ))}
+            {/* <a href="#" class="whitespace-nowrap rounded-lg bg-slate-800 px-4 py-2 text-sm">
+              Dashboard
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Patients
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Appointments
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Settings
+            </a> */}
           </nav>
           <div className="mt-4 md:mt-auto">
             <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
@@ -75,21 +87,18 @@ export default function DashboardLayout() {
 
       {/* <!-- Right Content Area --> */}
       <main className="min-w-0 p-4 md:p-8">
-        {/* <div className="rounded-2xl bg-white p-2 shadow-sm">
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div>
               <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
                 Patient Portal
               </p>
               <h1 className="font-display text-2xl">Welcome back</h1>
           </div>
-        </div> */}
-        <div className=''>
-          <Outlet />
         </div>
       </main>
-      {/* <div className=''>
+      <div className=''>
         <Outlet />
-      </div> */}
+      </div>
     </div>
   </div>
   );

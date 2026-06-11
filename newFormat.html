@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-slate-100">
+    <div class="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
+
+      <!-- Left Aside Menu -->
+      <aside class="bg-slate-900 text-white md:min-h-screen">
+        <div class="sticky top-0 p-4">
+            <Link to="/dashboard" className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
+                  A
+                </div>
+                <div>
+                  <p className="font-display text-xl">Aeviora</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-aeviora-gold">
+                    Wellness Portal
+                  </p>
+                </div>
+              </Link>
+
+          <nav class="flex gap-2 overflow-x-auto md:flex-col md:overflow-visible">
+            <a href="#" class="whitespace-nowrap rounded-lg bg-slate-800 px-4 py-2 text-sm">
+              Dashboard
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Patients
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Appointments
+            </a>
+            <a href="#" class="whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+              Settings
+            </a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Right Content Area -->
+      <main class="min-w-0 p-4 md:p-8">
+        <div class="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-2xl font-semibold text-slate-900">
+            Content Area
+          </h2>
+
+          <p class="text-slate-600">
+            This content stays on the right side on larger screens and moves below
+            the menu on smaller screens. It does not overlap the sidebar because
+            the layout uses CSS grid instead of fixed positioning.
+          </p>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="rounded-xl border border-slate-200 p-4">
+              <h3 class="font-semibold text-slate-900">Card 1</h3>
+              <p class="mt-2 text-sm text-slate-500">Example dashboard card.</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 p-4">
+              <h3 class="font-semibold text-slate-900">Card 2</h3>
+              <p class="mt-2 text-sm text-slate-500">Responsive content block.</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 p-4">
+              <h3 class="font-semibold text-slate-900">Card 3</h3>
+              <p class="mt-2 text-sm text-slate-500">No sidebar overlap.</p>
+            </div>
+          </div>
+
+          <div class="mt-8 rounded-xl bg-slate-50 p-4">
+            <h3 class="font-semibold text-slate-900">Layout behavior</h3>
+            <p class="mt-2 text-sm text-slate-600">
+              Desktop: sidebar left, content right. Mobile: menu becomes a top
+              horizontal scroll menu, content stacks below.
+            </p>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>

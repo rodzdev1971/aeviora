@@ -1,5 +1,5 @@
-import { Navigate} from "react-router-dom";
-import DashboardLayout from './dashboardlayout';
+import { Navigate, Outlet} from "react-router-dom";
+// import DashboardLayout from './dashboardlayout';
 export default function ProtectedRoute(){
   const isAuthenticated = sessionStorage.getItem("aeviora_session") === "active";
 
@@ -7,5 +7,6 @@ export default function ProtectedRoute(){
     return <Navigate to="/login" replace />;
   }
 
-  return <DashboardLayout />
+  // return <DashboardLayout />
+  return <Outlet />
 }

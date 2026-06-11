@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -8,7 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-export default function Dashboard(){
+export default function DashboardLayout() {
   const navigate = useNavigate();
 
   function logout() {
@@ -68,8 +68,7 @@ export default function Dashboard(){
           </button>
         </div>
       </aside>
-
-      <header className="sticky top-0 z-40 border-b bg-white px-6 py-4 lg:ml-72">
+      <header className="sticky top-0 z-40 border-b bg-white right-0 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
@@ -77,16 +76,15 @@ export default function Dashboard(){
             </p>
             <h1 className="font-display text-2xl">Welcome back</h1>
           </div>
-
           <button onClick={logout} className="lg:hidden">
             <LogOut />
           </button>
         </div>
-
+          
         <nav className="mt-4 flex gap-3 overflow-x-auto lg:hidden">
           {links.map((link) => (
             <Link
-              key={link.href}
+              key={link.label}
               to={link.href}
               className="whitespace-nowrap rounded-full bg-aeviora-black px-4 py-2 text-xs text-white"
             >
@@ -95,6 +93,9 @@ export default function Dashboard(){
           ))}
         </nav>
       </header>
+      <div className=''>
+        <Outlet />
+      </div>
     </div>
   );
 }
