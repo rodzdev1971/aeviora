@@ -24,8 +24,8 @@ export default function DashboardLayout() {
   ];
 
   return (
-    <div class="min-h-screen bg-aeviora-cream">
-    <div class="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
+    <div className="min-h-screen bg-aeviora-cream">
+    <div className="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
 
       {/* <!-- Left Aside Menu --> */}
       <aside className="bg-aeviora-black text-white md:min-h-screen">

@@ -1,21 +1,22 @@
+import IntakeForm from '../components/IntakeForm_copy';
 export default function Intake() {
     return (
       <div className="mx-auto max-w-5xl">
-        <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
+        <div className="mb-4">
+          {/* <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Intake Forms
-          </p>
+          </p> */}
           <h1 className="mt-2 font-display text-4xl">
             Wellness Intake Questionnaire
           </h1>
-          <p className="mt-3 text-sm text-gray-600">
+          {/* <p className="mt-3 text-sm text-gray-600">
             This form is a frontend template. In production, all answers containing
             PHI should be transmitted securely to the backend and never saved in
             browser storage.
-          </p>
+          </p> */}
         </div>
-  
-        <form className="grid gap-6">
+        <IntakeForm />
+        {/* <form className="grid gap-6">
           <section className="card">
             <h2 className="font-display text-2xl">Health Goals</h2>
   
@@ -92,7 +93,7 @@ export default function Intake() {
           <button type="submit" className="btn-primary">
             Submit Intake Securely
           </button>
-        </form>
+        </form> */}
       </div>
     );
   }
