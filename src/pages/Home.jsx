@@ -18,6 +18,8 @@ import Footer from "../components/footer";
 import SecurityNotice from "../components/securitynotice";
 import Feature from "../components/feature";
 import Services from "../components/services";
+import PortalCard from "../components/portalcard";
+import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
 
 export default function Home() {
   return (
@@ -32,7 +34,8 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,77,0.16),transparent_35%)]" />
         </div>
 
-        <div className="relative mx-auto grid max-w-5xl items-center gap-14">
+        {/* <div className="relative mx-auto grid max-w-5xl items-center gap-14"> */}
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
               <Sparkles size={15} />
@@ -78,7 +81,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* <div className="relative">
+          <div className="relative">
             <div className="rounded-[2rem] border border-aeviora-gold/40 bg-white/10 p-4 shadow-2xl backdrop-blur">
               <div className="rounded-[1.5rem] bg-white p-6 text-aeviora-black">
                 <div className="mb-6 flex items-center justify-between">
@@ -95,8 +98,8 @@ export default function Home() {
                     <HeartPulse />
                   </div>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
+                  <WellnessProtocolDropdown />
+                {/* <div className="grid gap-4 sm:grid-cols-2">
                   <PortalCard
                     icon={<ClipboardList />}
                     title="Intake Forms"
@@ -117,7 +120,7 @@ export default function Home() {
                     title="Privacy Status"
                     value="Protected"
                   />
-                </div>
+                </div> */}
 
                 <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
@@ -139,7 +142,7 @@ export default function Home() {
               </p>
               <p className="mt-1 font-display text-2xl">Patient-first UX</p>
             </div>
-          </div> */}
+          </div>
         </div>
       </section>
 
@@ -301,18 +304,6 @@ function TrustPoint({ label }) {
     <div className="flex items-center gap-2 text-sm text-gray-300">
       <CheckCircle2 size={17} className="text-aeviora-gold" />
       {label}
-    </div>
-  );
-}
-
-function PortalCard({ icon, title, value }) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-aeviora-black text-aeviora-gold">
-        {icon}
-      </div>
-      <p className="text-sm text-gray-300">{title}</p>
-      <p className="mt-1 font-display text-2xl">{value}</p>
     </div>
   );
 }
