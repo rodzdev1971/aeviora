@@ -16,7 +16,16 @@ export default function Modal({ isOpen, onClose, title, description, children })
       {/* Modal Box */}
       <div className="relative z-10 w-full max-w-2xl rounded-[2rem] bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-200 p-6">
+        <div className="flex justify-end pr-5 pt-1">
+            <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full p-1 text-gray-500 transition hover:bg-gray-100 hover:text-aeviora-black"
+            >
+                <X size={22} />
+            </button>
+        </div>
+        <div className="flex items-start justify-center border-b border-gray-200 p-1">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
               Aeviora Wellness
@@ -34,14 +43,6 @@ export default function Modal({ isOpen, onClose, title, description, children })
               </p>
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-aeviora-black"
-          >
-            <X size={22} />
-          </button>
         </div>
 
         {/* Body */}

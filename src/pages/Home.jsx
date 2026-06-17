@@ -42,7 +42,7 @@ export default function Home() {
             selectedProtocol={selectedProtocol}
             onClose={() => setIsProtocolModalOpen(false)}
           /> */}
-          <p>testing modal</p>
+          
         </Modal>
      
      <Navbar />
