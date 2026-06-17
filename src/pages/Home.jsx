@@ -22,10 +22,11 @@ import Services from "../components/services";
 import PortalCard from "../components/portalcard";
 import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
 import Modal from "../components/modal";
+import ProtocolInterestForm from "../components/protocolinterestform";
 // import ProtocolInterestForm from "../components/ProtocolInterestForm";
 export default function Home() {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
-  // const [selectedProtocol, setSelectedProtocol] = useState("General Wellness Consultation");
+  const [protocol, setProtocol] = useState("General Wellness Consultation");
 
   const modalHandler = function(){
     setIsProtocolModalOpen(prevSet => !prevSet)
@@ -38,11 +39,10 @@ export default function Home() {
           title="Protocol Interest Form"
           description="Complete this short form and our care team will review your interest."
         >
-          {/* <ProtocolInterestForm
-            selectedProtocol={selectedProtocol}
+          <ProtocolInterestForm 
+            selectedProtocol={protocol}
             onClose={() => setIsProtocolModalOpen(false)}
-          /> */}
-          
+          />
         </Modal>
      
      <Navbar />
@@ -119,7 +119,7 @@ export default function Home() {
                     <HeartPulse />
                   </div>
                 </div>
-                  <WellnessProtocolDropdown  modalSetting={modalHandler}/>
+                  <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
                 {/* <div className="grid gap-4 sm:grid-cols-2">
                   <PortalCard
                     icon={<ClipboardList />}
