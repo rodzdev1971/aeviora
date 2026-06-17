@@ -62,7 +62,7 @@ const protocols = [
   },
 ];
 
-export default function WellnessProtocolDropdown() {
+export default function WellnessProtocolDropdown({modalSetting}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProtocol, setSelectedProtocol] = useState(null);
 
@@ -138,6 +138,15 @@ export default function WellnessProtocolDropdown() {
           <p className="mt-2 text-sm leading-6 text-gray-600">
             {selectedProtocol.description}
           </p>
+          <button className="btn-gold"
+            type="button"
+            onClick={() => {
+            //   setSelectedProtocol(service);
+                 modalSetting(true)
+            }}
+          >
+            Start your protocol
+          </button>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
   ArrowRight,
   CalendarCheck,
@@ -20,11 +21,31 @@ import Feature from "../components/feature";
 import Services from "../components/services";
 import PortalCard from "../components/portalcard";
 import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
-
+import Modal from "../components/modal";
+// import ProtocolInterestForm from "../components/ProtocolInterestForm";
 export default function Home() {
+  const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
+  // const [selectedProtocol, setSelectedProtocol] = useState("General Wellness Consultation");
+
+  const modalHandler = function(){
+    setIsProtocolModalOpen(prevSet => !prevSet)
+  }
   return (
     <div className="min-h-screen bg-aeviora-cream">
-      <Navbar />
+      <Modal
+          isOpen={isProtocolModalOpen}
+          onClose={() => setIsProtocolModalOpen(false)}
+          title="Protocol Interest Form"
+          description="Complete this short form and our care team will review your interest."
+        >
+          {/* <ProtocolInterestForm
+            selectedProtocol={selectedProtocol}
+            onClose={() => setIsProtocolModalOpen(false)}
+          /> */}
+          <p>testing modal</p>
+        </Modal>
+     
+     <Navbar />
 
       {/* HERO */}
       <section className="relative overflow-hidden bg-aeviora-charcoal px-6 py-12 text-white lg:py-15">
@@ -98,7 +119,7 @@ export default function Home() {
                     <HeartPulse />
                   </div>
                 </div>
-                  <WellnessProtocolDropdown />
+                  <WellnessProtocolDropdown  modalSetting={modalHandler}/>
                 {/* <div className="grid gap-4 sm:grid-cols-2">
                   <PortalCard
                     icon={<ClipboardList />}

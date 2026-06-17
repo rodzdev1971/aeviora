@@ -11,7 +11,7 @@ export default {
             black: "#0B0B0C",
             charcoal: "#5c5c69",
             gold: "#C9A24D",
-            lightGold: "#E7D7A1",
+            lightGold: "#efd59d",
             cream: "#F8F5EF",
             sage: "#9AAE9B",
           },
