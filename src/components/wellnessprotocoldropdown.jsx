@@ -78,8 +78,8 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
   }
   return (
     <div className="relative z-40 w-full max-w-xl">
-      <label className="mb-2 block text-sm font-semibold text-gray-700">
-        Wellness Dashboard Selection
+      <label className="mb-2 block text-lg font-semibold text-gray-700">
+        Wellness Protocol Selection
       </label>
 
       <button
@@ -90,7 +90,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
       >
         <div>
           <p className="text-xl font-semibold text-aeviora-black">
-            {selectedProtocol ? selectedProtocol.name : "Select a wellness protocol"}
+            {selectedProtocol ? selectedProtocol.name : "Select a Protocol"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
             {selectedProtocol
