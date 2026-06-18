@@ -48,7 +48,7 @@ export default function Home() {
      <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-aeviora-charcoal px-6 py-12 text-white lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-aeviora-charcoal px-6 py-12 text-white lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
@@ -119,7 +119,8 @@ export default function Home() {
                     <HeartPulse />
                   </div>
                 </div>
-                  <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
+
+                <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
                 {/* <div className="grid gap-4 sm:grid-cols-2">
                   <PortalCard
                     icon={<ClipboardList />}
@@ -168,7 +169,7 @@ export default function Home() {
       </section>
 
       {/* PROFESSIONAL INTRO */}
-      <section className="px-6 py-20">
+      <section className="relative z-10 px-6 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[1.1fr] lg:items-center">
             <div>
