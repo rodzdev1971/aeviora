@@ -48,7 +48,7 @@ export default function Home() {
      <Navbar />
 
       {/* HERO */}
-      <section className="relative z-20 overflow-hidden bg-aeviora-charcoal px-6 py-12 text-white lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-aeviora-charcoal px-2 sm:px-6 py-12 text-white lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
@@ -104,7 +104,7 @@ export default function Home() {
 
           <div className="relative">
             <div className="rounded-[2rem] border border-aeviora-gold/40 bg-white/10 p-4 shadow-2xl backdrop-blur">
-              <div className="rounded-[1.5rem] bg-white p-6 text-aeviora-black">
+              <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-black">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
