@@ -89,7 +89,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
         className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-aeviora-gold focus:border-aeviora-gold focus:outline-none focus:ring-2 focus:ring-aeviora-lightGold"
       >
         <div>
-          <p className="text-sm font-semibold text-aeviora-black">
+          <p className="text-lg font-semibold text-aeviora-black">
             {selectedProtocol ? selectedProtocol.name : "Select a wellness protocol"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
