@@ -75,7 +75,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
   return (
     <div className="relative w-full max-w-xl">
       <label className="mb-2 block text-sm font-semibold text-gray-700">
-        Wellness Dashboard
+        Wellness Dashboard Selection
       </label>
 
       <button

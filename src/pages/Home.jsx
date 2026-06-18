@@ -143,7 +143,7 @@ export default function Home() {
                   />
                 </div> */}
 
-                <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
+                {/* <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Lock size={17} className="text-aeviora-gold" />
                     Security Reminder
@@ -153,16 +153,16 @@ export default function Home() {
                     MFA, secure sessions, role-based permissions, and signed
                     BAAs with all applicable vendors.
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
 
-            <div className="absolute -bottom-6 -left-4 hidden rounded-2xl border border-aeviora-gold/30 bg-aeviora-black p-5 text-white shadow-xl md:block">
+            {/* <div className="absolute -bottom-6 -left-4 hidden rounded-2xl border border-aeviora-gold/30 bg-aeviora-black p-5 text-white shadow-xl md:block">
               <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
                 Portal Ready
               </p>
               <p className="mt-1 font-display text-2xl">Patient-first UX</p>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
