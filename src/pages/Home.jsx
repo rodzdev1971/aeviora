@@ -210,7 +210,7 @@ export default function Home() {
 
       {/* SERVICES */}
       <section id="services" className="bg-white px-6 py-20">
-        <Services />
+        <Services sProtocol={setProtocol} modalSetting={modalHandler}/>
       </section>
 
       {/* PORTAL FEATURES */}

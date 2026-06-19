@@ -1,5 +1,10 @@
 import { Stethoscope } from "lucide-react"
-export default function Services(){
+export default function Services({sProtocol, modalSetting}){
+
+    const modalProtocolHandler = (service)=>{
+        sProtocol(service)
+        modalSetting(true)
+    }
     return(
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 max-w-7xl">
@@ -30,6 +35,7 @@ export default function Services(){
               <div
                 key={service}
                 className="group rounded-3xl border border-gray-200 bg-aeviora-cream p-6 transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl"
+                onClick={()=>modalProtocolHandler(service)}
               >
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
                   <Stethoscope />
