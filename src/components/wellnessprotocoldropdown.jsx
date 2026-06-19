@@ -134,7 +134,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
       )}
 
       {selectedProtocol && (
-        <div className="mt-4 rounded-2xl border border-aeviora-gold/40 bg-aeviora-cream p-4">
+        <div className="mt-4 rounded-2xl border border-aeviora-gold/40 bg-aeviora-ivory p-4">
           <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
             Selected Protocol
           </p>
@@ -144,7 +144,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
           <p className="mt-2 text-sm leading-6 text-gray-600">
             {selectedProtocol.description}
           </p>
-          <button className="btn-gold"
+          <button className="btn-primary mt-2 w-full"
             type="button"
             onClick={() => {
             //   protocol(service);

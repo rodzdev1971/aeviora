@@ -64,7 +64,7 @@ export default function Home() {
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
               <Sparkles size={15} />
-              Luxury Wellness Patient Portal
+              Intelligent affordable Wellness Patient Portal
             </div>
 
             <h1 className="font-display text-5xl leading-tight md:text-6xl lg:text-7xl">
@@ -181,7 +181,7 @@ export default function Home() {
                 Aeviora Wellness
               </p>
               <h2 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-                A premium digital front door for your wellness clinic.
+                An affordable digital front door for your wellness clinic.
               </h2>
             </div>
           </div>
