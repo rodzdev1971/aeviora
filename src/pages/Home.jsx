@@ -28,6 +28,10 @@ export default function Home() {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
   const [protocol, setProtocol] = useState("General Wellness Consultation");
 
+  const bgStyle = {
+    dark : 'bg-aeviora-black'
+  }
+
   const modalHandler = function(){
     setIsProtocolModalOpen(prevSet => !prevSet)
   }
@@ -89,7 +93,7 @@ export default function Home() {
                 Access Patient Portal
               </Link> */}
               
-                <button className="btn-gold">
+                <button className="btn-primary">
                 Clinic will open soon
                 </button>
                 
@@ -104,7 +108,7 @@ export default function Home() {
 
           <div className="relative">
             <div className="rounded-[2rem] border border-aeviora-gold/40 bg-white/10 p-4 shadow-2xl backdrop-blur">
-              <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-black">
+              <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
@@ -285,14 +289,14 @@ export default function Home() {
 
       {/* CTA */}
       <section className="px-6 pb-20">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-black p-10 text-center text-white md:p-16">
+        <div className="mx-auto max-w-7xl rounded-[2rem] bg-black p-10 text-center text-white md:p-16">
           <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Aeviora Wellness Portal
           </p>
           <h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl md:text-5xl">
             Give your patients a premium digital experience from day one.
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-gray-300">
+          <p className="mx-auto mt-5 max-w-2xl text-aeviora-softGold">
             Start with registration, intake, records access, and a refined
             dashboard experience built for a modern wellness and longevity brand.
           </p>
@@ -309,7 +313,7 @@ export default function Home() {
             </Link>
           </div> */}
            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <button className="btn-gold">
+                <button className="btn-primary">
                 Clinic will open soon
                 </button>
             </div>

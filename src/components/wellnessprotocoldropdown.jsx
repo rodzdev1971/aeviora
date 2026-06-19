@@ -89,10 +89,10 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
         className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-aeviora-gold focus:border-aeviora-gold focus:outline-none focus:ring-2 focus:ring-aeviora-lightGold"
       >
         <div>
-          <p className="text-xl font-semibold text-aeviora-black">
+          <p className="text-xl font-semibold text-aeviora-primaryDark">
             {selectedProtocol ? selectedProtocol.name : "Select a Protocol"}
           </p>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-aeviora-primary">
             {selectedProtocol
               ? selectedProtocol.description
               : "Choose the service you are interested in"}
@@ -121,7 +121,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-aeviora-black">
+                <p className="text-sm font-semibold text-aeviora-primaryDark">
                   {protocol.name}
                 </p>
                 <p className="mt-1 text-xs leading-5 text-gray-500">
@@ -138,7 +138,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
           <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
             Selected Protocol
           </p>
-          <h3 className="mt-2 font-display text-2xl text-aeviora-black">
+          <h3 className="mt-2 font-display text-2xl text-aeviora-primaryDark">
             {selectedProtocol.name}
           </h3>
           <p className="mt-2 text-sm leading-6 text-gray-600">

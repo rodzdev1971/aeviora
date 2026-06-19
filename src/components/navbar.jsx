@@ -9,26 +9,26 @@ export default function Navbar() {
             A
           </div>
           <div>
-            <p className="font-display text-xl tracking-wide text-white">
+            <p className="font-display text-xl tracking-wide text-aeviora-softGold">
               Aeviora Wellness
             </p>
-            <p className="text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
+            <p className="text-xs uppercase tracking-[0.25em] text-aeviora-softSage">
               Longevity & Precision Health
             </p>
           </div>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a href="#services" className="text-sm text-gray-200 hover:text-aeviora-gold">
+          <a href="#services" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Services
           </a>
-          <a href="#privacy" className="text-sm text-gray-200 hover:text-aeviora-gold">
+          <a href="#privacy" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Privacy
           </a>
-          <Link to="/login" className="text-sm text-gray-200 hover:text-aeviora-gold">
+          <Link to="/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Login
           </Link>
-          <Link to="/register" className="btn-gold">
+          <Link to="/register" className="btn-primary">
             Patient Portal
           </Link>
         </nav>
