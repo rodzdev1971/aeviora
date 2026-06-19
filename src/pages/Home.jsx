@@ -107,9 +107,9 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="rounded-[2rem] border border-aeviora-gold/40 bg-white/10 p-4 shadow-2xl backdrop-blur">
+            <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
               <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
-                <div className="mb-6 flex items-center justify-between">
+                <div className="m-6 flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
                       Patient Overview
@@ -216,7 +216,7 @@ export default function Home() {
       {/* PORTAL FEATURES */}
       <section className="px-6 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-[2rem] bg-aeviora-black p-8 text-white md:p-12">
+          <div className="rounded-[2rem] bg-aeviora-primaryDark p-8 text-white md:p-12">
             <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
@@ -289,7 +289,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="px-6 pb-20">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-black p-10 text-center text-white md:p-16">
+        <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-primaryDark p-10 text-center text-white md:p-16">
           <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Aeviora Wellness Portal
           </p>
@@ -313,7 +313,7 @@ export default function Home() {
             </Link>
           </div> */}
            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <button className="btn-primary">
+                <button className="btn-secondary">
                 Clinic will open soon
                 </button>
             </div>

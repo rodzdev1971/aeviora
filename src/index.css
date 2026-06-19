@@ -18,11 +18,11 @@ body {
 }
 
 .btn-primary {
-  @apply rounded-xl bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-aeviora-primaryDark;
+  @apply rounded-xl bg-aeviora-primary px-5 py-3 font-semibold text-white transition hover:bg-aeviora-primaryDark;
 }
 
 .btn-secondary {
-  @apply rounded-xl bg-aeviora-sand px-5 py-3 text-sm font-semibold text-aeviora-charcoal transition hover:bg-aeviora-warmSand;
+  @apply rounded-xl bg-aeviora-sand px-5 py-3 text-sm font-semibold text-aeviora-charcoal/90 transition hover:bg-aeviora-warmSand;
 }
 
 .btn-outline {

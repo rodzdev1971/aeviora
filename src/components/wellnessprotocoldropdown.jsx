@@ -77,9 +77,9 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
     setSelectedProtocol(prev => null)
   }
   return (
-    <div className="relative z-40 w-full max-w-xl">
-      <label className="mb-2 block text-lg font-semibold text-gray-700">
-        Wellness Protocol Selection
+    <div className="relative z-40 m-auto w-full max-w-xl">
+      <label className="mb-2 px-2 block text-lg font-semibold text-gray-700">
+        Wellness Selection
       </label>
 
       <button
@@ -90,7 +90,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
       >
         <div>
           <p className="text-xl font-semibold text-aeviora-primaryDark">
-            {selectedProtocol ? selectedProtocol.name : "Select a Protocol"}
+            {selectedProtocol ? selectedProtocol.name : "Select a Wellness Therapy"}
           </p>
           <p className="mt-1 text-xs text-aeviora-primary">
             {selectedProtocol
@@ -144,14 +144,14 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
           <p className="mt-2 text-sm leading-6 text-gray-600">
             {selectedProtocol.description}
           </p>
-          <button className="btn-primary mt-2 w-full"
+          <button className="btn-primary mt-2 text-lg w-full"
             type="button"
             onClick={() => {
             //   protocol(service);
               modalSetting(true)
             }}
           >
-            Start your protocol
+            Start your wellness
           </button>
         </div>
       )}

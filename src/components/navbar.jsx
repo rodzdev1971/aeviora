@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/20 bg-aeviora-black/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/20 bg-aeviora-primaryDark backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
@@ -28,7 +28,7 @@ export default function Navbar() {
           <Link to="/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Login
           </Link>
-          <Link to="/register" className="btn-primary">
+          <Link to="/register" className="btn-secondary">
             Patient Portal
           </Link>
         </nav>
