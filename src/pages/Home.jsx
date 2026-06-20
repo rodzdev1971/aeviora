@@ -68,11 +68,11 @@ export default function Home() {
               Intelligent affordable Wellness Patient Portal
             </div>
 
-            <h1 className="font-display text-5xl leading-tight md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl text-center leading-tight md:text-6xl lg:text-7xl">
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
-            <p className="mt-6 max-w-5xl text-lg leading-8 text-gray-300">
+            <p className="mt-6 max-w-5xl text-lg justify-center leading-8 text-gray-300">
               Aeviora Wellness gives patients a refined digital experience to
               register, complete intake forms, access wellness records, and
               manage their care journey through a privacy-focused patient portal.
