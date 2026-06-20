@@ -4,7 +4,7 @@ export default function SecurityNotice() {
   return (
     <div className="rounded-3xl border border-aeviora-gold/40 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
           <ShieldCheck />
         </div>
 

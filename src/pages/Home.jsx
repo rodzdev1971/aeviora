@@ -23,6 +23,7 @@ import PortalCard from "../components/portalcard";
 import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
 import Modal from "../components/modal";
 import ProtocolInterestForm from "../components/protocolinterestform";
+import ProfessionalCard from "../components/profesionalcard";
 // import ProtocolInterestForm from "../components/ProtocolInterestForm";
 export default function Home() {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
@@ -119,7 +120,7 @@ export default function Home() {
                     </h2>
                   </div>
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
                     <HeartPulse />
                   </div>
                 </div>
@@ -334,17 +335,7 @@ function TrustPoint({ label }) {
   );
 }
 
-function ProfessionalCard({ icon, title, text }) {
-  return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl">
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
-        {icon}
-      </div>
-      <h3 className="font-display text-2xl">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-gray-600">{text}</p>
-    </div>
-  );
-}
+
 
 function StepCard({ number, title, text }) {
   return (

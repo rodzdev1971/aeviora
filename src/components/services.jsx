@@ -37,7 +37,7 @@ export default function Services({sProtocol, modalSetting}){
                 className="group rounded-3xl border border-gray-200 bg-aeviora-cream p-6 transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl"
                 onClick={()=>modalProtocolHandler(service)}
               >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
                   <Stethoscope />
                 </div>
                 <h3 className="font-display text-2xl">{service}</h3>
