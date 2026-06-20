@@ -62,13 +62,13 @@ export default function Home() {
 
         {/* <div className="relative mx-auto grid max-w-5xl items-center gap-14"> */}
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
+          <div className="flex-col items-center">
+            <div className="mb-6 inline-flex gap-2 w-full justify-center rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
               <Sparkles size={15} />
-              Intelligent affordable Wellness Patient Portal
+              Intelligent affordable Wellness Portal
             </div>
 
-            <h1 className="font-display text-5xl text-center leading-tight md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl text-center leading-tight md:text-5xl lg:text-5xl">
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
