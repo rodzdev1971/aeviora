@@ -88,7 +88,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
         onClick={openDropDownHandler}
         className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-aeviora-gold focus:border-aeviora-gold focus:outline-none focus:ring-2 focus:ring-aeviora-lightGold"
       >
-        <div>
+        <div className="no-scrollbar overflow-y-auto">
           <p className="text-xl font-semibold text-aeviora-primaryDark">
             {selectedProtocol ? selectedProtocol.name : "Select a Wellness Therapy"}
           </p>
@@ -108,7 +108,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
       </button>
 
       {isOpen && (
-        <div className="relative z-50 mt-3 max-h-96 w-full overflow-y-auto rounded-3xl border border-gray-200 bg-white p-3 shadow-2xl">
+        <div className="relative z-50 mt-3 max-h-96 w-full no-scrollbar overflow-y-auto rounded-3xl border border-gray-200 bg-white p-3 shadow-2xl">
           {protocols.map((protocol) => (
             <button
               key={protocol.id}

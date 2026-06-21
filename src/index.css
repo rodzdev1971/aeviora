@@ -4,6 +4,13 @@
 @theme {
   --color-dark: #0B0B0C;
 }
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 body {
   @apply bg-aeviora-ivory text-aeviora-charcoal font-body;
