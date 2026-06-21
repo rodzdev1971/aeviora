@@ -52,7 +52,7 @@ export default function Home() {
      <Navbar />
 
       {/* HERO */}
-      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-24 px-2 sm:px-6 text-aeviora-primary lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-12 sm:px-6 text-aeviora-primary lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
@@ -173,7 +173,7 @@ export default function Home() {
       </section>
 
       {/* PROFESSIONAL INTRO */}
-      <section className="relative z-10 px-6 py-20">
+      <section className="relative z-10 px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[1.1fr] lg:items-center">
             <div>
@@ -209,7 +209,7 @@ export default function Home() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" className="bg-white px-6 py-20">
+      <section id="services" className="bg-white px-6 py-12">
         <Services sProtocol={setProtocol} modalSetting={modalHandler}/>
       </section>
 
@@ -244,7 +244,7 @@ export default function Home() {
       </section>
 
       {/* PROCESS */}
-      <section className="bg-white px-6 py-20">
+      <section className="bg-white px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
             <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
@@ -281,14 +281,14 @@ export default function Home() {
       </section>
 
       {/* HIPAA NOTICE */}
-      <section id="privacy" className="px-6 py-20">
+      <section id="privacy" className="px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <SecurityNotice />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="px-6 pb-20">
+      <section className="px-6 pb-12">
         <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-primaryDark p-10 text-center text-white md:p-16">
           <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Aeviora Wellness Portal

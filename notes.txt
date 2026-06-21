@@ -1,4 +1,5 @@
 we have three branches
 main
 version1.1 which added it the dropdown menu
-version2.1 added it a different theme colors and added modal in services for patient protocols interaction
+version1.2 added it a different theme colors and added modal in services for patient protocols interaction
+version1.3 changed theme colors from ivory to softsage and changed some text color to match the theme
