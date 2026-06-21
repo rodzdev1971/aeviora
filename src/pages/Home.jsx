@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   ArrowRight,
   CalendarCheck,
-  CheckCircle2,
   ClipboardList,
   FileText,
   HeartPulse,
@@ -24,18 +23,18 @@ import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
 import Modal from "../components/modal";
 import ProtocolInterestForm from "../components/protocolinterestform";
 import ProfessionalCard from "../components/profesionalcard";
+import TrustPoint from "../components/trustpoint";
+import StepCard from "../components/stepcard";
 // import ProtocolInterestForm from "../components/ProtocolInterestForm";
+
 export default function Home() {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
   const [protocol, setProtocol] = useState("General Wellness Consultation");
 
-  // const bgStyle = {
-  //   dark : 'bg-aeviora-black'
-  // }
-
   const modalHandler = function(){
     setIsProtocolModalOpen(prevSet => !prevSet)
   }
+
   return (
     <div className="min-h-screen bg-aeviora-cream">
       <Modal
@@ -53,7 +52,7 @@ export default function Home() {
      <Navbar />
 
       {/* HERO */}
-      <section className="relative z-20 overflow-hidden bg-aeviora-charcoal px-2 sm:px-6 py-12 text-white lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-24 px-2 sm:px-6 text-aeviora-primary lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
@@ -72,7 +71,7 @@ export default function Home() {
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
-            <p className="mt-6 max-w-5xl text-lg justify-center leading-8 text-gray-300">
+            <p className="mt-6 max-w-5xl text-lg justify-center leading-8 text-aeviora-slate">
               Aeviora Wellness gives patients a refined digital experience to
               register, complete intake forms, access wellness records, and
               manage their care journey through a privacy-focused patient portal.
@@ -322,27 +321,6 @@ export default function Home() {
       </section>
 
       <Footer />
-    </div>
-  );
-}
-
-function TrustPoint({ label }) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-gray-300">
-      <CheckCircle2 size={17} className="text-aeviora-gold" />
-      {label}
-    </div>
-  );
-}
-
-
-
-function StepCard({ number, title, text }) {
-  return (
-    <div className="rounded-3xl border border-gray-200 bg-aeviora-cream p-6">
-      <p className="font-display text-4xl text-aeviora-gold">{number}</p>
-      <h3 className="mt-5 font-display text-2xl">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-gray-600">{text}</p>
     </div>
   );
 }
