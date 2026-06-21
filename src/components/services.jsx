@@ -1,6 +1,4 @@
-// import { Stethoscope } from "lucide-react";
-import {protocols} from '../util/constants';
-
+import { Stethoscope } from "lucide-react"
 export default function Services({sProtocol, modalSetting}){
 
     const modalProtocolHandler = (service)=>{
@@ -23,20 +21,29 @@ export default function Services({sProtocol, modalSetting}){
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {protocols.map((service) => (
+            {[
+              "Hormone Optimization",
+              "Medical Weight Loss",
+              "GLP-1 Programs",
+              "Peptide Therapy",
+              "Functional Medicine",
+              "NAD+ and IV Therapy",
+              "Longevity Assessment",
+              "Metabolic Health",
+              "Preventive Wellness",
+            ].map((service) => (
               <div
-                key={service.id}
+                key={service}
                 className="group rounded-3xl border border-gray-200 bg-aeviora-cream p-6 transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl"
                 onClick={()=>modalProtocolHandler(service)}
               >
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
-                  {service.icon}
+                  <Stethoscope />
                 </div>
-                <h3 className="semi-bold font-display text-2xl">{service.name}</h3>
-                <p className="mt-3 text-md leading-6 text-gray-600">
-                  {/* Support documentation, intake, care summaries, and secure
-                  patient communication for this service category. */}
-                  {service.description}
+                <h3 className="font-display text-2xl">{service}</h3>
+                <p className="mt-3 text-sm leading-6 text-gray-600">
+                  Support documentation, intake, care summaries, and secure
+                  patient communication for this service category.
                 </p>
               </div>
             ))}
