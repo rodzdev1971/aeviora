@@ -4,6 +4,7 @@
 @theme {
   --color-dark: #0B0B0C;
 }
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -38,4 +39,35 @@ body {
 
 .card {
   @apply rounded-3xl border border-aeviora-border bg-white p-6 shadow-sm;
+}
+
+/* Modal questionnaire transitions */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 340ms ease-out both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 340ms ease-out both;
 }
