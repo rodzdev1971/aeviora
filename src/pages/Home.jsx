@@ -67,7 +67,7 @@ export default function Home() {
               Intelligent affordable Wellness Portal
             </div>
 
-            <h1 className="font-display text-5xl text-center leading-tight md:text-5xl lg:text-5xl">
+            <h1 className="font-display text-5xl text-aeviora-primary text-center leading-tight md:text-5xl lg:text-5xl">
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
