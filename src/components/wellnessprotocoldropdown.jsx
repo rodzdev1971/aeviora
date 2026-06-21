@@ -116,7 +116,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
               onClick={() => handleSelect(protocol)}
               className="flex w-full gap-4 rounded-2xl p-4 text-left transition hover:bg-aeviora-cream"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
                 {protocol.icon}
               </div>
 
