@@ -48,7 +48,7 @@ export default function Modal({ isOpen, onClose, title, description, children })
             </div> */}
 
             {/* Body */}
-            <div className="max-h-[100vh] overflow-y-auto p-6">
+            <div className="max-h-[100vh] overflow-y-auto no-scrollbar p-6">
                 <div className="flex justify-end pr-5 pt-1">
                     <button
                         type="button"
