@@ -29,9 +29,9 @@ export default function Home() {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
   const [protocol, setProtocol] = useState("General Wellness Consultation");
 
-  const bgStyle = {
-    dark : 'bg-aeviora-black'
-  }
+  // const bgStyle = {
+  //   dark : 'bg-aeviora-black'
+  // }
 
   const modalHandler = function(){
     setIsProtocolModalOpen(prevSet => !prevSet)
