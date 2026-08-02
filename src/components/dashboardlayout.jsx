@@ -16,6 +16,15 @@ export default function DashboardLayout() {
     navigate("/login");
   }
 
+  // async function logout() {
+  //   await fetch("http://localhost:5000/api/auth/logout", {
+  //     method: "POST",
+  //     credentials: "include",
+  //   });
+  
+  //   navigate("/login");
+  // }
+
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { label: "Records", href: "/records", icon: <FileText size={18} /> },

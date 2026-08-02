@@ -1,14 +1,12 @@
 import {useState} from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import ButtonPassword from '../components/buttonPassword';
+import PasswordInput from '../components/passwordInput';
+// import { Ps } from 'zod/v4/locales';
 
 
 export default function Register() {
-  // const navigate = useNavigate()
-  const [pwdData, setPWDData] = useState({password : '', confirmPassword : ''});
-  const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate()
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -156,32 +154,11 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="label">Password</label>
-              <div className="relative">
-              {error && <p className='text-red-600'>{error}</p>}
-                <input
-                  className="input"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  minLength={10}
-                  onChange={comparePWDHandler}
-                  required
-                  placeholder="Minimum 10 characters"
-                />
-                {/* Absolute Toggle Button Container */}
-                <ButtonPassword showPassword={showPassword} error={error} showTogglePassword={togglePasswordVisibilityHandler} />
-              </div>
+              <PasswordInput />
             </div>
 
             <div>
-              <label className="label">Confirm Password</label>
-              <div className='relative'>
-              {error && <p className='text-red-600'>{error}</p>}
-                <input className="input" type={showPassword ? "text" : "password"} name='confirmPassword' minLength={10} onChange={comparePWDHandler} required />
-                 {/* Absolute Toggle Button Container */}
-                 <ButtonPassword error={error} showPassword={showPassword} showTogglePassword={togglePasswordVisibilityHandler} />
-                
-              </div>
+             <PasswordInput />
             </div>
             {/* <div>
               <label className="label">Select Wellness</label>

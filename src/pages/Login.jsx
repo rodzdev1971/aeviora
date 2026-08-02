@@ -6,6 +6,35 @@ export default function Login() {
 const [error, setError] = useState(false)
   const navigate = useNavigate();
 
+  // async function handleLogin(e) {
+  //   e.preventDefault();
+  
+  //   const formData = new FormData(e.currentTarget);
+  
+  //   const payload = {
+  //     email: formData.get("email"),
+  //     password: formData.get("password"),
+  //   };
+  
+  //   const response = await fetch("http://localhost:5000/api/auth/login", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     credentials: "include",
+  //     body: JSON.stringify(payload),
+  //   });
+  
+  //   const data = await response.json();
+  
+  //   if (!response.ok) {
+  //     alert(data.message || "Login failed.");
+  //     return;
+  //   }
+  
+  //   navigate("/dashboard");
+  // }
+
   function handleLogin(e) {
     e.preventDefault();
 

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { encryptText, decryptText } from "../utils/crypto.js";
 
 const patientSchema = new mongoose.Schema(
   {
@@ -20,12 +21,14 @@ const patientSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
 
     phone: {
       type: String,
       required: true,
-      trim: true,
+      set: encryptText,
+      get: decryptText,
     },
 
     dateOfBirth: {
@@ -36,11 +39,30 @@ const patientSchema = new mongoose.Schema(
     passwordHash: {
       type: String,
       required: true,
+      select: false,
     },
 
     selectedProtocol: {
       type: String,
       default: "General Wellness Consultation",
+    },
+
+    medicalHistory: {
+      type: String,
+      set: encryptText,
+      get: decryptText,
+    },
+
+    medications: {
+      type: String,
+      set: encryptText,
+      get: decryptText,
+    },
+
+    allergies: {
+      type: String,
+      set: encryptText,
+      get: decryptText,
     },
 
     role: {
@@ -61,6 +83,8 @@ const patientSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );
 

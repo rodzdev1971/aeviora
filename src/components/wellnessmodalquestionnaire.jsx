@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   X,
   ArrowLeft,
@@ -478,9 +479,11 @@ function SummaryStep({ answers, onClose }) {
         </div>
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <Link to='/register'>
           <button type="button" onClick={onClose} className="btn-primary">
             Continue to Registration
           </button>
+          </Link>
 
           <button
             type="button"

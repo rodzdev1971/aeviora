@@ -1,4 +1,4 @@
-export default function buttonPassword({showTogglePassword, showPassword, error}){
+export default function ButtonPassword({showTogglePassword, showPassword, error}){
 
     let buttonClass = "absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600";
     

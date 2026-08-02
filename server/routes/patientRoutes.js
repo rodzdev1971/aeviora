@@ -1,148 +1,97 @@
 import express from "express";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import Patient from '../models/patients.js';
+import Patient from "../models/Patient.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      dateOfBirth,
-      password,
-      selectedProtocol,
-      hipaaAcknowledged,
-    } = req.body;
+router.get("/me", requireAuth, async (req, res) => {
+  const patient = await Patient.findById(req.user.id).select("-passwordHash");
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !phone ||
-      !dateOfBirth ||
-      !password
-    ) {
-      return res.status(400).json({
-        message: "Please complete all required fields.",
-      });
-    }
-
-    if (password.length < 10) {
-      return res.status(400).json({
-        message: "Password must be at least 10 characters.",
-      });
-    }
-
-    const existingPatient = await Patient.findOne({ email });
-
-    if (existingPatient) {
-      return res.status(409).json({
-        message: "A patient account with this email already exists.",
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const patient = await Patient.create({
-      firstName,
-      lastName,
-      email,
-      phone,
-      dateOfBirth,
-      passwordHash,
-      selectedProtocol,
-      hipaaAcknowledged,
-    });
-
-    return res.status(201).json({
-      message: "Patient registered successfully.",
-      patient: {
-        id: patient._id,
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        email: patient.email,
-        selectedProtocol: patient.selectedProtocol,
-      },
-    });
-  } catch (error) {
-    console.error("Register error:", error);
-
-    return res.status(500).json({
-      message: "Server error during registration.",
-    });
+  if (!patient) {
+    return res.status(404).json({ message: "Patient not found." });
   }
+
+  await logAudit({
+    req,
+    actorId: req.user.id,
+    actorRole: req.user.role,
+    action: "PATIENT_VIEWED",
+    targetType: "Patient",
+    targetId: patient._id.toString(),
+  });
+
+  return res.json({ patient });
 });
 
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const patient = await Patient.findOne({ email });
-
-    if (!patient) {
-      return res.status(401).json({
-        message: "Invalid email or password.",
-      });
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      patient.passwordHash
-    );
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        message: "Invalid email or password.",
-      });
-    }
-
-    const token = jwt.sign(
-      {
-        patientId: patient._id,
-        role: patient.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
-
-    return res.json({
-      message: "Login successful.",
-      token,
-      patient: {
-        id: patient._id,
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        email: patient.email,
-        selectedProtocol: patient.selectedProtocol,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-
-    return res.status(500).json({
-      message: "Server error during login.",
-    });
-  }
-});
-
-router.get("/", async (req, res) => {
-  try {
+router.get(
+  "/",
+  requireAuth,
+  requireRole("provider", "admin"),
+  async (req, res) => {
     const patients = await Patient.find()
       .select("-passwordHash")
       .sort({ createdAt: -1 });
 
-    return res.json(patients);
-  } catch (error) {
-    return res.status(500).json({
-      message: "Unable to fetch patients.",
+    await logAudit({
+      req,
+      actorId: req.user.id,
+      actorRole: req.user.role,
+      action: "PATIENT_VIEWED",
+      targetType: "PatientList",
     });
+
+    return res.json({ patients });
   }
+);
+
+router.get("/me/summary", requireAuth, async (req, res) => {
+  const patient = await Patient.findById(req.user.id).select(
+    "firstName selectedProtocol createdAt"
+  );
+
+  return res.json({
+    firstName: patient.firstName,
+    selectedProtocol: patient.selectedProtocol,
+    memberSince: patient.createdAt,
+  });
+});
+
+router.patch("/me", requireAuth, async (req, res) => {
+  const allowedFields = [
+    "phone",
+    "selectedProtocol",
+    "medicalHistory",
+    "medications",
+    "allergies",
+  ];
+
+  const updates = {};
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field];
+    }
+  }
+
+  const patient = await Patient.findByIdAndUpdate(req.user.id, updates, {
+    new: true,
+    runValidators: true,
+  }).select("-passwordHash");
+
+  await logAudit({
+    req,
+    actorId: req.user.id,
+    actorRole: req.user.role,
+    action: "PATIENT_UPDATED",
+    targetType: "Patient",
+    targetId: patient._id.toString(),
+    metadata: {
+      updatedFields: Object.keys(updates),
+    },
+  });
+
+  return res.json({ message: "Profile updated.", patient });
 });
 
 export default router;
