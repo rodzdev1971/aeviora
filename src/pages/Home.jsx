@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import {
   ArrowRight,
   CalendarCheck,
-  CheckCircle2,
   ClipboardList,
   FileText,
   HeartPulse,
@@ -17,32 +17,61 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import SecurityNotice from "../components/securitynotice";
 import Feature from "../components/feature";
+import Services from "../components/services";
+import PortalCard from "../components/portalcard";
+import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
+import Modal from "../components/modal";
+import ProtocolInterestForm from "../components/protocolinterestform";
+import ProfessionalCard from "../components/profesionalcard";
+import TrustPoint from "../components/trustpoint";
+import StepCard from "../components/stepcard";
+// import ProtocolInterestForm from "../components/ProtocolInterestForm";
 
 export default function Home() {
+  const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
+  const [protocol, setProtocol] = useState("General Wellness Consultation");
+
+  const modalHandler = function(){
+    setIsProtocolModalOpen(prevSet => !prevSet)
+  }
+
   return (
     <div className="min-h-screen bg-aeviora-cream">
-      <Navbar />
+      <Modal
+          isOpen={isProtocolModalOpen}
+          onClose={() => setIsProtocolModalOpen(false)}
+          title="Protocol Interest Form"
+          description="Complete this short form and our care team will review your interest."
+        >
+          <ProtocolInterestForm 
+            selectedProtocol={protocol}
+            onClose={() => setIsProtocolModalOpen(false)}
+          />
+        </Modal>
+     
+     <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-aeviora-charcoal px-6 py-12 text-white lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-24 px-2 sm:px-6 text-aeviora-primary lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,77,0.16),transparent_35%)]" />
         </div>
 
+        {/* <div className="relative mx-auto grid max-w-5xl items-center gap-14"> */}
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
+          <div className="flex-col items-center">
+            <div className="mb-6 inline-flex gap-2 w-full justify-center rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
               <Sparkles size={15} />
-              Luxury Wellness Patient Portal
+              Intelligent affordable Wellness Portal
             </div>
 
-            <h1 className="font-display text-5xl leading-tight md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl text-center leading-tight md:text-5xl lg:text-5xl">
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300">
+            <p className="mt-6 max-w-5xl text-lg justify-center leading-8 text-aeviora-slate">
               Aeviora Wellness gives patients a refined digital experience to
               register, complete intake forms, access wellness records, and
               manage their care journey through a privacy-focused patient portal.
@@ -64,7 +93,7 @@ export default function Home() {
                 Access Patient Portal
               </Link> */}
               
-                <button className="btn-gold">
+                <button className="btn-primary">
                 Clinic will open soon
                 </button>
                 
@@ -78,9 +107,9 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="rounded-[2rem] border border-aeviora-gold/40 bg-white/10 p-4 shadow-2xl backdrop-blur">
-              <div className="rounded-[1.5rem] bg-white p-6 text-aeviora-black">
-                <div className="mb-6 flex items-center justify-between">
+            <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
+              <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
+                <div className="m-6 flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
                       Patient Overview
@@ -90,12 +119,13 @@ export default function Home() {
                     </h2>
                   </div>
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
                     <HeartPulse />
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
+                {/* <div className="grid gap-4 sm:grid-cols-2">
                   <PortalCard
                     icon={<ClipboardList />}
                     title="Intake Forms"
@@ -116,9 +146,9 @@ export default function Home() {
                     title="Privacy Status"
                     value="Protected"
                   />
-                </div>
+                </div> */}
 
-                <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
+                {/* <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Lock size={17} className="text-aeviora-gold" />
                     Security Reminder
@@ -128,22 +158,22 @@ export default function Home() {
                     MFA, secure sessions, role-based permissions, and signed
                     BAAs with all applicable vendors.
                   </p>
-                </div>
+                </div> */}
               </div>
             </div>
 
-            <div className="absolute -bottom-6 -left-4 hidden rounded-2xl border border-aeviora-gold/30 bg-aeviora-black p-5 text-white shadow-xl md:block">
+            {/* <div className="absolute -bottom-6 -left-4 hidden rounded-2xl border border-aeviora-gold/30 bg-aeviora-black p-5 text-white shadow-xl md:block">
               <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
                 Portal Ready
               </p>
               <p className="mt-1 font-display text-2xl">Patient-first UX</p>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
 
       {/* PROFESSIONAL INTRO */}
-      <section className="px-6 py-20">
+      <section className="relative z-10 px-6 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[1.1fr] lg:items-center">
             <div>
@@ -151,7 +181,7 @@ export default function Home() {
                 Aeviora Wellness
               </p>
               <h2 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-                A premium digital front door for your wellness clinic.
+                An affordable digital front door for your wellness clinic.
               </h2>
             </div>
           </div>
@@ -180,54 +210,13 @@ export default function Home() {
 
       {/* SERVICES */}
       <section id="services" className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-              Wellness Services
-            </p>
-            <h2 className="mt-3 font-display text-4xl md:text-5xl">
-              Designed for a modern longevity practice.
-            </h2>
-            <p className="mt-5 text-gray-600">
-              The patient portal can support multiple service lines while keeping
-              the patient experience consistent, elegant, and easy to navigate.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              "Hormone Optimization",
-              "Medical Weight Loss",
-              "GLP-1 Programs",
-              "Peptide Therapy",
-              "Functional Medicine",
-              "NAD+ and IV Therapy",
-              "Longevity Assessment",
-              "Metabolic Health",
-              "Preventive Wellness",
-            ].map((service) => (
-              <div
-                key={service}
-                className="group rounded-3xl border border-gray-200 bg-aeviora-cream p-6 transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl"
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
-                  <Stethoscope />
-                </div>
-                <h3 className="font-display text-2xl">{service}</h3>
-                <p className="mt-3 text-sm leading-6 text-gray-600">
-                  Support documentation, intake, care summaries, and secure
-                  patient communication for this service category.
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Services sProtocol={setProtocol} modalSetting={modalHandler}/>
       </section>
 
       {/* PORTAL FEATURES */}
       <section className="px-6 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-[2rem] bg-aeviora-black p-8 text-white md:p-12">
+          <div className="rounded-[2rem] bg-aeviora-primaryDark p-8 text-white md:p-12">
             <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
@@ -300,14 +289,14 @@ export default function Home() {
 
       {/* CTA */}
       <section className="px-6 pb-20">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-black p-10 text-center text-white md:p-16">
+        <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-primaryDark p-10 text-center text-white md:p-16">
           <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Aeviora Wellness Portal
           </p>
           <h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl md:text-5xl">
             Give your patients a premium digital experience from day one.
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-gray-300">
+          <p className="mx-auto mt-5 max-w-2xl text-aeviora-softGold">
             Start with registration, intake, records access, and a refined
             dashboard experience built for a modern wellness and longevity brand.
           </p>
@@ -324,7 +313,7 @@ export default function Home() {
             </Link>
           </div> */}
            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <button className="btn-gold">
+                <button className="btn-secondary">
                 Clinic will open soon
                 </button>
             </div>
@@ -332,49 +321,6 @@ export default function Home() {
       </section>
 
       <Footer />
-    </div>
-  );
-}
-
-function TrustPoint({ label }) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-gray-300">
-      <CheckCircle2 size={17} className="text-aeviora-gold" />
-      {label}
-    </div>
-  );
-}
-
-function PortalCard({ icon, title, value }) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-aeviora-black text-aeviora-gold">
-        {icon}
-      </div>
-      <p className="text-sm text-gray-300">{title}</p>
-      <p className="mt-1 font-display text-2xl">{value}</p>
-    </div>
-  );
-}
-
-function ProfessionalCard({ icon, title, text }) {
-  return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-aeviora-gold hover:shadow-xl">
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-black text-aeviora-gold">
-        {icon}
-      </div>
-      <h3 className="font-display text-2xl">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-gray-600">{text}</p>
-    </div>
-  );
-}
-
-function StepCard({ number, title, text }) {
-  return (
-    <div className="rounded-3xl border border-gray-200 bg-aeviora-cream p-6">
-      <p className="font-display text-4xl text-aeviora-gold">{number}</p>
-      <h3 className="mt-5 font-display text-2xl">{title}</h3>
-      <p className="mt-3 text-sm leading-6 text-gray-600">{text}</p>
     </div>
   );
 }

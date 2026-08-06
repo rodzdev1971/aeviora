@@ -23,9 +23,14 @@ export default function Register() {
   }
 
   return (
-    <main className="min-h-screen bg-aeviora-black px-6 py-10">
+    <main className="min-h-screen  bg-aeviora-primaryDark px-6 py-10">
       <div className="mx-auto grid max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-2xl md:grid-cols-2">
-        <section className="bg-aeviora-black p-10 text-white">
+        <section className="p-10 bg-aeviora-primary text-white">
+          <div className="absolute inset-0">
+            <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
+            <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,77,0.16),transparent_35%)]" />
+          </div>
           <Link to="/" className="inline-flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
               A
