@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
+import TermsOfUse from "./components/termsofuse";
 // import DashboardLayout1 from "./components/dashboardlayout1";
 // import { Children } from "react";
 
@@ -44,6 +45,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/termsofuse" element={<TermsOfUse />} />
       {/* <Route path="test" element={<DashboardLayout />} /> */}
 
       <Route element={<ProtectedRoute />}>

@@ -1,8 +1,10 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
     return (
       <footer className="bg-aeviora-primaryDark px-6 py-10 text-white">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-4">
             <div>
               <h3 className="font-display text-2xl text-aeviora-gold">
                 Aeviora Wellness
@@ -30,6 +32,11 @@ export default function Footer() {
                 encrypted, HIPAA-compliant systems.
               </p>
             </div>
+            
+            <div>
+              <Link to='/termsofuse'  className="text-sm text-gray-300 hover:text-aeviora-gold"><p>Terms of Use</p></Link>
+            </div>
+
           </div>
   
           <p className="mt-10 border-t border-white/10 pt-6 text-xs text-gray-400">
