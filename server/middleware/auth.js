@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Patient from "../models/Patient.js";
+import Patient from "../models/patients.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 export async function requireAuth(req, res, next) {

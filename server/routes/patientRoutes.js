@@ -1,5 +1,5 @@
 import express from "express";
-import Patient from "../models/Patient.js";
+import Patient from "../models/patients.js"
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 

@@ -77,7 +77,7 @@ export default function Home() {
               manage their care journey through a privacy-focused patient portal.
             </p>
 
-            <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+            <div className="mt-9 flex flex-col justify-center gap-4">
               {/* <Link
                 to="/register"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-aeviora-gold px-6 py-4 text-sm font-bold text-aeviora-black transition hover:bg-aeviora-lightGold"
@@ -93,9 +93,31 @@ export default function Home() {
                 Access Patient Portal
               </Link> */}
               
-                <button className="btn-primary">
+                {/* <button className="btn-primary">
                 Clinic will open soon
-                </button>
+                </button> */}
+                
+              <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
+                <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
+                  <div className="m-6 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
+                        Patient Overview
+                      </p>
+                      <h2 className="mt-1 font-display text-3xl">
+                        Wellness Dashboard
+                      </h2>
+                    </div>
+
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
+                      <HeartPulse />
+                    </div>
+                  </div>
+
+                  <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
+                
+                </div>
+              </div>  
                 
             </div>
 
@@ -125,40 +147,7 @@ export default function Home() {
                 </div>
 
                 <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
-                {/* <div className="grid gap-4 sm:grid-cols-2">
-                  <PortalCard
-                    icon={<ClipboardList />}
-                    title="Intake Forms"
-                    value="2 Pending"
-                  />
-                  <PortalCard
-                    icon={<FileText />}
-                    title="Records"
-                    value="8 Files"
-                  />
-                  <PortalCard
-                    icon={<CalendarCheck />}
-                    title="Next Review"
-                    value="June 18"
-                  />
-                  <PortalCard
-                    icon={<ShieldCheck />}
-                    title="Privacy Status"
-                    value="Protected"
-                  />
-                </div> */}
-
-                {/* <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Lock size={17} className="text-aeviora-gold" />
-                    Security Reminder
-                  </div>
-                  <p className="text-sm leading-6 text-gray-600">
-                    For production, use encrypted backend storage, audit logs,
-                    MFA, secure sessions, role-based permissions, and signed
-                    BAAs with all applicable vendors.
-                  </p>
-                </div> */}
+               
               </div>
             </div>
 
