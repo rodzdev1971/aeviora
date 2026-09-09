@@ -60,3 +60,12 @@ export const protocols = [
       icon: <Syringe size={20} />,
     },
   ];
+export const company = {
+  name: "Aeviora Wellness",
+  quote: "your health guide",
+  address: "6625 Miami Lakes Dr ste 467",
+  address1: "Miami Lakes, FL 33014",
+  telephone:"305-828-7650",
+  fax:"Pending",
+  email:"info@aeviorawellness.com"
+}

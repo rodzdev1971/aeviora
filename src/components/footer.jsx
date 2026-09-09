@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { company } from "../util/constants";
 
 export default function Footer() {
     return (
@@ -17,11 +18,14 @@ export default function Footer() {
             <div>
               <h4 className="font-semibold text-aeviora-lightGold">Contact</h4>
               <p className="mt-3 text-sm text-gray-300">
-                Miami, Florida
+                {company.address}
                 <br />
-                info@aeviorawellness.com
+                {company.address1}
                 <br />
-                305-000-0000
+                {company.email}
+                <br />
+                tel: {company.telephone}
+                fax: {company.fax}
               </p>
             </div>
   
