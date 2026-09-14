@@ -52,7 +52,7 @@ export default function Home() {
      <Navbar />
 
       {/* HERO */}
-      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-24 px-2 sm:px-6 text-aeviora-primary lg:py-15">
+      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-12 sm:px-6 text-aeviora-primary lg:py-15">
         <div className="absolute inset-0">
           <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
           <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
@@ -67,7 +67,7 @@ export default function Home() {
               Intelligent affordable Wellness Portal
             </div>
 
-            <h1 className="font-display text-5xl text-center leading-tight md:text-5xl lg:text-5xl">
+            <h1 className="font-display text-5xl text-aeviora-primary text-center leading-tight md:text-5xl lg:text-5xl">
               Modern care access for longevity, wellness, and precision health.
             </h1>
 
@@ -77,7 +77,7 @@ export default function Home() {
               manage their care journey through a privacy-focused patient portal.
             </p>
 
-            <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+            <div className="mt-9 flex flex-col justify-center gap-4">
               {/* <Link
                 to="/register"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-aeviora-gold px-6 py-4 text-sm font-bold text-aeviora-black transition hover:bg-aeviora-lightGold"
@@ -93,9 +93,31 @@ export default function Home() {
                 Access Patient Portal
               </Link> */}
               
-                <button className="btn-primary">
+                {/* <button className="btn-primary">
                 Clinic will open soon
-                </button>
+                </button> */}
+                
+              <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
+                <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
+                  <div className="m-6 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
+                        Patient Overview
+                      </p>
+                      <h2 className="mt-1 font-display text-3xl">
+                        Wellness Dashboard
+                      </h2>
+                    </div>
+
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
+                      <HeartPulse />
+                    </div>
+                  </div>
+
+                  <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
+                
+                </div>
+              </div>  
                 
             </div>
 
@@ -125,40 +147,7 @@ export default function Home() {
                 </div>
 
                 <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
-                {/* <div className="grid gap-4 sm:grid-cols-2">
-                  <PortalCard
-                    icon={<ClipboardList />}
-                    title="Intake Forms"
-                    value="2 Pending"
-                  />
-                  <PortalCard
-                    icon={<FileText />}
-                    title="Records"
-                    value="8 Files"
-                  />
-                  <PortalCard
-                    icon={<CalendarCheck />}
-                    title="Next Review"
-                    value="June 18"
-                  />
-                  <PortalCard
-                    icon={<ShieldCheck />}
-                    title="Privacy Status"
-                    value="Protected"
-                  />
-                </div> */}
-
-                {/* <div className="mt-6 rounded-3xl bg-aeviora-cream p-5">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <Lock size={17} className="text-aeviora-gold" />
-                    Security Reminder
-                  </div>
-                  <p className="text-sm leading-6 text-gray-600">
-                    For production, use encrypted backend storage, audit logs,
-                    MFA, secure sessions, role-based permissions, and signed
-                    BAAs with all applicable vendors.
-                  </p>
-                </div> */}
+               
               </div>
             </div>
 
@@ -173,7 +162,7 @@ export default function Home() {
       </section>
 
       {/* PROFESSIONAL INTRO */}
-      <section className="relative z-10 px-6 py-20">
+      <section className="relative z-10 px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[1.1fr] lg:items-center">
             <div>
@@ -209,7 +198,7 @@ export default function Home() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" className="bg-white px-6 py-20">
+      <section id="services" className="bg-white px-6 py-12">
         <Services sProtocol={setProtocol} modalSetting={modalHandler}/>
       </section>
 
@@ -244,7 +233,7 @@ export default function Home() {
       </section>
 
       {/* PROCESS */}
-      <section className="bg-white px-6 py-20">
+      <section className="bg-white px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
             <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
@@ -281,14 +270,14 @@ export default function Home() {
       </section>
 
       {/* HIPAA NOTICE */}
-      <section id="privacy" className="px-6 py-20">
+      <section id="privacy" className="px-6 py-12">
         <div className="mx-auto max-w-7xl">
           <SecurityNotice />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="px-6 pb-20">
+      <section className="px-6 pb-12">
         <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-primaryDark p-10 text-center text-white md:p-16">
           <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
             Aeviora Wellness Portal

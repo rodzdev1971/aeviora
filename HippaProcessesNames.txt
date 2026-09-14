@@ -1,0 +1,82 @@
+| Process                     | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| Risk Analysis Process       | Identify where PHI is created, stored, transmitted, and accessed   |
+| Access Control Process      | Limit PHI access by role: patient, provider, admin                 |
+| Authentication Process      | Secure login, strong passwords, MFA-ready structure                |
+| Session Security Process    | Secure cookies, timeout, logout, token rotation                    |
+| Authorization Process       | Verify every request before accessing PHI                          |
+| Audit Logging Process       | Record who accessed, changed, exported, or deleted PHI             |
+| Encryption Process          | Encrypt data in transit and at rest                                |
+| Minimum Necessary Process   | Only show the minimum PHI needed for the task                      |
+| Breach Response Process     | Detect, investigate, document, and notify when required            |
+| Backup and Recovery Process | Encrypted backups and disaster recovery                            |
+| Vendor BAA Process          | BAAs with hosting, email, SMS, storage, analytics, payment vendors |
+| Staff Training Process      | Workforce HIPAA training and sanctions policy                      |
+| Secure Development Process  | Code reviews, dependency scanning, vulnerability patching          |
+
+React Frontend
+  ↓ HTTPS only
+Node.js / Express API
+  ↓ role-based authorization
+MongoDB
+  ↓ encrypted fields + backups
+Audit Logs
+
+HttpOnly secure cookies
+MFA
+rate limiting
+role-based access control
+audit logs
+encrypted database fields
+encrypted document storage
+BAAs with vendors
+HTTPS only
+
+WHAT is NOT COVERED ON THE CODE for HIPPA
+HIPAA risk analysis documentation
+HIPAA privacy policy
+HIPAA security policy
+Business Associate Agreements
+Staff HIPAA training
+Device and workstation policy
+Sanctions policy
+Incident response plan
+Breach notification process
+Backup and disaster recovery plan
+Access review process
+Vendor review process
+Data retention and destruction policy
+
+Vendor / Tool Warning for Your Website
+Google Analytics
+Meta Pixel
+TikTok Pixel
+Chat widgets
+Online scheduling widgets
+Email marketing forms
+SMS tools
+Payment tools
+Cloud storage
+AI transcription tools
+HHS guidance on tracking technologies states that regulated entities must ensure disclosures to tracking technology vendors are permitted by the Privacy Rule and that BAAs are required when vendors create, receive, maintain, or transmit PHI
+
+Practical Build Order for Aeviora Wellness
+1. Secure backend with HTTPS
+2. User registration and login
+3. HttpOnly cookie sessions
+4. Role-based access
+5. Patient profile endpoint
+6. Intake form endpoint
+7. Audit logging
+8. Encrypted PHI fields
+9. Admin/provider dashboard
+10. Document storage with signed URLs
+11. Backup and recovery plan
+12. Incident response procedure
+13. Vendor BAA checklist
+14. Staff training records
+
+Writting Block
+app.use("/api/auth", authRoutes);
+app.use("/api/patients", patientRoutes);
+app.use("/api/audit", auditRoutes);

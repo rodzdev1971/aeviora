@@ -62,6 +62,7 @@ export default function Register() {
 
   }
 
+<<<<<<< HEAD
   // const comparePWDHandler = (e) => {
   //   e.preventDefault()
   //   const {name, value} = e.target;
@@ -86,6 +87,32 @@ export default function Register() {
   // const togglePasswordVisibilityHandler = ()=>{
   //   setShowPassword(prev=>!prev)
   // }
+=======
+  const comparePWDHandler = (e) => {
+    e.preventDefault()
+    const {name, value} = e.target;
+    setPWDData(prev=>({...prev, [name] :value }))
+     // Real-time comparison check
+     if (name === 'confirmPassword') {
+      if (pwdData.password !== value) {
+        setError('Passwords do not match');
+        console.log('error')
+      } else {
+        setError('');
+      }
+    } else if (name === 'password') {
+      if (pwdData.confirmPassword && value !== pwdData.confirmPassword) {
+        setError('Passwords do not match');
+      } else {
+        setError('');
+      }
+    }
+  };
+
+  const togglePasswordVisibilityHandler = ()=>{
+    setShowPassword(prev=>!prev)
+  }
+>>>>>>> version2
   
 
   return (
