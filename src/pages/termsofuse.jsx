@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-export default function TermsOfUse(){
+export default function TermsOfUse() {
   const lastUpdated = "August 5, 2026";
 
   return (

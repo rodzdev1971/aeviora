@@ -7,7 +7,7 @@ import MainDashboard from "./pages/MainDashboard";
 import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
-import TermsOfUse from "./pages/TermsOfUse";
+import TermsOfUse from "./pages/termsofuse.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 // import DashboardLayout1 from "./components/dashboardlayout1";
