@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// Legacy clinical records only. Account registration/authentication use users.js.
 import { encryptText, decryptText } from "../utils/crypto.js";
 
 const patientSchema = new mongoose.Schema(

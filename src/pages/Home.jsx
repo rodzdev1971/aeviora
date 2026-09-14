@@ -1,5 +1,7 @@
+
 import { useState } from "react";
-import { ClipboardList, FileText, HeartPulse, ShieldCheck, Sparkles, UserRoundCheck } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ClipboardList, FileText, HeartPulse, ShieldCheck, Sparkles, UserRoundCheck,ArrowRight} from "lucide-react";
 
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -66,7 +68,7 @@ export default function Home() {
             </p>
 
             <div className="mt-9 flex flex-col justify-center gap-4">
-              {/* <Link
+              <Link
                 to="/register"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-aeviora-gold px-6 py-4 text-sm font-bold text-aeviora-black transition hover:bg-aeviora-lightGold"
               >
@@ -79,13 +81,13 @@ export default function Home() {
                 className="inline-flex items-center justify-center rounded-xl border border-aeviora-gold/70 px-6 py-4 text-sm font-bold text-aeviora-gold transition hover:bg-aeviora-gold hover:text-aeviora-black"
               >
                 Access Patient Portal
-              </Link> */}
+              </Link>
               
                 {/* <button className="btn-primary">
                 Clinic will open soon
                 </button> */}
                 
-              <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
+              {/* <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
                 <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
                   <div className="m-6 flex items-center justify-between">
                     <div>
@@ -105,7 +107,7 @@ export default function Home() {
                   <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
                 
                 </div>
-              </div>  
+              </div>   */}
                 
             </div>
 

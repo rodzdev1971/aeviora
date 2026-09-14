@@ -8,6 +8,7 @@ import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/termsofuse.jsx";
+import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/termsofuse" element={<TermsOfUse />} />
+      <Route path="/account-privacy" element={<AccountPrivacy />} />
       {/* <Route path="test" element={<DashboardLayout />} /> */}
 
       <Route element={<ProtectedRoute />}>

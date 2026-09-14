@@ -1,7 +1,11 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Patient from "../models/patients.js"
+import User from "../models/users.js";
+import { registerAccount, RegistrationError } from "../services/registration.js";
+import { registrationConfig } from "../config/registration.js";
+import { requireAuth } from "../middleware/auth.js";
+import { z } from "zod";
 import { logAudit } from "../utils/auditLogger.js";
 
 const router = express.Router();
@@ -28,76 +32,34 @@ function cookieOptions() {
   };
 }
 
+router.get("/registration-config", (req, res) => {
+  try { res.json(registrationConfig()); }
+  catch { res.status(503).json({ message: "Registration is not configured yet." }); }
+});
+
 router.post("/register", async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      dateOfBirth,
-      password,
-      selectedProtocol,
-      hipaaAcknowledged,
-    } = req.body;
-
-    if (!firstName || !lastName || !email || !phone || !dateOfBirth || !password) {
-      return res.status(400).json({ message: "Please complete all required fields." });
-    }
-
-    if (password.length < 12) {
-      return res.status(400).json({
-        message: "Password must be at least 12 characters.",
-      });
-    }
-
-    const existingUser = await Patient.findOne({ email });
-
-    if (existingUser) {
-      return res.status(409).json({
-        message: "An account with this email already exists.",
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const patient = await Patient.create({
-      firstName,
-      lastName,
-      email,
-      phone,
-      dateOfBirth,
-      passwordHash,
-      selectedProtocol,
-      hipaaAcknowledged,
-      role: "patient",
-    });
-
-    await logAudit({
-      req,
-      actorId: patient._id,
-      actorRole: patient.role,
-      action: "PATIENT_CREATED",
-      targetType: "Patient",
-      targetId: patient._id.toString(),
-    });
-
+    const user = await registerAccount(req.body);
+    await logAudit({ req, actorId: user._id, actorRole: user.role, action: "USER_CREATED", targetType: "User", targetId: user._id });
     return res.status(201).json({
-      message: "Patient account created.",
+      message: user.accountStatus === "pending" ? "Account created. Activation is pending." : "Account created. You can now sign in.",
+      userId: user._id, accountStatus: user.accountStatus,
     });
   } catch (error) {
-    console.error("Register error:", error.message);
-    return res.status(500).json({ message: "Registration failed." });
+    if (error instanceof RegistrationError) return res.status(error.status).json({ message: error.message, fields: error.fields });
+    return res.status(500).json({ message: "Registration is unavailable. Please try again later." });
   }
 });
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const input = z.strictObject({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1).max(200) }).safeParse(req.body);
+    if (!input.success) return res.status(400).json({ message: "Enter a valid email and password." });
+    const { email, password } = input.data;
 
-    const patient = await Patient.findOne({ email }).select("+passwordHash");
+    const user = await User.findOne({ email }).select("+passwordHash");
 
-    if (!patient) {
+    if (!user) {
       await logAudit({
         req,
         action: "LOGIN_FAILED",
@@ -107,13 +69,13 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    const isValid = await bcrypt.compare(password, patient.passwordHash);
+    const isValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isValid) {
       await logAudit({
         req,
-        actorId: patient._id,
-        actorRole: patient.role,
+        actorId: user._id,
+        actorRole: user.role,
         action: "LOGIN_FAILED",
         metadata: { email },
       });
@@ -121,27 +83,30 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    const accessToken = createAccessToken(patient);
+    if (user.accountStatus !== "active") {
+      return res.status(403).json({ message: user.accountStatus === "pending" ? "Account activation is pending." : "This account is unavailable." });
+    }
+    const accessToken = createAccessToken(user);
 
     res.cookie("accessToken", accessToken, cookieOptions());
 
     await logAudit({
       req,
-      actorId: patient._id,
-      actorRole: patient.role,
+      actorId: user._id,
+      actorRole: user.role,
       action: "LOGIN_SUCCESS",
-      targetType: "Patient",
-      targetId: patient._id.toString(),
+      targetType: "User",
+      targetId: user._id.toString(),
     });
 
     return res.json({
       message: "Login successful.",
       user: {
-        id: patient._id,
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        email: patient.email,
-        role: patient.role,
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -150,13 +115,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/logout", async (req, res) => {
+router.post("/logout", requireAuth, async (req, res) => {
   res.clearCookie("accessToken");
 
   await logAudit({
     req,
     actorId: req.user?.id,
-    actorRole: req.user?.role || "system",
+    actorRole: req.user.role,
     action: "LOGOUT",
   });
 

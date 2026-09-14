@@ -1,171 +1,152 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import PasswordInput from '../components/passwordInput';
-// import { Ps } from 'zod/v4/locales';
+import PasswordInput from "../components/passwordInput";
+import { apiRequest } from "../util/api";
+import { createRegistrationSchema } from "../../shared/registration";
 
+const fields = [
+  ["firstName", "First name", "text", "given-name", true],
+  ["lastName", "Last name", "text", "family-name", true],
+  ["email", "Email address", "email", "email", true],
+  ["phone", "Mobile phone", "tel", "tel", true],
+  ["zipCode", "ZIP / postal code", "text", "postal-code", true],
+  ["country", "Country code", "text", "country", true],
+];
+const addressFields = [
+  ["addressLine1", "Address line 1", "text", "address-line1"],
+  ["addressLine2", "Address line 2", "text", "address-line2"],
+  ["city", "City", "text", "address-level2"],
+  ["state", "State / region", "text", "address-level1"],
+];
 
 export default function Register() {
-  const navigate = useNavigate()
+  const [config, setConfig] = useState(null);
+  const [loadError, setLoadError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(null);
+  const [preference, setPreference] = useState("");
+  const inFlight = useRef(false);
+  const errorRef = useRef(null);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest("/api/auth/registration-config", { signal: controller.signal })
+      .then(setConfig).catch((error) => { if (!controller.signal.aborted) setLoadError(error.message); });
+    return () => controller.abort();
+  }, []);
 
-    /*
-      Production HIPAA-oriented workflow:
-      - Send data only over HTTPS.
-      - Do not store PHI in localStorage.
-      - Validate on backend.
-      - Encrypt sensitive data at rest.
-      - Use audit logs.
-      - Use MFA for patient access.
-      - Use Business Associate Agreements with vendors.
-    */
+  useEffect(() => { if (Object.keys(errors).length) errorRef.current?.focus(); }, [errors]);
 
-    // sessionStorage.setItem("aeviora_session", "active");
-    // navigate("/dashboard");
-    const formData = new FormData(e.currentTarget);
-
-    const payload = {
-      firstName: formData.get("firstName"),
-      lastName: formData.get("lastName"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-      dateOfBirth: formData.get("dateOfBirth"),
-      password: formData.get("password"),
-      selectedProtocol: formData.get("selectedProtocol"),
-      hipaaAcknowledged: formData.get("hipaaAcknowledged") === "on",
-    };
-  
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (!config || inFlight.current) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const payload = Object.fromEntries([...fields, ...addressFields].map(([name]) => [name, data.get(name) || ""]));
+    Object.assign(payload, {
+      preferredLanguage: data.get("preferredLanguage"), communicationPreference: data.get("communicationPreference"),
+      timeZone: data.get("timeZone"), password: data.get("password"),
+      is18OrOlder: data.has("is18OrOlder"), termsAccepted: data.has("termsAccepted"), privacyAccepted: data.has("privacyAccepted"),
+      termsVersion: config.termsVersion, privacyVersion: config.privacyVersion,
+      smsConsent: data.has("smsConsent"), marketingConsent: data.has("marketingConsent"),
+    });
+    const parsed = createRegistrationSchema(config.requiredAddressFields).safeParse(payload);
+    const nextErrors = {};
+    if (!parsed.success) for (const issue of parsed.error.issues) nextErrors[issue.path[0] || "form"] ??= issue.message;
+    if (payload.password !== data.get("confirmPassword")) nextErrors.confirmPassword = "Passwords do not match.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    inFlight.current = true;
+    setSubmitting(true);
     try {
-      const response = await fetch("http://localhost:5000/api/patients/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      const result = await apiRequest("/api/auth/register", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed.data),
       });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        alert(data.message || "Registration failed.");
-        return;
-      }
-  
-      alert("Registration successful.");
-      navigate("/login");
+      form.reset();
+      setSuccess(result);
     } catch (error) {
-      console.error(error);
-      alert("Unable to connect to server.");
-    }
+      setErrors(error.fields || { form: error.message || "Unable to connect. Please try again." });
+    } finally { inFlight.current = false; setSubmitting(false); }
+  }
 
+  function renderField([name, label, type, autoComplete, required = false]) {
+    const needed = required || config.requiredAddressFields.includes(name);
+    return (
+      <div key={name}>
+        <label htmlFor={name} className="label">{label}{needed ? " *" : " (optional)"}</label>
+        <input id={name} name={name} type={type} autoComplete={autoComplete} required={needed}
+          defaultValue={name === "country" ? "US" : ""} maxLength={name === "country" ? 2 : 254}
+          className="input" aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? name + "-error" : undefined} />
+        {errors[name] && <p id={name + "-error"} className="mt-1 text-sm text-red-700">{errors[name]}</p>}
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen  bg-aeviora-primaryDark px-6 py-10">
-      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-2xl md:grid-cols-2">
-        <section className="p-10 bg-aeviora-primary text-white">
-          {/* <div className="absolute inset-0">
-            <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
-            <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,77,0.16),transparent_35%)]" />
-          </div> */}
-          <Link to="/" className="inline-flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
-              A
-            </div>
-            <div>
-              <p className="font-display text-2xl">Aeviora Wellness</p>
-              <p className="text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
-                Patient Portal
-              </p>
-            </div>
-          </Link>
-
-          <div className="mt-16">
-            <ShieldCheck className="mb-6 h-12 w-12 text-aeviora-gold" />
-            <h1 className="font-display text-5xl">Create your secure account</h1>
-            <p className="mt-6 text-gray-300">
-              Register to complete intake forms, manage your wellness records,
-              and access your care information.
-            </p>
-          </div>  
+    <main className="min-h-screen bg-aeviora-primaryDark px-4 py-8 sm:px-6">
+      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl lg:grid-cols-[1fr_2fr]">
+        <section className="bg-aeviora-primary p-8 text-white lg:p-10">
+          <Link to="/" className="font-display text-2xl">Aeviora Wellness</Link>
+          <ShieldCheck className="mb-5 mt-10 h-12 w-12 text-aeviora-softGold" />
+          <h1 className="font-display text-4xl">Create your account</h1>
+          <p className="mt-5 leading-7">Start with your contact details and communication preferences.</p>
+          <p className="mt-4 text-sm leading-6">Your ZIP code helps us check service availability. An account does not confirm eligibility for a service.</p>
         </section>
-
-        <section className="p-8 md:p-10">
-          <h2 className="font-display text-3xl">Patient Registration</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Please enter your information exactly as it appears on your ID.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-8 grid gap-5">
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                  <label className="label">First Name</label>
-                  <input name='firstName' className="input" type="text" required />
-              </div>
-
-              <div>
-                <label className="label">Last Name</label>
-                <input name="lastName" className="input" type="text" required />
-              </div>
+        <section className="p-6 sm:p-10">
+          {success ? (
+            <div role="status">
+              <h2 className="font-display text-3xl">Account created</h2>
+              <p className="my-5">{success.message}</p>
+              <Link to={success.accountStatus === "active" ? "/login" : "/"} className="btn-primary inline-block">
+                {success.accountStatus === "active" ? "Sign in" : "Return home"}
+              </Link>
             </div>
-
-            <div>
-              <label className="label">Email Address</label>
-              <input name="email" className="input" type="email" required />
-            </div>
-
-            <div>
-              <label className="label">Phone Number</label>
-              <input name="phone" className="input" type="tel" required />
-            </div>
-
-            <div>
-              <label className="label">Date of Birth</label>
-              <input name="dateOfBirth" className="input" type="date" required />
-            </div>
-
-            <div>
-              <PasswordInput />
-            </div>
-
-            <div>
-             <PasswordInput />
-            </div>
-            {/* <div>
-              <label className="label">Select Wellness</label>
-              <select name="selectedProtocol" className="input">
-                <option>General Wellness Consultation</option>
-                <option>Hormone Optimization</option>
-                <option>Peptide Therapy</option>
-                <option>GLP-1 Weight Loss Program</option>
-                <option>Functional Medicine</option>
-                <option>NAD+ and IV Therapy</option>
-                <option>Longevity Assessment</option>
-              </select>
-            </div> */}
-
-            <label className="flex gap-3 text-sm text-gray-600">
-              <input type="checkbox" required className="mt-1" />
-              <span>
-                I acknowledge that Aeviora Wellness will use secure systems to
-                manage my patient information and that I will not share my portal
-                credentials.
-              </span>
-            </label>
-
-            <button className="btn-primary w-full" type="submit">
-              Create Secure Account
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Already registered?{" "}
-            <Link to="/login" className="font-semibold text-aeviora-gold">
-              Login here
-            </Link>
-          </p>
+          ) : <>
+            <h2 className="font-display text-3xl">Account registration</h2>
+            <p className="mt-2 text-sm text-aeviora-slate">Fields marked * are required.</p>
+            {loadError && <p role="alert" className="mt-5 text-red-700">{loadError} <button type="button" className="underline" onClick={() => window.location.reload()}>Try again</button></p>}
+            {!config && !loadError && <p role="status" className="mt-5">Loading registration…</p>}
+            {config && <form onSubmit={handleSubmit} className="mt-7 space-y-7" noValidate>
+              {Object.keys(errors).length > 0 && <div ref={errorRef} tabIndex={-1} role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800">
+                <p className="font-semibold">Please review these details:</p>
+                <ul className="mt-2 list-disc pl-5">{Object.entries(errors).map(([name, message]) => <li key={name}>{message}</li>)}</ul>
+              </div>}
+              <fieldset disabled={submitting} className="space-y-6 disabled:opacity-60">
+                <legend className="mb-4 font-semibold">Contact details</legend>
+                <div className="grid gap-5 sm:grid-cols-2">{fields.map(renderField)}</div>
+                <details open={config.requiredAddressFields.length > 0 || addressFields.some(([name]) => errors[name])}>
+                  <summary className="cursor-pointer font-semibold">{config.requiredAddressFields.length ? "Address details" : "Add an address (optional)"}</summary>
+                  <div className="mt-4 grid gap-5 sm:grid-cols-2">{addressFields.map(renderField)}</div>
+                </details>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div><label htmlFor="preferredLanguage" className="label">Preferred language (optional)</label>
+                    <select id="preferredLanguage" name="preferredLanguage" className="input" defaultValue=""><option value="">No preference</option><option value="en">English</option><option value="es">Spanish</option></select></div>
+                  <div><label htmlFor="communicationPreference" className="label">Communication preference (optional)</label>
+                    <select id="communicationPreference" name="communicationPreference" className="input" value={preference} onChange={(event) => setPreference(event.target.value)}>
+                      <option value="">No preference</option><option value="email">Email</option><option value="sms">SMS</option><option value="both">Email and SMS</option>
+                    </select></div>
+                </div>
+                <div><label htmlFor="timeZone" className="label">Time zone (optional)</label>
+                  <input id="timeZone" name="timeZone" className="input" defaultValue={Intl.DateTimeFormat().resolvedOptions().timeZone || ""} placeholder="America/New_York" /></div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <PasswordInput placeholder="At least 12 characters" />
+                  <PasswordInput name="confirmPassword" label="Confirm password" />
+                </div>
+                <div className="space-y-4 border-t border-aeviora-border pt-5 text-sm leading-6">
+                  {config.isDraft && <p className="rounded-xl bg-amber-50 p-3 text-amber-900">Development registration: policy documents are drafts. Acceptance is recorded for testing.</p>}
+                  <label className="flex items-start gap-3"><input name="is18OrOlder" type="checkbox" required className="mt-1" /><span>I confirm that I am 18 years of age or older. *</span></label>
+                  <label className="flex items-start gap-3"><input name="termsAccepted" type="checkbox" required className="mt-1" /><span>I accept the <a href={config.termsUrl} target="_blank" rel="noreferrer" className="underline">Terms</a> ({config.termsVersion}). *</span></label>
+                  <label className="flex items-start gap-3"><input name="privacyAccepted" type="checkbox" required className="mt-1" /><span>I accept the <a href={config.privacyUrl} target="_blank" rel="noreferrer" className="underline">Privacy Policy</a> ({config.privacyVersion}). *</span></label>
+                  <label className="flex items-start gap-3"><input name="smsConsent" type="checkbox" required={["sms", "both"].includes(preference)} className="mt-1" /><span>I consent to SMS messages for account verification and general account notifications. Required if SMS is selected. This does not include marketing messages.</span></label>
+                  <label className="flex items-start gap-3"><input name="marketingConsent" type="checkbox" className="mt-1" /><span>I would like to receive marketing messages (optional). Creating an account does not require this consent.</span></label>
+                </div>
+                <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">{submitting ? "Creating account…" : "Create account"}</button>
+              </fieldset>
+            </form>}
+            <p className="mt-6 text-center text-sm">Already registered? <Link to="/login" className="font-semibold text-aeviora-primary underline">Sign in</Link></p>
+          </>}
         </section>
       </div>
     </main>

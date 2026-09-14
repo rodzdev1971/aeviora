@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Patient from "../models/patients.js";
+import User from "../models/users.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 export async function requireAuth(req, res, next) {
@@ -18,11 +18,11 @@ export async function requireAuth(req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
-    const user = await Patient.findById(decoded.userId).select(
-      "_id email role firstName lastName isActive"
+    const user = await User.findById(decoded.userId).select(
+      "_id email role firstName lastName accountStatus"
     );
 
-    if (!user || !user.isActive) {
+    if (!user || user.accountStatus !== "active") {
       await logAudit({
         req,
         actorId: decoded.userId,

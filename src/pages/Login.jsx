@@ -1,63 +1,24 @@
-import {useState} from 'react';
-
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiRequest } from "../util/api";
 
 export default function Login() {
-const [error, setError] = useState(false)
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  // async function handleLogin(e) {
-  //   e.preventDefault();
-  
-  //   const formData = new FormData(e.currentTarget);
-  
-  //   const payload = {
-  //     email: formData.get("email"),
-  //     password: formData.get("password"),
-  //   };
-  
-  //   const response = await fetch("http://localhost:5000/api/auth/login", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     credentials: "include",
-  //     body: JSON.stringify(payload),
-  //   });
-  
-  //   const data = await response.json();
-  
-  //   if (!response.ok) {
-  //     alert(data.message || "Login failed.");
-  //     return;
-  //   }
-  
-  //   navigate("/dashboard");
-  // }
-
-  function handleLogin(e) {
-    e.preventDefault();
-
-    /*
-      Demo only.
-      Production should validate credentials on a HIPAA-compliant backend.
-    */
-    console.log(e.target.email.value)
-    const username = e.target.email.value;
-    const pwd = e.target.password.value;
-
-    if(username == 'demo@demo.com' && pwd == 'demo'){
-        sessionStorage.setItem("aeviora_session", "active");
-        navigate("/dashboard");
-    }else{
-        setError(true)
-    }
-    
+  async function handleLogin(event) {
+    event.preventDefault();
+    if (submitting) return;
+    const data = new FormData(event.currentTarget);
+    setSubmitting(true);
+    setError("");
+    try {
+      await apiRequest("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), password: data.get("password") }) });
+      navigate("/dashboard");
+    } catch (error) { setError(error.message || "Unable to sign in."); }
+    finally { setSubmitting(false); }
   }
-  function resetError(e){
-    e.target.value = ''
-    setError(false)
-  }
+  function resetError() { setError(""); }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-aeviora-black px-6 py-10">
@@ -72,24 +33,24 @@ const [error, setError] = useState(false)
           </p>
         </Link>
 
-        <h1 className="font-display text-3xl">Patient Login</h1>
+        <h1 className="font-display text-3xl">Account Login</h1>
         <p className="mt-2 text-sm text-gray-600">
           Access your wellness records and patient information.
         </p>
-        {error ? <p className='text-red-400 font-semibold'>Username and password does not match</p> : ''}
+        {error ? <p className='text-red-400 font-semibold'>{error}</p> : ''}
         <form onSubmit={handleLogin} className="mt-8 grid gap-5">
           <div>
-            <label className="label">Email Address</label>
-            <input className="input" type="email" name='email' onFocus={resetError} required />
+            <label htmlFor="loginEmail" className="label">Email Address</label>
+            <input className="input" id="loginEmail" autoComplete="username" type="email" name='email' onFocus={resetError} required />
           </div>
 
           <div>
-            <label className="label">Password</label>
-            <input className="input" name="password" onFocus={resetError} type="password" required />
+            <label htmlFor="loginPassword" className="label">Password</label>
+            <input className="input" id="loginPassword" autoComplete="current-password" name="password" onFocus={resetError} type="password" required />
           </div>
 
-          <button type="submit" className="btn-primary w-full">
-            Login Securely
+          <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
+            {submitting ? "Signing in…" : "Sign in"}
           </button>
         </form>
 

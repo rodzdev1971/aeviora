@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 const auditLogSchema = new mongoose.Schema(
   {
     actorId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
+      type: String,
+      ref: "User",
     },
 
     actorRole: {
       type: String,
-      enum: ["patient", "provider", "admin", "system"],
+      enum: ["user", "patient", "provider", "admin", "system"],
       default: "system",
     },
 
@@ -17,6 +17,9 @@ const auditLogSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
+        "USER_CREATED",
+        "USER_VIEWED",
+        "USER_UPDATED",
         "LOGIN_SUCCESS",
         "LOGIN_FAILED",
         "LOGOUT",

@@ -14,7 +14,8 @@ Use npm and preserve `package-lock.json` when changing dependencies.
 - `npm run deploy`: build and publish `dist/` with gh-pages; run only when deployment is requested.
 
 On PowerShell, use `npm.cmd` if execution policy blocks `npm.ps1`.
-There is currently no automated test script or test framework configured.
+Account registration tests use Node's built-in runner:
+`node --test server/tests/registration.test.js` (synthetic storage; no MongoDB).
 
 ## Active code paths
 
@@ -50,14 +51,15 @@ layouts when changing UI.
 
 ## Runtime boundaries
 
-Login currently uses demo credentials and an `aeviora_session` sessionStorage
-flag; the route guard is demo UI gating, not server authentication. Use synthetic
-data for local verification and do not add patient data or credentials to browser
-storage or logs.
-
-Registration currently posts to `http://localhost:5000/api/patients/register`.
-No backend implementation is included in this repository; do not assume this
-endpoint is available or that registration is integrated with demo login.
+Registration posts to `/api/auth/register`. Express starts in `server/server.js`,
+with testable middleware in `server/app.js`. New account data belongs in
+`server/models/users.js`, separate from legacy `patients` records. Shared strict
+validation lives in `shared/registration.js`. Do not add medical data to accounts.
+Login and the active route guard use backend cookie authentication. New accounts
+default to pending; only active accounts can log in. See
+`docs/account-registration.md` for development activation, consent policies,
+address requirements, and boundaries. Use synthetic data for verification.
+Do not read or print `.env` secrets or add personal data/credentials to logs.
 
 Vite's base and BrowserRouter's basename are both `/`, and `vercel.json`
 provides an SPA rewrite. GitHub Pages metadata and a deploy script also exist.

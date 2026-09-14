@@ -1,3 +1,4 @@
+import { apiRequest } from "../util/api";
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -11,9 +12,11 @@ import {
 export default function DashboardLayout() {
   const navigate = useNavigate();
 
-  function logout() {
-    sessionStorage.removeItem("aeviora_session");
-    navigate("/login");
+  async function logout() {
+    try {
+      await apiRequest("/api/auth/logout", { method: "POST" });
+      navigate("/login");
+    } catch { alert("Unable to sign out. Please try again."); }
   }
 
   // async function logout() {
