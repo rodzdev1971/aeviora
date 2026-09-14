@@ -1,24 +1,12 @@
-import { Link } from "react-router-dom";
 import { useState } from "react";
-import {
-  ArrowRight,
-  CalendarCheck,
-  ClipboardList,
-  FileText,
-  HeartPulse,
-  Lock,
-  ShieldCheck,
-  Sparkles,
-  Stethoscope,
-  UserRoundCheck,
-} from "lucide-react";
+import { ClipboardList, FileText, HeartPulse, ShieldCheck, Sparkles, UserRoundCheck } from "lucide-react";
 
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import SecurityNotice from "../components/securitynotice";
 import Feature from "../components/feature";
 import Services from "../components/services";
-import PortalCard from "../components/portalcard";
+
 import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
 import Modal from "../components/modal";
 import ProtocolInterestForm from "../components/protocolinterestform";

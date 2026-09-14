@@ -43,7 +43,7 @@ export async function requireAuth(req, res, next) {
     };
 
     next();
-  } catch (error) {
+  } catch {
     await logAudit({
       req,
       action: "ACCESS_DENIED",

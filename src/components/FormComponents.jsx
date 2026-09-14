@@ -1,5 +1,3 @@
-import React from "react";
-
 export function FieldError({ error }) {
   if (!error) return null;
 

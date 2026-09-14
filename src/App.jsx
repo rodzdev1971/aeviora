@@ -1,4 +1,4 @@
-import { Routes, Route, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -7,7 +7,7 @@ import MainDashboard from "./pages/MainDashboard";
 import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
-// import TermsOfUse from "./pages/TermsOfUse"
+import TermsOfUse from "./pages/termsofuse.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 

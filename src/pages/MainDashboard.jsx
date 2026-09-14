@@ -1,13 +1,3 @@
-import { Link, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  FileText,
-  ClipboardList,
-  User,
-  LogOut,
-  ShieldCheck,
-} from "lucide-react";
-
 export default function MainDashboard(){
   // const navigate = useNavigate();
 

@@ -1,5 +1,6 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import { symptomOptions, medicalConditionOptions, familyHistoryOptions, serviceOptions } from "../util/intakeOptions.js";
+
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -133,76 +134,13 @@ const intakeSchema = z.object({
   signatureDate: z.string().min(1, "Signature date is required."),
 });
 
-const symptomOptions = [
-  "Fatigue",
-  "Low energy",
-  "Brain fog",
-  "Poor concentration",
-  "Weight gain",
-  "Difficulty losing weight",
-  "Increased appetite",
-  "Cravings",
-  "Difficulty sleeping",
-  "Snoring",
-  "Wake unrefreshed",
-  "Anxiety",
-  "Depression",
-  "Low libido",
-  "Erectile dysfunction",
-  "Hot flashes",
-  "Night sweats",
-  "Joint pain",
-  "Muscle pain",
-  "Bloating",
-  "Constipation",
-  "Reflux",
-];
 
-const medicalConditionOptions = [
-  "High blood pressure",
-  "High cholesterol",
-  "Heart disease",
-  "Arrhythmia",
-  "Stroke",
-  "Type 1 diabetes",
-  "Type 2 diabetes",
-  "Prediabetes",
-  "Thyroid disorder",
-  "PCOS",
-  "Asthma",
-  "COPD",
-  "Sleep apnea",
-  "Migraines",
-  "Anxiety",
-  "Depression",
-  "ADHD",
-  "Autoimmune disease",
-];
 
-const familyHistoryOptions = [
-  "Father - Heart disease",
-  "Mother - Heart disease",
-  "Sibling - Heart disease",
-  "Father - Diabetes",
-  "Mother - Diabetes",
-  "Sibling - Diabetes",
-  "Father - Cancer",
-  "Mother - Cancer",
-  "Sibling - Cancer",
-  "Father - Dementia/Alzheimer’s",
-  "Mother - Dementia/Alzheimer’s",
-  "Sibling - Dementia/Alzheimer’s",
-];
 
-const serviceOptions = [
-  "Hormone Optimization",
-  "Medical Weight Loss",
-  "GLP-1 Programs",
-  "Peptide Therapy",
-  "Functional Medicine",
-  "NAD+ Therapy",
-  "IV Therapy",
-];
+
+
+
+
 
 function FieldError({ error }) {
   if (!error) return null;
@@ -347,7 +285,7 @@ export default function AevioraPatientIntakeForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
@@ -364,7 +302,8 @@ export default function AevioraPatientIntakeForm() {
     },
   });
 
-  const servicesInterested = watch("servicesInterested") || [];
+  const servicesInterested = useWatch({ control, name: "servicesInterested", defaultValue: [] });
+  const cancerHistory = useWatch({ control, name: "cancerHistory", defaultValue: "" });
   const glp1Selected = servicesInterested.includes("GLP-1 Programs");
 
   const onSubmit = async (data) => {
@@ -694,7 +633,7 @@ export default function AevioraPatientIntakeForm() {
               <option value="Yes">Yes</option>
             </SelectInput>
 
-            {watch("cancerHistory") === "Yes" && (
+            {cancerHistory === "Yes" && (
               <TextInput
                 label="Cancer Type / Year / Treatment"
                 name="cancerType"

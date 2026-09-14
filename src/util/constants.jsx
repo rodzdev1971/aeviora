@@ -1,18 +1,4 @@
-import {
-    ArrowRight,
-    CheckCircle2,
-    ShieldCheck,
-    ChevronDown,
-    Stethoscope,
-    HeartPulse,
-    Syringe,
-    Scale,
-    Activity,
-    Sparkles,
-    Droplets,
-    Brain,
-    ShieldPlus,
-  } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, HeartPulse, Syringe, Scale, Activity, Sparkles, Droplets, Brain, ShieldPlus } from "lucide-react";
 export const questions = [
     {
       id: "primary-goal",

@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import WellnessQuestionnaireModal from "./wellnessmodalquestionnaire"
 
-export default function Modal({ isOpen, onClose, title, description, children }) {
+export default function Modal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (

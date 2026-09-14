@@ -1,21 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  X,
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Sparkles,
-  HeartPulse,
-  Scale,
-  Brain,
-  Activity,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 
 import { questions } from '../util/constants';
 
-export default function WellnessQuestionnaireModal({ isOpen, onClose }) {
+export default function WellnessQuestionnaireModal({ onClose }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState("forward");
   const [answers, setAnswers] = useState({});
@@ -343,7 +332,7 @@ function QuestionStep({
   );
 }
 
-function FeedbackStep({ question, answer, onNext, onBack, isLastQuestion }) {
+function FeedbackStep({ question, answer }) {
   const multipleAnswers = Array.isArray(answer) ? answer : [];
 
   if (question.type === "multiple") {

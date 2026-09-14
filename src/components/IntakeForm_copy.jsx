@@ -1,9 +1,10 @@
-import React, {useState} from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { symptomOptions, medicalConditionOptions, familyHistoryOptions, serviceOptions } from "../util/intakeOptions.js";
+import { useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { intakeSchema } from "../util/IntakeSchema";
-import {Section, TextInput, SelectInput} from './FormComponents';
+import { Section, TextInput, SelectInput, TextArea, CheckboxGrid, FieldError } from './FormComponents';
 
 export default function AevioraPatientIntakeForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -11,7 +12,7 @@ export default function AevioraPatientIntakeForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     trigger,
     formState: { errors, isSubmitting },
     reset,
@@ -155,7 +156,8 @@ export default function AevioraPatientIntakeForm() {
     setCurrentStep(0);
   };
 
-  const servicesInterested = watch("servicesInterested") || [];
+  const servicesInterested = useWatch({ control, name: "servicesInterested", defaultValue: [] });
+  const cancerHistory = useWatch({ control, name: "cancerHistory", defaultValue: "" });
   const glp1Selected = servicesInterested.includes("GLP-1 Programs");
 
   return (
@@ -479,7 +481,7 @@ export default function AevioraPatientIntakeForm() {
                 <option value="Yes">Yes</option>
               </SelectInput>
 
-              {watch("cancerHistory") === "Yes" && (
+              {cancerHistory === "Yes" && (
                 <TextInput
                   label="Cancer Type / Year / Treatment"
                   name="cancerType"

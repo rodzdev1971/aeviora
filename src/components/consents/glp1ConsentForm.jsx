@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const sideEffects = [
   "Nausea",
@@ -106,15 +106,32 @@ function SignaturePad({ label, value, onChange, required = true }) {
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.strokeStyle = "#0f172a";
-
-    if (value) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, width, height);
-      };
-      img.src = value;
-    }
   }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!value) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+
+    // Drawing already updated the canvas before emitting this value.
+    if (canvas.toDataURL("image/png") === value) return;
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.offsetWidth, 180);
+    };
+    img.src = value;
+
+    return () => {
+      img.onload = null;
+    };
+  }, [value]);
 
   const getPoint = (event) => {
     const canvas = canvasRef.current;

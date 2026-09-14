@@ -50,13 +50,13 @@ const [error, setError] = useState(false)
         sessionStorage.setItem("aeviora_session", "active");
         navigate("/dashboard");
     }else{
-        setError(prevError => true)
+        setError(true)
     }
     
   }
   function resetError(e){
     e.target.value = ''
-    setError(prevError => false)
+    setError(false)
   }
 
   return (

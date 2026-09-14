@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  ChevronDown,
-  HeartPulse,
-  Syringe,
-  Scale,
-  Activity,
-  Sparkles,
-  Droplets,
-  Brain,
-  ShieldPlus,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import {protocols} from '../util/constants'
 
 
@@ -25,7 +15,7 @@ export default function WellnessProtocolDropdown({modalSetting, sProtocol}) {
 
   function openDropDownHandler(){
     setIsOpen((prev)=>!prev);
-    setSelectedProtocol(prev => null)
+    setSelectedProtocol(null)
   }
   return (
     <div className="relative z-40 m-auto w-full max-w-xl">

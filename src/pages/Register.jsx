@@ -1,4 +1,3 @@
-import {useState} from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import PasswordInput from '../components/passwordInput';
@@ -61,58 +60,6 @@ export default function Register() {
     }
 
   }
-
-// <<<<<<< HEAD
-//   // const comparePWDHandler = (e) => {
-//   //   e.preventDefault()
-//   //   const {name, value} = e.target;
-//   //   setPWDData(prev=>({...prev, [name] :value }))
-//   //    // Real-time comparison check
-//   //    if (name === 'confirmPassword') {
-//   //     if (pwdData.password !== value) {
-//   //       setError('Passwords do not match');
-//   //       console.log('error')
-//   //     } else {
-//   //       setError('');
-//   //     }
-//   //   } else if (name === 'password') {
-//   //     if (pwdData.confirmPassword && value !== pwdData.confirmPassword) {
-//   //       setError('Passwords do not match');
-//   //     } else {
-//   //       setError('');
-//   //     }
-//   //   }
-//   // };
-
-//   // const togglePasswordVisibilityHandler = ()=>{
-//   //   setShowPassword(prev=>!prev)
-//   // }
-//
-  const comparePWDHandler = (e) => {
-    e.preventDefault()
-    const {name, value} = e.target;
-    setPWDData(prev=>({...prev, [name] :value }))
-     // Real-time comparison check
-     if (name === 'confirmPassword') {
-      if (pwdData.password !== value) {
-        setError('Passwords do not match');
-        console.log('error')
-      } else {
-        setError('');
-      }
-    } else if (name === 'password') {
-      if (pwdData.confirmPassword && value !== pwdData.confirmPassword) {
-        setError('Passwords do not match');
-      } else {
-        setError('');
-      }
-    }
-  };
-
-  const togglePasswordVisibilityHandler = ()=>{
-    setShowPassword(prev=>!prev)
-  }
-  
 
   return (
     <main className="min-h-screen  bg-aeviora-primaryDark px-6 py-10">

@@ -1,14 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  HeartPulse,
-  Lock,
-  Scale,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, HeartPulse, Scale, ShieldCheck } from "lucide-react";
 
 export default function TermsOfUse() {
   const lastUpdated = "August 5, 2026";
