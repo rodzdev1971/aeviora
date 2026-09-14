@@ -8,7 +8,6 @@ import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/TermsOfUse";
-
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 // import DashboardLayout1 from "./components/dashboardlayout1";
