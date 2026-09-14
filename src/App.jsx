@@ -7,38 +7,14 @@ import MainDashboard from "./pages/MainDashboard";
 import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
-import TermsOfUse from "./pages/termsofuse.jsx";
+// import TermsOfUse from "./pages/TermsOfUse"
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
-// import DashboardLayout1 from "./components/dashboardlayout1";
-// import { Children } from "react";
 
-// const routes =[
-//   {path:'/', element:<Home />},
-//   {path:'register', element:<Register />},
-//   {path:'login', element:<Login />},
-//   {element:<ProtectedRoute />,
-//     children: [
-//       {path:'dashboard', element:<DashboardLayout />,
-//         Children:[
-//           {index:true, element:<MainDashboard />},
-//           {path:'intake', element:<Intake />},
-//           {path:'records',element:<Records />},
-//           {path:'profile',element:<Profile />}
-//         ]
-//       }
-//     ]
-//   }
-// ]
-
-// const router = createBrowserRouter(routes, {basename:'/aeviora'})
 
 export default function App() {
 
   return (
-    // <div>
-    //   <RouterProvider router={router} />
-    // </div>
 
     <Routes>
       <Route path="/" element={<Home />} />
