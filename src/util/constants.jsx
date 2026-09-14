@@ -236,6 +236,6 @@ export const company = {
   address: "6625 Miami Lakes Dr ste 467",
   address1: "Miami Lakes, FL 33014",
   telephone:"305-828-7650",
-  fax:"Pending",
+  fax:"305-937-0204",
   email:"info@aeviorawellness.com"
 }

@@ -45,7 +45,7 @@ export default function Footer() {
           </div>
   
           <p className="mt-10 border-t border-white/10 pt-6 text-xs text-gray-400">
-            © {new Date().getFullYear()} Aeviora Wellness. All rights reserved.
+            © {new Date().getFullYear()} Aeviora Wellness by Health GuideLife LLC. All rights reserved.
           </p>
         </div>
       </footer>

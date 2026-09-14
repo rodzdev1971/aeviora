@@ -13,7 +13,7 @@ export default function Navbar() {
               Aeviora Wellness
             </p>
             <p className="text-xs uppercase tracking-[0.25em] text-aeviora-softSage">
-              Longevity & Precision Health
+              by Health GuideLife LLC
             </p>
           </div>
         </Link>
