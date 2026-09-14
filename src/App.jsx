@@ -7,10 +7,10 @@ import MainDashboard from "./pages/MainDashboard";
 import Records from "./pages/Records";
 import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
+import TermsOfUse from "./pages/TermsOfUse";
 
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
-import TermsOfUse from "./components/termsofuse";
 // import DashboardLayout1 from "./components/dashboardlayout1";
 // import { Children } from "react";
 
@@ -56,50 +56,6 @@ export default function App() {
             <Route path='profile' element={<Profile />} />
         </Route>
       </Route>
-
-      {/* <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <MainDashboard />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/records"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <Records />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/intake"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <Intake />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <Profile />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      /> */}
     </Routes>
   );
 }

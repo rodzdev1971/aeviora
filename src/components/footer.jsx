@@ -25,6 +25,7 @@ export default function Footer() {
                 {company.email}
                 <br />
                 tel: {company.telephone}
+                <br />
                 fax: {company.fax}
               </p>
             </div>
