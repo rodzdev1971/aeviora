@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
   smsConsent: { type: consentSchema, required: true },
   marketingConsent: { type: consentSchema, required: true },
   accountStatus: { type: String, enum: ["pending", "active", "suspended", "deleted"], default: "pending" },
-  role: { type: String, enum: ["user", "provider", "admin"], default: "user" },
+  role: { type: String, enum: ["user", "patient", "provider", "admin"], default: "patient" },
   stripeCustomerId: { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
   subscriptionStatus: { type: String, default: "inactive" },

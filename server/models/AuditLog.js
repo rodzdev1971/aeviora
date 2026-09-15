@@ -31,6 +31,7 @@ const auditLogSchema = new mongoose.Schema(
         "ACCESS_DENIED",
         "PASSWORD_CHANGED",
         "PAYMENT_CHECKOUT_STARTED",
+        "PATIENT_CONTACT_SELECTED",
       ],
     },
 

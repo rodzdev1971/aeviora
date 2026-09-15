@@ -29,7 +29,7 @@ test("registration stores a UUID, normalized contact data, password hash and ser
   assert.equal(user.phone, "+12025550123");
   assert.equal(user.country, "US");
   assert.equal(user.accountStatus, "pending");
-  assert.equal(user.role, "user");
+  assert.equal(user.role, "patient");
   assert.equal(await bcrypt.compare(input().password, user.passwordHash), true);
   assert.equal(user.termsAcceptance.acceptedAt.toISOString(), now.toISOString());
   assert.equal(user.privacyAcceptance.version, config.privacyVersion);

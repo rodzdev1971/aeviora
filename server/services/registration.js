@@ -26,7 +26,7 @@ export async function registerAccount(body, {
   const consent = (granted) => ({ granted, recordedAt: timestamp, grantedAt: granted ? timestamp : null });
   try {
     return await users.create({
-      ...account, passwordHash: await hashPassword(password), role: "user", accountStatus: status,
+      ...account, passwordHash: await hashPassword(password), role: "patient", accountStatus: status,
       termsAcceptance: { version: config.termsVersion, documentUrl: config.termsUrl, acceptedAt: timestamp, isDraft: config.isDraft },
       privacyAcceptance: { version: config.privacyVersion, documentUrl: config.privacyUrl, acceptedAt: timestamp, isDraft: config.isDraft },
       smsConsent: consent(smsConsent), marketingConsent: consent(marketingConsent),

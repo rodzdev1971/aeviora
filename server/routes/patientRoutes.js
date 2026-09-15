@@ -28,8 +28,9 @@ router.get("/me", requireAuth, async (req, res) => {
   return res.json({ user });
 });
 
-router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
+router.get("/", requireAuth, requireRole("provider", "admin"), async (req, res) => {
   const users = await User.find()
+    .where("role").in(["patient", "user"])
     .select(publicFields)
     .sort({ createdAt: -1 })
     .limit(100);
@@ -113,6 +114,15 @@ router.post("/me/password", requireAuth, async (req, res) => {
     metadata: { result: "completed" },
   });
   return res.json({ message: "Password changed successfully." });
+});
+
+router.patch("/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const parsed = profileUpdateSchema.safeParse(req.body);
+  if (!parsed.success || !Object.keys(parsed.data).length) return res.status(400).json({ message: "Provide valid editable patient fields." });
+  const user = await User.findByIdAndUpdate(req.params.id, { $set: parsed.data }, { new: true, runValidators: true }).select(publicFields);
+  if (!user) return res.status(404).json({ message: "Patient account not found." });
+  await logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action: "USER_UPDATED", targetType: "User", targetId: user._id, metadata: { updatedFields: Object.keys(parsed.data), source: "staff_patient_update" } });
+  return res.json({ message: "Patient profile updated.", user });
 });
 
 export default router;
