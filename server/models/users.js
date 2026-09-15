@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
   marketingConsent: { type: consentSchema, required: true },
   accountStatus: { type: String, enum: ["pending", "active", "suspended", "deleted"], default: "pending" },
   role: { type: String, enum: ["user", "provider", "admin"], default: "user" },
+  stripeCustomerId: { type: String, default: null },
+  stripeSubscriptionId: { type: String, default: null },
+  subscriptionStatus: { type: String, default: "inactive" },
 }, { timestamps: true, strict: "throw", collection: "users" });
 
 export default mongoose.model("User", userSchema);

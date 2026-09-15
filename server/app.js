@@ -8,6 +8,7 @@ import hpp from "hpp";
 import authRoutes from "./routes/authRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 export function createApp() {
   const app = express();
@@ -36,6 +37,7 @@ app.use(
   })
 );
 
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
@@ -66,6 +68,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);
+app.use("/api/payments", paymentRoutes);
 
 
   app.use((error, req, res, next) => {

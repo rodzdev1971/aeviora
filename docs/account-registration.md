@@ -72,6 +72,9 @@ a Node/MongoDB host; a static GitHub Pages deployment cannot run it.
 - `PATCH /api/users/me`: limited address/language/time-zone edits. Contact changes,
   communication changes, and consent updates need separate verified workflows.
 - `GET /api/users`: admin-only account list, limited to 100 records.
+- `POST /api/payments/checkout-session`: creates an authenticated Stripe subscription Checkout session.
+- `POST /api/payments/billing-portal`: creates an authenticated Stripe Customer Portal session.
+- `POST /api/payments/webhook`: receives signed Stripe subscription lifecycle events.
 
 `/api/patients` remains an alias to the account routes for compatibility, but
 returns `user`/`users` instead of the old patient payloads. Registration is only
@@ -82,6 +85,12 @@ lookup, address validation against a postal service, consent withdrawal/history,
 and clinical intake persistence are not implemented by this change. ZIP collection
 does not certify that a service is available. Existing intake/profile/records UI
 outside registration remains separate work.
+
+Stripe billing requires `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, and
+`STRIPE_WEBHOOK_SECRET` in the server environment. Configure the Stripe webhook
+endpoint as `/api/payments/webhook` for checkout completion and subscription
+updates. Stripe Checkout and the Customer Portal keep payment details out of
+Aeviora; do not send card numbers or clinical information to these endpoints.
 
 ## Checks
 

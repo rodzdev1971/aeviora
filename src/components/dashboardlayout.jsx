@@ -2,8 +2,6 @@ import { apiRequest } from "../util/api";
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
-  FileText,
-  ClipboardList,
   User,
   LogOut,
   ShieldCheck,
@@ -30,8 +28,6 @@ export default function DashboardLayout() {
 
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
-    { label: "Records", href: "/records", icon: <FileText size={18} /> },
-    { label: "Intake Forms", href: "/intake", icon: <ClipboardList size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
   ];
 
@@ -70,7 +66,7 @@ export default function DashboardLayout() {
             <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
               <ShieldCheck className="mb-2 text-aeviora-gold" size={20} />
               <p className="text-xs text-gray-300">
-                Secure access recommended with MFA, timeout controls, and audit logs.
+                Clinical information stays with your authorized healthcare portals.
               </p>
             </div>
 

@@ -30,6 +30,7 @@ const auditLogSchema = new mongoose.Schema(
         "RECORD_DOWNLOADED",
         "ACCESS_DENIED",
         "PASSWORD_CHANGED",
+        "PAYMENT_CHECKOUT_STARTED",
       ],
     },
 

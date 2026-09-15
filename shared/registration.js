@@ -65,6 +65,13 @@ export const profileUpdateSchema = z.strictObject({
   addressLine2: accountFields.addressLine2.optional(),
   city: accountFields.city.optional(),
   state: accountFields.state.optional(),
+  zipCode: accountFields.zipCode,
   preferredLanguage: accountFields.preferredLanguage.optional(),
   timeZone: accountFields.timeZone.optional(),
+});
+
+export const passwordChangeSchema = z.strictObject({
+  currentPassword: z.string().min(1).max(200),
+  newPassword: z.string().min(12, "Use at least 12 characters.")
+    .refine((value) => new TextEncoder().encode(value).length <= 72, "Password must be at most 72 UTF-8 bytes."),
 });

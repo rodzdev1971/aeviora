@@ -4,8 +4,6 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import MainDashboard from "./pages/MainDashboard";
-import Records from "./pages/Records";
-import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
@@ -28,8 +26,6 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
             <Route path='dashboard' element={<MainDashboard />}/>
-            <Route path='intake' element={<Intake />}/>
-            <Route path='records' element={<Records />} />
             <Route path='profile' element={<Profile />} />
         </Route>
       </Route>
