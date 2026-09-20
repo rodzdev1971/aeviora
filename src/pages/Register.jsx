@@ -33,7 +33,14 @@ export default function Register() {
   useEffect(() => {
     const controller = new AbortController();
     apiRequest("/api/auth/registration-config", { signal: controller.signal })
-      .then(setConfig)
+      .then((data) =>
+        setConfig({
+          ...data,
+          requiredAddressFields: Array.isArray(data.requiredAddressFields)
+            ? data.requiredAddressFields
+            : [],
+        }),
+      )
       .catch((error) => {
         if (!controller.signal.aborted) setLoadError(error.message);
       });

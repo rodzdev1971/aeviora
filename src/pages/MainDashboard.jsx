@@ -46,7 +46,12 @@ export default function MainDashboard() {
         if (["provider", "admin"].includes(user.role)) return apiRequest("/api/users");
         return null;
       })
-      .then((result) => { if (result) setPatients(result.users.filter((user) => ["patient", "user"].includes(user.role))); })
+      .then((result) => {
+        if (result) {
+          const users = Array.isArray(result.users) ? result.users : [];
+          setPatients(users.filter((user) => ["patient", "user"].includes(user.role)));
+        }
+      })
       .catch((error) => setStaffError(error.message));
   }, []);
 
