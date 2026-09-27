@@ -52,6 +52,18 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+
+  // return res.json({
+  //     message: "Login successful.",
+  //     user: {
+  //       id: 1111,
+  //       firstName: "demo",
+  //       lastName: "demo",
+  //       email: "demo@example.com",
+  //       role: 'admin',
+  //     },
+  //   });
+
   try {
     const input = z.strictObject({ email: z.string().trim().toLowerCase().email(), password: z.string().min(1).max(200) }).safeParse(req.body);
     if (!input.success) return res.status(400).json({ message: "Enter a valid email and password." });

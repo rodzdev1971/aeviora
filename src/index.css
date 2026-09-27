@@ -21,6 +21,13 @@ body {
   @apply w-full rounded-xl border border-aeviora-border bg-white px-4 py-3 text-sm outline-none transition focus:border-aeviora-primary focus:ring-2 focus:ring-aeviora-softSage;
 }
 
+.input[aria-invalid="true"] {
+  @apply border-red-600 focus:border-red-600 focus:ring-red-200;
+}
+input[type="checkbox"][aria-invalid="true"] {
+  @apply outline outline-2 outline-offset-2 outline-red-600;
+}
+
 .label {
   @apply mb-2 block text-sm font-medium text-aeviora-charcoal;
 }

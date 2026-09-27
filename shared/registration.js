@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const optionalText = (max) => z.string().trim().max(max).default("");
+const optionalText = (max) => z.string().trim().max(max, { error: `Use ${max} characters or fewer.` }).default("");
 const phone = z.string().trim().regex(/^[+\d\s().-]+$/, "Enter a valid mobile number.")
   .transform((value) => {
     const digits = value.replace(/\D/g, "");
@@ -11,15 +11,15 @@ const phone = z.string().trim().regex(/^[+\d\s().-]+$/, "Enter a valid mobile nu
   }).pipe(z.string().regex(/^\+[1-9]\d{7,14}$/, "Include the country code for international mobile numbers."));
 
 export const accountFields = {
-  firstName: z.string().trim().min(1, "First name is required.").max(80),
-  lastName: z.string().trim().min(1, "Last name is required.").max(80),
-  email: z.string().trim().toLowerCase().email("Enter a valid email address.").max(254),
+  firstName: z.string().trim().min(1, "First name is required.").max(80, { error: "Use 80 characters or fewer." }),
+  lastName: z.string().trim().min(1, "Last name is required.").max(80, { error: "Use 80 characters or fewer." }),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address.").max(254, { error: "Use 254 characters or fewer." }),
   phone,
   addressLine1: optionalText(160),
   addressLine2: optionalText(160),
   city: optionalText(100),
   state: optionalText(100),
-  zipCode: z.string().trim().min(1, "ZIP or postal code is required.").max(20),
+  zipCode: z.string().trim().min(1, "ZIP or postal code is required.").max(20, { error: "Use 20 characters or fewer." }),
   country: z.string().trim().toUpperCase().regex(/^[A-Z]{2}$/, "Use a two-letter country code.").default("US"),
   preferredLanguage: z.enum(["", "en", "es"]).default(""),
   communicationPreference: z.enum(["", "email", "sms", "both"]).default(""),
