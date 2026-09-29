@@ -1,5 +1,5 @@
 import { apiRequest } from "../util/api";
-import { Link, useNavigate, Outlet } from "react-router-dom";
+import { Link, useNavigate, Outlet, useOutletContext } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -11,6 +11,7 @@ import {
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
+  const { user } = useOutletContext();
 
   async function logout() {
     try {
@@ -33,6 +34,9 @@ export default function DashboardLayout() {
     { label: "Records", href: "/records", icon: <FileText size={18} /> },
     { label: "Intake Forms", href: "/intake", icon: <ClipboardList size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
+    ...(user?.role === "admin"
+      ? [{ label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> }]
+      : []),
   ];
 
   return (

@@ -207,6 +207,51 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
       return object;
     },
   }));
+  t.mock.method(User, "find", () => {
+    let offset = 0;
+    let limit = 25;
+    const query = {
+      select: () => query,
+      sort: () => query,
+      skip: (value) => {
+        offset = value;
+        return query;
+      },
+      limit: (value) => {
+        limit = value;
+        return Promise.resolve(
+          accounts
+            .slice()
+            .sort((left, right) => right.createdAt - left.createdAt)
+            .slice(offset, offset + limit)
+            .map((account) => ({
+              _id: account._id,
+              firstName: account.firstName,
+              lastName: account.lastName,
+              email: account.email,
+              phone: account.phone,
+              accountStatus: account.accountStatus,
+              role: account.role,
+              createdAt: account.createdAt,
+            })),
+        );
+      },
+    };
+    return query;
+  });
+  t.mock.method(User, "countDocuments", async (filter = {}) =>
+    accounts.filter((account) =>
+      Object.entries(filter).every(([field, value]) => account[field] === value),
+    ).length,
+  );
+  t.mock.method(User, "updateOne", async (filter, update) => {
+    const account = accounts.find((item) =>
+      Object.entries(filter).every(([field, value]) => item[field] === value),
+    );
+    if (!account) return { matchedCount: 0 };
+    Object.assign(account, update.$set);
+    return { matchedCount: 1 };
+  });
   t.mock.method(AuditLog, "create", async (data) => {
     const log = new AuditLog(data);
     await log.validate();
@@ -279,6 +324,60 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   const profile = await response.json();
   assert.equal(profile.user._id, result.userId);
   assert.equal(profile.user.passwordHash, undefined);
+  assert.equal(
+    (
+      await fetch(base + "/api/admin/users", {
+        headers: { Cookie: cookie },
+      })
+    ).status,
+    403,
+  );
+  accounts[0].role = "admin";
+  response = await fetch(base + "/api/admin/users?page=1&limit=1", {
+    headers: { Cookie: cookie },
+  });
+  assert.equal(response.status, 200);
+  const adminUsers = await response.json();
+  assert.equal(adminUsers.total, 1);
+  assert.equal(adminUsers.totalPages, 1);
+  assert.equal(adminUsers.users[0].role, "admin");
+  assert.equal(adminUsers.users[0].addressLine1, undefined);
+  assert.equal(
+    (
+      await fetch(base + "/api/admin/users?page=0", {
+        headers: { Cookie: cookie },
+      })
+    ).status,
+    400,
+  );
+  response = await fetch(
+    `${base}/api/admin/users/${encodeURIComponent(accounts[0]._id)}/admin-access`,
+    { method: "DELETE", headers: { Cookie: cookie } },
+  );
+  assert.equal(response.status, 409);
+  accounts.push({
+    ...accounts[0],
+    _id: "second-admin",
+    email: "second-admin@example.com",
+    role: "admin",
+  });
+  response = await fetch(
+    `${base}/api/admin/users/second-admin/admin-access`,
+    { method: "DELETE", headers: { Cookie: cookie } },
+  );
+  assert.equal(response.status, 200);
+  assert.equal(accounts[1].role, "user");
+  assert.equal((await response.json()).message, "Admin access removed.");
+  assert.equal(
+    (
+      await fetch(base + "/api/admin/users/second-admin/admin-access", {
+        method: "DELETE",
+        headers: { Cookie: cookie },
+      })
+    ).status,
+    404,
+  );
+  accounts[0].role = "user";
   response = await fetch(base + "/api/users/me", {
     method: "PATCH",
     headers: { Cookie: cookie, "Content-Type": "application/json" },

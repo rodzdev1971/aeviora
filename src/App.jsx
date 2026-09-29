@@ -9,6 +9,7 @@ import Intake from "./pages/Intake";
 import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -31,6 +32,9 @@ export default function App() {
             <Route path='intake' element={<Intake />}/>
             <Route path='records' element={<Records />} />
             <Route path='profile' element={<Profile />} />
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route path="admin" element={<AdminDashboard />} />
+            </Route>
         </Route>
       </Route>
     </Routes>

@@ -71,7 +71,18 @@ a Node/MongoDB host; a static GitHub Pages deployment cannot run it.
 - `GET /api/users/me`, `GET /api/users/me/summary`: the authenticated account.
 - `PATCH /api/users/me`: limited address/language/time-zone edits. Contact changes,
   communication changes, and consent updates need separate verified workflows.
-- `GET /api/users`: admin-only account list, limited to 100 records.
+- `GET /api/admin/users?page=1&limit=25`: admin-only paginated account overview.
+   It returns basic contact/account fields only and is audited. The `/admin`
+   dashboard is available only to accounts with the server-managed `admin` role.
+
+To grant admin access, first create and activate an account through the normal
+operator-controlled process, then run `npm run grant-admin -- user@example.com`
+from the repository root on a host configured with `server/.env`. The command
+only promotes an existing active account; registration cannot assign roles.
+Admin access applies only to endpoints explicitly protected for admins. Future
+intake, records, or other data APIs must add server-side role checks and audit
+logging before the dashboard can access those datasets. Intake and clinical
+records are not currently persisted by this application.
 
 `/api/patients` remains an alias to the account routes for compatibility, but
 returns `user`/`users` instead of the old patient payloads. Registration is only

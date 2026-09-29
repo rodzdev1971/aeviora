@@ -20,6 +20,7 @@ const auditLogSchema = new mongoose.Schema(
         "USER_CREATED",
         "USER_VIEWED",
         "USER_UPDATED",
+        "ADMIN_ACCESS_REMOVED",
         "LOGIN_SUCCESS",
         "LOGIN_FAILED",
         "LOGOUT",

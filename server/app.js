@@ -8,6 +8,7 @@ import hpp from "hpp";
 import authRoutes from "./routes/authRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 export function createApp() {
   const app = express();
@@ -66,6 +67,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);
+app.use("/api/admin", adminRoutes);
 
 
   app.use((error, req, res, next) => {
