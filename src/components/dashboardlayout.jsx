@@ -2,8 +2,6 @@ import { apiRequest } from "../util/api";
 import { Link, useNavigate, Outlet, useOutletContext } from "react-router-dom";
 import {
   LayoutDashboard,
-  FileText,
-  ClipboardList,
   User,
   LogOut,
   ShieldCheck,
@@ -31,8 +29,6 @@ export default function DashboardLayout() {
 
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
-    { label: "Records", href: "/records", icon: <FileText size={18} /> },
-    { label: "Intake Forms", href: "/intake", icon: <ClipboardList size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
     ...(user?.role === "admin"
       ? [{ label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> }]
@@ -71,13 +67,6 @@ export default function DashboardLayout() {
           ))}
           </nav>
           <div className="mt-4 md:mt-auto">
-            <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
-              <ShieldCheck className="mb-2 text-aeviora-gold" size={20} />
-              <p className="text-xs text-gray-300">
-                Secure access recommended with MFA, timeout controls, and audit logs.
-              </p>
-            </div>
-
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm hover:bg-white/20"
