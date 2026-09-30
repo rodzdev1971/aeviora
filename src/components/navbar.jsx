@@ -19,11 +19,8 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a href="#services" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
-            Services
-          </a>
-          <a href="#privacy" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
-            Privacy
+          <a href="#therapies" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
+            Therapy Topics
           </a>
           <Link to="/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Login
