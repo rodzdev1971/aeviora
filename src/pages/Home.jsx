@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
 import { protocols } from "../util/constants";
 
 export default function Home() {
@@ -49,6 +50,25 @@ export default function Home() {
                 service for care-related information.
               </p>
             </aside>
+          </div>
+        </section>
+
+        <section aria-labelledby="therapy-quiz-heading" className="bg-aeviora-ivory px-6 py-12">
+          <div className="mx-auto max-w-4xl">
+            <header className="mb-5">
+              <p className="text-xs font-semibold uppercase text-aeviora-gold">
+                Start exploring
+              </p>
+              <h2 id="therapy-quiz-heading" className="mt-2 font-display text-3xl text-aeviora-charcoal">
+                Find a therapy topic that interests you
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-aeviora-slate">
+                Choose a topic and the kind of general information you want to
+                explore. This guide does not ask for symptoms or health history;
+                your choices are not submitted or saved.
+              </p>
+            </header>
+            <TherapyInterestQuiz showSignupCta />
           </div>
         </section>
 

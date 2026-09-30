@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { protocols } from "../util/constants";
 
 const informationTopics = [
@@ -10,7 +11,7 @@ const informationTopics = [
 
 const formats = ["Brief summary", "More detailed explanation"];
 
-export default function TherapyInterestQuiz({ onClose }) {
+export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) {
   const [step, setStep] = useState(0);
   const [therapy, setTherapy] = useState(null);
   const [information, setInformation] = useState("");
@@ -63,14 +64,16 @@ export default function TherapyInterestQuiz({ onClose }) {
             {step < questions.length ? "Choose what to explore" : "Your topic guide"}
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close therapy topic explorer"
-          className="p-2 text-aeviora-slate hover:bg-aeviora-ivory hover:text-aeviora-charcoal"
-        >
-          <X size={20} />
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close therapy topic explorer"
+            className="p-2 text-aeviora-slate hover:bg-aeviora-ivory hover:text-aeviora-charcoal"
+          >
+            <X size={20} />
+          </button>
+        )}
       </header>
 
       {step < questions.length ? (
@@ -172,15 +175,34 @@ export default function TherapyInterestQuiz({ onClose }) {
           <p className="mt-3 text-xs leading-5 text-aeviora-slate">
             Your selections stay in this page's temporary memory. They are not
             sent to Aeviora or saved to your account, and disappear when you
-            close this guide.
+            leave or refresh this page.
           </p>
+          {showSignupCta && (
+            <div className="mt-5 border-l-2 border-aeviora-gold bg-aeviora-ivory p-4">
+              <p className="font-semibold text-aeviora-charcoal">
+                Continue exploring in your Aeviora portal
+              </p>
+              <p className="mt-1 text-sm leading-6 text-aeviora-slate">
+                Create an account to use the guide and access provider links
+                after account activation and sign-in.
+              </p>
+              <Link
+                to="/register"
+                className="mt-3 inline-flex items-center gap-2 bg-aeviora-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-aeviora-primaryDark"
+              >
+                Create an account <ArrowRight aria-hidden="true" size={16} />
+              </Link>
+            </div>
+          )}
           <div className="mt-5 flex flex-wrap gap-2">
             <button type="button" onClick={resetQuiz} className="btn-secondary">
               Start over
             </button>
-            <button type="button" onClick={onClose} className="btn-primary">
-              Close guide
-            </button>
+            {onClose && (
+              <button type="button" onClick={onClose} className="btn-primary">
+                Close guide
+              </button>
+            )}
           </div>
         </div>
       )}
