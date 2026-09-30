@@ -179,7 +179,7 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
           </p>
           {showSignupCta && (
             <div className="mt-5 border-l-2 border-aeviora-gold bg-aeviora-ivory p-4">
-              <p className="font-semibold text-aeviora-charcoal">
+              <p className="font-semibold text-aeviora-charcoal text-2xl">
                 Continue exploring in your Aeviora portal
               </p>
               <p className="mt-1 text-sm leading-6 text-aeviora-slate">
