@@ -1,4 +1,6 @@
-import { ExternalLink, FlaskConical, UserRound, Video } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, FlaskConical, Sparkles, UserRound, Video } from "lucide-react";
+import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
 
 const telehealthServices = [
   {
@@ -92,6 +94,7 @@ function ServiceSection({ title, services }) {
 }
 
 export default function MainDashboard() {
+  const [showTherapyQuiz, setShowTherapyQuiz] = useState(false);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -106,6 +109,20 @@ export default function MainDashboard() {
           Access telehealth and laboratory service providers.
         </p>
       </header>
+      <section className="mt-6 border-b border-aeviora-border pb-6">
+        {showTherapyQuiz ? (
+          <TherapyInterestQuiz onClose={() => setShowTherapyQuiz(false)} />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowTherapyQuiz(true)}
+            className="inline-flex items-center gap-2 border border-aeviora-primary px-4 py-3 text-sm font-semibold text-aeviora-primary transition hover:bg-aeviora-primary hover:text-white"
+          >
+            <Sparkles aria-hidden="true" size={18} />
+            Explore therapy topics
+          </button>
+        )}
+      </section>
       <div className="mt-8 space-y-10">
         <ServiceSection title="Telehealth" services={telehealthServices} />
         <ServiceSection title="Laboratories" services={laboratoryServices} />

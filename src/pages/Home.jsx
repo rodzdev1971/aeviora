@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -13,22 +14,22 @@ export default function Home() {
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase text-aeviora-lightGold">
-                Aeviora Wellness
+                Patient services portal
               </p>
               <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">
-                Your portal to wellness services and therapy information.
+                Aeviora Wellness
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-gray-200">
-                Register for an Aeviora account and explore general therapy
-                information. Sign in to access links to telehealth and
-                laboratory providers.
+                Explore wellness therapy topics, then create an account to use
+                the interactive topic guide and access telehealth and
+                laboratory provider links in your dashboard.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   to="/register"
                   className="inline-flex items-center justify-center border border-aeviora-gold bg-aeviora-gold px-5 py-3 text-sm font-semibold text-aeviora-black transition hover:bg-aeviora-lightGold"
                 >
-                  Create an account
+                  Sign up to explore
                 </Link>
                 <Link
                   to="/login"
@@ -40,7 +41,7 @@ export default function Home() {
             </div>
 
             <aside className="border-l-2 border-aeviora-gold px-6 py-2">
-              <h2 className="font-display text-2xl">A portal, not a clinical record system</h2>
+              <h2 className="font-display text-2xl">Explore the therapy path that interests you</h2>
               <p className="mt-3 text-sm leading-6 text-gray-200">
                 Aeviora handles account registration and provides links to
                 independent service providers. This website does not collect
@@ -66,6 +67,23 @@ export default function Home() {
                 medical advice or a recommendation for treatment.
               </p>
             </header>
+            <div className="mb-6 flex flex-col gap-4 border-l-2 border-aeviora-gold bg-aeviora-ivory p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="font-semibold text-aeviora-charcoal">
+                  Want to explore a topic interactively?
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-aeviora-slate">
+                  Create an account to access the therapy topic guide and
+                  provider links after account activation and sign-in.
+                </p>
+              </div>
+              <Link
+                to="/register"
+                className="inline-flex shrink-0 items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-aeviora-primaryDark"
+              >
+                Create an account <ArrowRight aria-hidden="true" size={17} />
+              </Link>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {protocols.map((therapy) => (
                 <article
@@ -81,6 +99,13 @@ export default function Home() {
                   <p className="mt-2 text-sm leading-6 text-aeviora-slate">
                     {therapy.description}
                   </p>
+                  <Link
+                    to="/register"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary underline underline-offset-4 hover:text-aeviora-primaryDark"
+                  >
+                    Explore after sign-up
+                    <ArrowRight aria-hidden="true" size={15} />
+                  </Link>
                 </article>
               ))}
             </div>
