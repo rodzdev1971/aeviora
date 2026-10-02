@@ -31,7 +31,10 @@ export default function DashboardLayout() {
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
     ...(user?.role === "admin"
-      ? [{ label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> }]
+      ? [
+          { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
+          { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },
+        ]
       : []),
   ];
 

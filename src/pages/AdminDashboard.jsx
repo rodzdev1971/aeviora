@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { apiRequest } from "../util/api";
 
 const pageSize = 25;
@@ -58,6 +58,7 @@ export default function AdminDashboard() {
           Administration
         </p>
         <h1 className="mt-2 font-display text-3xl">Account overview</h1>
+        <Link to="/admin/benefits" className="mt-4 inline-block btn-secondary">Manage benefits</Link>
         <p className="mt-2 text-sm text-aeviora-slate">
           {result ? `${result.total} accounts` : "Account records"}
         </p>

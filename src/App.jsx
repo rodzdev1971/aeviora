@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import AdminBenefits from "./pages/AdminBenefits.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -30,6 +31,7 @@ export default function App() {
             <Route path='profile' element={<Profile />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/benefits" element={<AdminBenefits />} />
             </Route>
         </Route>
       </Route>
