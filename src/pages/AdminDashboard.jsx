@@ -59,6 +59,8 @@ export default function AdminDashboard() {
         </p>
         <h1 className="mt-2 font-display text-3xl">Account overview</h1>
         <Link to="/admin/benefits" className="mt-4 inline-block btn-secondary">Manage benefits</Link>
+        <Link to="/admin/fees" className="mt-4 ml-3 inline-block btn-secondary">Manage fee catalogs</Link>
+        <Link to="/admin/memberships" className="mt-4 ml-3 inline-block btn-secondary">Manage memberships</Link>
         <p className="mt-2 text-sm text-aeviora-slate">
           {result ? `${result.total} accounts` : "Account records"}
         </p>

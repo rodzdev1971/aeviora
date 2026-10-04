@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { feeCatalogs } from "../../shared/feeCatalog.js";
 
 const money = z.number().finite().min(0).max(100000000).refine(
   (value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.00001,
@@ -9,7 +10,7 @@ export const benefitInput = z.strictObject({
   description: z.string().trim().min(1).max(4000),
   price: money,
   services: z.array(z.strictObject({
-    source: z.enum(["laboratoryFees", "diagnosticFees"]),
+    source: z.enum(["laboratoryFees", "diagnosticFees", "serviceFees"]),
     feeId: z.string().regex(/^[a-f\d]{24}$/i),
     provider: z.string().trim().min(1).max(300),
     amount: money,
@@ -17,20 +18,21 @@ export const benefitInput = z.strictObject({
 });
 
 export function feeOptions(documents, source) {
-  const isLab = source === "laboratoryFees";
+  const config = Object.hasOwn(feeCatalogs, source) ? feeCatalogs[source] : null;
+  if (!config) return [];
   return documents.flatMap((document) => {
     const name = document.name || document.description || document.order;
     if (typeof name !== "string" || !name.trim()) return [];
-    const prices = document[isLab ? "labPrices" : "diagnosticPrices"];
+    const prices = document[config.prices];
     if (!Array.isArray(prices)) return [];
     return prices.flatMap((entry) => {
       if (!entry || typeof entry !== "object") return [];
-      const provider = entry[isLab ? "lab" : "diagnostic_center"];
+      const provider = entry[config.provider];
       const amount = entry.amount?._bsontype === "Decimal128"
         ? Number(entry.amount.toString()) : entry.amount;
       if (typeof provider !== "string" || !provider.trim() || !money.safeParse(amount).success) return [];
       return [{ source, feeId: String(document._id), name: name.trim(), provider: provider.trim(), amount,
-        billCode: String(document.billCode || "") }];
+        billCode: String(document[config.billcode] || "") }];
     });
   });
 }
@@ -48,7 +50,7 @@ export function resolveBenefit(input, options) {
     }
     return {
       name: option.name, cost: option.amount, source: option.source, feeId: option.feeId,
-      [option.source === "laboratoryFees" ? "lab" : "diagnostic_center"]: option.provider,
+      [feeCatalogs[option.source].provider]: option.provider,
       amount: option.amount,
     };
   });

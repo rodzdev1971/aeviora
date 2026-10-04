@@ -34,6 +34,8 @@ export default function DashboardLayout() {
       ? [
           { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
           { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },
+          { label: "Fee catalogs", href: "/admin/fees", icon: <ShieldCheck size={18} /> },
+          { label: "Memberships", href: "/admin/memberships", icon: <ShieldCheck size={18} /> },
         ]
       : []),
   ];

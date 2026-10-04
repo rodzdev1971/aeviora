@@ -10,6 +10,8 @@ import patientRoutes from "./routes/patientRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import benefitRoutes from "./routes/benefitRoutes.js";
+import membershipRoutes from "./routes/membershipRoutes.js";
+import feeRoutes from "./routes/feeRoutes.js";
 
 export function createApp() {
   const app = express();
@@ -70,6 +72,8 @@ app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/benefits", benefitRoutes);
+app.use("/api/admin/memberships", membershipRoutes);
+app.use("/api/admin/fees", feeRoutes);
 
 
   app.use((error, req, res, next) => {

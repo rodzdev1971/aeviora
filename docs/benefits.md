@@ -15,17 +15,20 @@ two decimal places; zero-cost services are allowed.
 ## MongoDB
 
 The server uses its existing MongoDB connection (local default:
-`mongodb://127.0.0.1:27017/aeviora_wellness`). Documents are stored in `benefits`,
-separate from `membershipBenefits`. Fee catalogs are read from `laboratoryFees`
+`mongodb://127.0.0.1:27017/aeviora_wellness`). Documents are stored in `membershipBenefits`,
+which supplies the membership plan editor. Fee catalogs are read from `laboratoryFees`
 (`labPrices[].lab`, `labPrices[].amount`) and `diagnosticFees`
-(`diagnosticPrices[].diagnostic_center`, `diagnosticPrices[].amount`).
+(`diagnosticPrices[].diagnostic_center`, `diagnosticPrices[].amount`), and
+`serviceFees` (`servicePrices[].provider`, `servicePrices[].amount`). Manage all
+three catalogs through **Fee catalogs** (`/admin/fees`), including multiple
+provider-price rows per fee. See [Fee catalogs](fee-catalogs.md).
 Service display names use the fee document's `name`, falling back to
 `description`, then `order`. Invalid catalog amounts or missing provider names
 are excluded. An empty diagnostic catalog simply provides no diagnostic options.
 
 Each benefit has `name`, `description`, `cost`, `price`, `services`, and timestamps.
-Each service stores `name`, `cost`, `amount`, `source`, `feeId`, and either `lab`
-or `diagnostic_center`. Service costs and names come from the server-side catalog;
+Each service stores `name`, `cost`, `amount`, `source`, `feeId`, and either `lab`,
+`diagnostic_center`, or `provider`. Service costs and names come from the server-side catalog;
 the benefit cost sums integer cents to avoid floating-point addition errors.
 The selling price is independently set by the admin.
 

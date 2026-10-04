@@ -4,13 +4,14 @@ import Benefit from "../models/benefits.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { benefitInput, feeOptions, resolveBenefit } from "../services/benefits.js";
 import { logAudit } from "../utils/auditLogger.js";
+import { feeCatalogs } from "../../shared/feeCatalog.js";
 
 async function loadOptions(selections) {
-  const groups = await Promise.all(["laboratoryFees", "diagnosticFees"].map(async (source) => {
+  const groups = await Promise.all(Object.keys(feeCatalogs).map(async (source) => {
     const filter = selections ? { _id: { $in: selections.filter((item) => item.source === source)
       .map((item) => new mongoose.Types.ObjectId(item.feeId)) } } : {};
     const documents = await mongoose.connection.db.collection(source).find(filter, {
-      projection: { name: 1, description: 1, order: 1, billCode: 1, labPrices: 1, diagnosticPrices: 1 },
+      projection: { name: 1, description: 1, order: 1, billCode: 1, billcode: 1, labPrices: 1, diagnosticPrices: 1, servicePrices: 1 },
     }).toArray();
     return feeOptions(documents, source);
   }));

@@ -9,6 +9,8 @@ import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminBenefits from "./pages/AdminBenefits.jsx";
+import AdminMemberships from "./pages/AdminMemberships.jsx";
+import AdminFees from "./pages/AdminFees.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -32,6 +34,8 @@ export default function App() {
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />
+              <Route path="admin/memberships" element={<AdminMemberships />} />
+              <Route path="admin/fees" element={<AdminFees />} />
             </Route>
         </Route>
       </Route>

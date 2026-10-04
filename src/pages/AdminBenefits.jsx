@@ -47,7 +47,7 @@ export default function AdminBenefits() {
   function edit(benefit) {
     setEditingId(benefit._id);
     setForm({ name: benefit.name, description: benefit.description, price: String(benefit.price),
-      services: benefit.services.map((service) => ({ ...service, provider: service.lab || service.diagnostic_center })) });
+      services: benefit.services.map((service) => ({ ...service, provider: service.lab || service.diagnostic_center || service.provider })) });
     setMessage(""); setError("");
     document.getElementById("benefit-name")?.focus();
   }
@@ -84,7 +84,8 @@ export default function AdminBenefits() {
         <Link to="/admin" className="text-sm text-aeviora-primary underline">Account overview</Link>
         <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-aeviora-gold">Administration</p>
         <h1 className="mt-2 font-display text-3xl">Aeviora benefits</h1>
-        <p className="mt-2 text-sm text-aeviora-slate">Build benefits from laboratory and diagnostic services. All amounts are in USD.</p>
+        <p className="mt-2 text-sm text-aeviora-slate">Build benefits from laboratory, diagnostic, and service fees. All amounts are in USD.</p>
+        <Link to="/admin/fees" className="mt-3 inline-block text-sm text-aeviora-primary underline">Manage fee catalogs and provider prices</Link>
       </header>
       {error && <p role="alert" className="border-l-4 border-red-600 bg-red-50 p-4 text-red-800">{error}</p>}
       {message && <p role="status" className="border-l-4 border-green-700 bg-green-50 p-4 text-green-900">{message}</p>}
@@ -111,6 +112,7 @@ export default function AdminBenefits() {
               <div><label className="label" htmlFor="fee-type">Service type</label>
                 <select id="fee-type" className="input" value={source} onChange={(event) => { setSource(event.target.value); setSelected(""); }}>
                   <option value="all">All services</option><option value="laboratoryFees">Laboratory</option><option value="diagnosticFees">Diagnostic</option>
+                  <option value="serviceFees">Service fees</option>
                 </select></div>
               <div><label className="label" htmlFor="fee-search">Search name, provider, or billing code</label>
                 <input id="fee-search" className="input" type="search" value={search} onChange={(event) => { setSearch(event.target.value); setSelected(""); }} /></div>
@@ -122,7 +124,7 @@ export default function AdminBenefits() {
                   {option.name} — {option.provider} — {money(option.amount)}{option.billCode ? ` (${option.billCode})` : ""}
                 </option>)}
               </select></div>
-            {!filtered.length && !loading && <p className="text-sm text-aeviora-slate">No matching fees. Diagnostic services become available when diagnosticFees contains prices.</p>}
+            {!filtered.length && !loading && <p className="text-sm text-aeviora-slate">No matching fees. Add provider prices in Fee catalogs, then refresh this catalog.</p>}
             {chosen && <p className="break-words text-sm">{chosen.name} · {chosen.provider} · {money(chosen.amount)}</p>}
             <button className="btn-secondary disabled:opacity-50" type="button" disabled={!chosen || form.services.length >= 200} onClick={() => {
               setForm({ ...form, services: [...form.services, chosen] }); setSelected("");
@@ -133,7 +135,7 @@ export default function AdminBenefits() {
             {!form.services.length && <p className="text-sm text-aeviora-slate">Add at least one service. You can add more services whenever you edit this benefit.</p>}
             {form.services.map((service, index) => <div key={index} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-aeviora-border p-3">
               <div className="min-w-0 flex-1 break-words"><p className="font-medium">{service.name}</p>
-                <p className="text-sm text-aeviora-slate">{service.source === "laboratoryFees" ? "Lab" : "Diagnostic center"}: {service.provider} · {money(service.amount)}</p>
+                <p className="text-sm text-aeviora-slate">Provider: {service.provider} · {money(service.amount)}</p>
                 {!options.some((option) => optionKey(option) === optionKey(service)) && !loading && <p className="text-sm text-red-700">Unavailable or price changed. Remove and select a current fee.</p>}
               </div>
               <button type="button" className="text-sm font-semibold text-red-700 underline" aria-label={`Remove service ${index + 1}: ${service.name}`} onClick={() => setForm({ ...form, services: form.services.filter((_, position) => position !== index) })}>Remove</button>
@@ -154,7 +156,7 @@ export default function AdminBenefits() {
           <p className="whitespace-pre-wrap break-words text-sm text-aeviora-slate">{benefit.description}</p>
           <p className="text-sm">Cost: <strong>{money(benefit.cost)}</strong> · Price: <strong>{money(benefit.price)}</strong> · {benefit.services.length} services</p>
           <details><summary className="cursor-pointer text-sm font-semibold">View included services</summary>
-            <ul className="mt-3 space-y-2 text-sm">{benefit.services.map((service, index) => <li className="break-words" key={index}>{service.name} · {service.lab || service.diagnostic_center} · {money(service.cost)}</li>)}</ul>
+            <ul className="mt-3 space-y-2 text-sm">{benefit.services.map((service, index) => <li className="break-words" key={index}>{service.name} · {service.lab || service.diagnostic_center || service.provider} · {money(service.cost)}</li>)}</ul>
           </details>
           <div className="flex flex-wrap gap-3">
             <button type="button" className="btn-secondary disabled:opacity-50" disabled={busy || loading} onClick={() => edit(benefit)}>Edit / add services</button>
