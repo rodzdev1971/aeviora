@@ -1,15 +1,11 @@
 import { z } from "zod";
 
-<<<<<<< HEAD
-const optionalText = (max) => z.string().trim().max(max).default("");
-=======
 const optionalText = (max) =>
   z
     .string()
     .trim()
     .max(max, { error: `Use ${max} characters or fewer.` })
     .default("");
->>>>>>> version4
 const phone = z
   .string()
   .trim()
@@ -31,10 +27,6 @@ const phone = z
   );
 
 export const accountFields = {
-<<<<<<< HEAD
-  firstName: z.string().trim().min(1, "First name is required.").max(80),
-  lastName: z.string().trim().min(1, "Last name is required.").max(80),
-=======
   firstName: z
     .string()
     .trim()
@@ -45,31 +37,22 @@ export const accountFields = {
     .trim()
     .min(1, "Last name is required.")
     .max(80, { error: "Use 80 characters or fewer." }),
->>>>>>> version4
   email: z
     .string()
     .trim()
     .toLowerCase()
     .email("Enter a valid email address.")
-<<<<<<< HEAD
-    .max(254),
-=======
     .max(254, { error: "Use 254 characters or fewer." }),
->>>>>>> version4
   phone,
   addressLine1: optionalText(160),
   addressLine2: optionalText(160),
   city: optionalText(100),
   state: optionalText(100),
-<<<<<<< HEAD
-  zipCode: z.string().trim().min(1, "ZIP or postal code is required.").max(20),
-=======
   zipCode: z
     .string()
     .trim()
     .min(1, "ZIP or postal code is required.")
     .max(20, { error: "Use 20 characters or fewer." }),
->>>>>>> version4
   country: z
     .string()
     .trim()

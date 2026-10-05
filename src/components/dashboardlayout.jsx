@@ -72,7 +72,6 @@ export default function DashboardLayout() {
           ))}
           </nav>
           <div className="mt-4 md:mt-auto">
-<<<<<<< HEAD
             <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
               <ShieldCheck className="mb-2 text-aeviora-gold" size={20} />
               <p className="text-xs text-gray-300">
@@ -80,8 +79,6 @@ export default function DashboardLayout() {
               </p>
             </div>
 
-=======
->>>>>>> version4
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm hover:bg-white/20"

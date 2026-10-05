@@ -72,15 +72,9 @@ export async function registerAccount(
   });
   try {
     return await users.create({
-<<<<<<< HEAD
-      ...account, passwordHash: await hashPassword(password), role: "patient", accountStatus: status,
-      termsAcceptance: { version: config.termsVersion, documentUrl: config.termsUrl, acceptedAt: timestamp, isDraft: config.isDraft },
-      privacyAcceptance: { version: config.privacyVersion, documentUrl: config.privacyUrl, acceptedAt: timestamp, isDraft: config.isDraft },
-      smsConsent: consent(smsConsent), marketingConsent: consent(marketingConsent),
-=======
       ...account,
       passwordHash: await hashPassword(password),
-      role: "user",
+      role: "patient",
       accountStatus: status,
       termsAcceptance: {
         version: config.termsVersion,
@@ -96,7 +90,6 @@ export async function registerAccount(
       },
       smsConsent: consent(smsConsent),
       marketingConsent: consent(marketingConsent),
->>>>>>> version4
     });
   } catch (error) {
     if (error.code === 11000)

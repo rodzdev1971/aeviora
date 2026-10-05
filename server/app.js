@@ -8,14 +8,11 @@ import hpp from "hpp";
 import authRoutes from "./routes/authRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
-<<<<<<< HEAD
 import paymentRoutes from "./routes/paymentRoutes.js";
-=======
 import adminRoutes from "./routes/adminRoutes.js";
 import benefitRoutes from "./routes/benefitRoutes.js";
 import membershipRoutes from "./routes/membershipRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
->>>>>>> version4
 
 export function createApp() {
   const app = express();
@@ -75,14 +72,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);
-<<<<<<< HEAD
 app.use("/api/payments", paymentRoutes);
-=======
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/benefits", benefitRoutes);
 app.use("/api/admin/memberships", membershipRoutes);
 app.use("/api/admin/fees", feeRoutes);
->>>>>>> version4
 
 
   app.use((error, req, res, next) => {
