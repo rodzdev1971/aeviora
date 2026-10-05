@@ -1,303 +1,142 @@
-
-import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ClipboardList, FileText, HeartPulse, ShieldCheck, Sparkles, UserRoundCheck,ArrowRight} from "lucide-react";
-
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import SecurityNotice from "../components/securitynotice";
-import Feature from "../components/feature";
-import Services from "../components/services";
-
-import WellnessProtocolDropdown from "../components/wellnessprotocoldropdown";
-import Modal from "../components/modal";
-import ProtocolInterestForm from "../components/protocolinterestform";
-import ProfessionalCard from "../components/profesionalcard";
-import TrustPoint from "../components/trustpoint";
-import StepCard from "../components/stepcard";
-// import ProtocolInterestForm from "../components/ProtocolInterestForm";
+import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
+import { protocols } from "../util/constants";
 
 export default function Home() {
-  const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
-  const [protocol, setProtocol] = useState("General Wellness Consultation");
-
-  const modalHandler = function(){
-    setIsProtocolModalOpen(prevSet => !prevSet)
-  }
-
   return (
     <div className="min-h-screen bg-aeviora-cream">
-      <Modal
-          isOpen={isProtocolModalOpen}
-          onClose={() => setIsProtocolModalOpen(false)}
-          title="Protocol Interest Form"
-          description="Complete this short form and our care team will review your interest."
-        >
-          <ProtocolInterestForm 
-            selectedProtocol={protocol}
-            onClose={() => setIsProtocolModalOpen(false)}
-          />
-        </Modal>
-     
-     <Navbar />
+      <Navbar />
 
-      {/* HERO */}
-      <section className="relative z-20 overflow-hidden bg-gradient-to-br from-aeviora-ivory via-white to-aeviora-softSage px-6 py-12 sm:px-6 text-aeviora-primary lg:py-15">
-        <div className="absolute inset-0">
-          <div className="absolute left-[-10%] top-[-10%] h-96 w-96 rounded-full bg-aeviora-gold/20 blur-3xl" />
-          <div className="absolute bottom-[-15%] right-[-10%] h-[30rem] w-[30rem] rounded-full bg-aeviora-sage/20 blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,77,0.16),transparent_35%)]" />
-        </div>
-
-        {/* <div className="relative mx-auto grid max-w-5xl items-center gap-14"> */}
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
-          <div className="flex-col items-center">
-            <div className="mb-6 inline-flex gap-2 w-full justify-center rounded-full border border-aeviora-gold/40 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-aeviora-lightGold">
-              <Sparkles size={15} />
-              Intelligent affordable Wellness Portal
+      <main>
+        <section className="bg-aeviora-primaryDark px-6 py-16 text-white sm:py-20">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase text-aeviora-lightGold">
+                Patient services portal
+              </p>
+              <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">
+                Aeviora Wellness
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-gray-200">
+                Explore wellness therapy topics, then create an account to use
+                the interactive topic guide and access telehealth and
+                laboratory provider links in your dashboard.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center border border-aeviora-gold bg-aeviora-gold px-5 py-3 text-sm font-semibold text-aeviora-black transition hover:bg-aeviora-lightGold"
+                >
+                  Sign up to explore
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center border border-white/50 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
 
-            <h1 className="font-display text-5xl text-aeviora-primary text-center leading-tight md:text-5xl lg:text-5xl">
-              Modern care access for longevity, wellness, and precision health.
-            </h1>
+            <aside className="border-l-2 border-aeviora-gold px-6 py-2">
+              <h2 className="font-display text-2xl">Explore the therapy path that interests you</h2>
+              <p className="mt-3 text-sm leading-6 text-gray-200">
+                Aeviora handles account registration and provides links to
+                independent service providers. This website does not collect
+                health histories or clinical records. Use the provider's own
+                service for care-related information.
+              </p>
+            </aside>
+          </div>
+        </section>
 
-            <p className="mt-6 max-w-5xl text-lg justify-center leading-8 text-aeviora-slate">
-              Aeviora Wellness gives patients a refined digital experience to
-              register, complete intake forms, access wellness records, and
-              manage their care journey through a privacy-focused patient portal.
-            </p>
+        <section aria-labelledby="therapy-quiz-heading" className="bg-aeviora-ivory px-6 py-12">
+          <div className="mx-auto max-w-4xl">
+            <header className="mb-5">
+              <p className="text-xs font-semibold uppercase text-aeviora-gold">
+                Start exploring
+              </p>
+              <h2 id="therapy-quiz-heading" className="mt-2 font-display text-3xl text-aeviora-charcoal">
+                Find a therapy topic that interests you
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-aeviora-slate">
+                Choose a topic and the kind of general information you want to
+                explore. This guide does not ask for symptoms or health history;
+                your choices are not submitted or saved.
+              </p>
+            </header>
+            <TherapyInterestQuiz showSignupCta />
+          </div>
+        </section>
 
-            <div className="mt-9 flex flex-col justify-center gap-4">
+        <section id="therapies" aria-labelledby="therapies-heading" className="bg-white px-6 py-14">
+          <div className="mx-auto max-w-7xl">
+            <header className="mb-6 border-b border-aeviora-border pb-4">
+              <p className="text-xs font-semibold uppercase text-aeviora-gold">
+                Educational overview
+              </p>
+              <h2 id="therapies-heading" className="mt-2 font-display text-3xl text-aeviora-charcoal">
+                Explore therapy topics
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-aeviora-slate">
+                Browse general descriptions of the wellness services discussed
+                by Aeviora. These summaries are informational and are not
+                medical advice or a recommendation for treatment.
+              </p>
+            </header>
+            <div className="mb-6 flex flex-col gap-4 border-l-2 border-aeviora-gold bg-aeviora-ivory p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="font-semibold text-aeviora-charcoal">
+                  Want to explore a topic interactively?
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-aeviora-slate">
+                  Create an account to access the therapy topic guide and
+                  provider links after account activation and sign-in.
+                </p>
+              </div>
               <Link
                 to="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-aeviora-gold px-6 py-4 text-sm font-bold text-aeviora-black transition hover:bg-aeviora-lightGold"
+                className="inline-flex shrink-0 items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-aeviora-primaryDark"
               >
-                Start Patient Registration
-                <ArrowRight size={18} />
+                Create an account <ArrowRight aria-hidden="true" size={17} />
               </Link>
-
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center rounded-xl border border-aeviora-gold/70 px-6 py-4 text-sm font-bold text-aeviora-gold transition hover:bg-aeviora-gold hover:text-aeviora-black"
-              >
-                Access Patient Portal
-              </Link>
-              
-                {/* <button className="btn-primary">
-                Clinic will open soon
-                </button> */}
-                
-              {/* <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
-                <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
-                  <div className="m-6 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-                        Patient Overview
-                      </p>
-                      <h2 className="mt-1 font-display text-3xl">
-                        Wellness Dashboard
-                      </h2>
-                    </div>
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
-                      <HeartPulse />
-                    </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {protocols.map((therapy) => (
+                <article
+                  key={therapy.id}
+                  className="border border-aeviora-border p-5"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center border border-aeviora-gold text-aeviora-primary">
+                    {therapy.icon}
                   </div>
-
-                  <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
-                
-                </div>
-              </div>   */}
-                
+                  <h3 className="mt-4 font-display text-xl text-aeviora-charcoal">
+                    {therapy.name}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-aeviora-slate">
+                    {therapy.description}
+                  </p>
+                  <Link
+                    to="/register"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary underline underline-offset-4 hover:text-aeviora-primaryDark"
+                  >
+                    Explore after sign-up
+                    <ArrowRight aria-hidden="true" size={15} />
+                  </Link>
+                </article>
+              ))}
             </div>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <TrustPoint label="Secure Access" />
-              <TrustPoint label="Patient Records" />
-              <TrustPoint label="Wellness Intake" />
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="rounded-[2rem] border border-aeviora-gold/50 bg-white/10 p-2 shadow-2xl backdrop-blur">
-              <div className="rounded-[1.5rem] bg-white p-2 text-aeviora-primaryDark">
-                <div className="m-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-                      Patient Overview
-                    </p>
-                    <h2 className="mt-1 font-display text-3xl">
-                      Wellness Dashboard
-                    </h2>
-                  </div>
-
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aeviora-primaryDark text-aeviora-softGold">
-                    <HeartPulse />
-                  </div>
-                </div>
-
-                <WellnessProtocolDropdown  sProtocol={setProtocol} modalSetting={modalHandler}/>
-               
-              </div>
-            </div>
-
-            {/* <div className="absolute -bottom-6 -left-4 hidden rounded-2xl border border-aeviora-gold/30 bg-aeviora-black p-5 text-white shadow-xl md:block">
-              <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-                Portal Ready
-              </p>
-              <p className="mt-1 font-display text-2xl">Patient-first UX</p>
-            </div> */}
-          </div>
-        </div>
-      </section>
-
-      {/* PROFESSIONAL INTRO */}
-      <section className="relative z-10 px-6 py-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr] lg:items-center">
-            <div>
-              <p className="uppercase tracking-[0.3em] text-3xl pb-2 text-aeviora-gold">
-                Aeviora Wellness
-              </p>
-              <h2 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-                An affordable digital front door for your wellness clinic.
-              </h2>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            <ProfessionalCard
-              icon={<UserRoundCheck />}
-              title="Patient Registration"
-              text="Allow new patients to create an account and begin their wellness journey with a clean registration experience."
-            />
-
-            <ProfessionalCard
-              icon={<ClipboardList />}
-              title="Digital Intake"
-              text="Collect structured wellness goals, medical background, allergies, medications, and lifestyle information."
-            />
-
-            <ProfessionalCard
-              icon={<FileText />}
-              title="Records Management"
-              text="Give patients organized access to approved clinical notes, wellness summaries, lab reviews, and care documents."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* SERVICES */}
-      <section id="services" className="bg-white px-6 py-12">
-        <Services sProtocol={setProtocol} modalSetting={modalHandler}/>
-      </section>
-
-      {/* PORTAL FEATURES */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-[2rem] bg-aeviora-primaryDark p-8 text-white md:p-12">
-            <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-                  Secure Portal Experience
-                </p>
-                <h2 className="mt-3 font-display text-4xl md:text-5xl">
-                  Everything patients need in one organized portal.
-                </h2>
-                <p className="mt-5 leading-8 text-gray-300">
-                  Patients can register, complete forms, review their wellness
-                  documents, update profile details, and access their care
-                  information from a responsive dashboard.
-                </p>
-              </div>
-
-              <div className="grid gap-4">
-                <Feature icon={<ShieldCheck />} title="Privacy-first workflow" />
-                <Feature icon={<UserRoundCheck />} title="Secure patient access" />
-                <Feature icon={<FileText />} title="Organized patient records" />
-                <Feature icon={<ClipboardList />} title="Digital intake forms" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PROCESS */}
-      <section className="bg-white px-6 py-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-12 text-center">
-            <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-              Patient Journey
+            <p className="mt-6 border-l-2 border-aeviora-gold pl-4 text-sm leading-6 text-aeviora-slate">
+              A licensed healthcare professional determines whether any
+              service or therapy is appropriate for an individual. Availability
+              and eligibility vary by provider.
             </p>
-            <h2 className="mt-3 font-display text-4xl md:text-5xl">
-              Simple, professional, and organized.
-            </h2>
           </div>
-
-          <div className="grid gap-6 md:grid-cols-4">
-            <StepCard
-              number="01"
-              title="Register"
-              text="Patient creates a secure portal account."
-            />
-            <StepCard
-              number="02"
-              title="Complete Intake"
-              text="Patient fills out wellness and medical history forms."
-            />
-            <StepCard
-              number="03"
-              title="Review Records"
-              text="Approved documents and care summaries are organized."
-            />
-            <StepCard
-              number="04"
-              title="Manage Care"
-              text="Patient keeps information updated over time."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* HIPAA NOTICE */}
-      <section id="privacy" className="px-6 py-12">
-        <div className="mx-auto max-w-7xl">
-          <SecurityNotice />
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 pb-12">
-        <div className="mx-auto max-w-7xl rounded-[2rem] bg-aeviora-primaryDark p-10 text-center text-white md:p-16">
-          <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-            Aeviora Wellness Portal
-          </p>
-          <h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl md:text-5xl">
-            Give your patients a premium digital experience from day one.
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-aeviora-softGold">
-            Start with registration, intake, records access, and a refined
-            dashboard experience built for a modern wellness and longevity brand.
-          </p>
-
-          {/* <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link to="/register" className="btn-gold">
-              Register as Patient
-            </Link>
-            <Link
-              to="/login"
-              className="rounded-xl border border-aeviora-gold px-5 py-3 text-sm font-semibold text-aeviora-gold hover:bg-aeviora-gold hover:text-aeviora-black"
-            >
-              Login to Portal
-            </Link>
-          </div> */}
-           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-                <button className="btn-secondary">
-                Clinic will open soon
-                </button>
-            </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

@@ -31,10 +31,12 @@ export default function Footer() {
             </div>
   
             <div>
-              <h4 className="font-semibold text-aeviora-lightGold">Privacy Notice</h4>
+              <h4 className="font-semibold text-aeviora-lightGold">Using provider portals</h4>
               <p className="mt-3 text-sm text-gray-300">
-                Patient information should only be transmitted through secure,
-                encrypted, HIPAA-compliant systems.
+                Aeviora provides account registration and links to independent
+                service providers, and does not collect health histories or
+                clinical records on this website. Use the provider's own portal
+                for care information and review its privacy and HIPAA practices.
               </p>
             </div>
             

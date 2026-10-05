@@ -33,6 +33,7 @@ export default function Register() {
   useEffect(() => {
     const controller = new AbortController();
     apiRequest("/api/auth/registration-config", { signal: controller.signal })
+<<<<<<< HEAD
       .then((data) =>
         setConfig({
           ...data,
@@ -41,6 +42,9 @@ export default function Register() {
             : [],
         }),
       )
+=======
+      .then(setConfig)
+>>>>>>> version4
       .catch((error) => {
         if (!controller.signal.aborted) setLoadError(error.message);
       });
@@ -284,17 +288,40 @@ export default function Register() {
                         id="timeZone"
                         name="timeZone"
                         className="input"
+<<<<<<< HEAD
+=======
+                        aria-invalid={Boolean(errors.timeZone)}
+                        aria-describedby={errors.timeZone ? "timeZone-error" : undefined}
+>>>>>>> version4
                         defaultValue={
                           Intl.DateTimeFormat().resolvedOptions().timeZone || ""
                         }
                         placeholder="America/New_York"
                       />
+<<<<<<< HEAD
                     </div>
                     <div className="grid gap-5 sm:grid-cols-2">
                       <PasswordInput placeholder="At least 12 characters" />
                       <PasswordInput
                         name="confirmPassword"
                         label="Confirm password"
+=======
+                      {errors.timeZone && (
+                        <p id="timeZone-error" className="mt-1 text-sm text-red-700">
+                          {errors.timeZone}
+                        </p>
+                      )}
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <PasswordInput
+                        placeholder="At least 12 characters"
+                        error={errors.password}
+                      />
+                      <PasswordInput
+                        name="confirmPassword"
+                        label="Confirm password"
+                        error={errors.confirmPassword}
+>>>>>>> version4
                       />
                     </div>
                     <div className="space-y-4 border-t border-aeviora-border pt-5 text-sm leading-6">
@@ -310,17 +337,35 @@ export default function Register() {
                           type="checkbox"
                           required
                           className="mt-1"
+<<<<<<< HEAD
+=======
+                          aria-invalid={Boolean(errors.is18OrOlder)}
+                          aria-describedby={errors.is18OrOlder ? "is18OrOlder-error" : undefined}
+>>>>>>> version4
                         />
                         <span>
                           I confirm that I am 18 years of age or older. *
                         </span>
                       </label>
+<<<<<<< HEAD
+=======
+                      {errors.is18OrOlder && (
+                        <p id="is18OrOlder-error" className="ml-7 text-sm text-red-700">
+                          {errors.is18OrOlder}
+                        </p>
+                      )}
+>>>>>>> version4
                       <label className="flex items-start gap-3">
                         <input
                           name="termsAccepted"
                           type="checkbox"
                           required
                           className="mt-1"
+<<<<<<< HEAD
+=======
+                          aria-invalid={Boolean(errors.termsAccepted)}
+                          aria-describedby={errors.termsAccepted ? "termsAccepted-error" : undefined}
+>>>>>>> version4
                         />
                         <span>
                           I accept the{" "}
@@ -335,12 +380,25 @@ export default function Register() {
                           ({config.termsVersion}). *
                         </span>
                       </label>
+<<<<<<< HEAD
+=======
+                      {errors.termsAccepted && (
+                        <p id="termsAccepted-error" className="ml-7 text-sm text-red-700">
+                          {errors.termsAccepted}
+                        </p>
+                      )}
+>>>>>>> version4
                       <label className="flex items-start gap-3">
                         <input
                           name="privacyAccepted"
                           type="checkbox"
                           required
                           className="mt-1"
+<<<<<<< HEAD
+=======
+                          aria-invalid={Boolean(errors.privacyAccepted)}
+                          aria-describedby={errors.privacyAccepted ? "privacyAccepted-error" : undefined}
+>>>>>>> version4
                         />
                         <span>
                           I accept the{" "}
@@ -355,12 +413,25 @@ export default function Register() {
                           ({config.privacyVersion}). *
                         </span>
                       </label>
+<<<<<<< HEAD
+=======
+                      {errors.privacyAccepted && (
+                        <p id="privacyAccepted-error" className="ml-7 text-sm text-red-700">
+                          {errors.privacyAccepted}
+                        </p>
+                      )}
+>>>>>>> version4
                       <label className="flex items-start gap-3">
                         <input
                           name="smsConsent"
                           type="checkbox"
                           required={["sms", "both"].includes(preference)}
                           className="mt-1"
+<<<<<<< HEAD
+=======
+                          aria-invalid={Boolean(errors.smsConsent)}
+                          aria-describedby={errors.smsConsent ? "smsConsent-error" : undefined}
+>>>>>>> version4
                         />
                         <span>
                           I consent to SMS messages for account verification and
@@ -368,6 +439,14 @@ export default function Register() {
                           selected. This does not include marketing messages.
                         </span>
                       </label>
+<<<<<<< HEAD
+=======
+                      {errors.smsConsent && (
+                        <p id="smsConsent-error" className="ml-7 text-sm text-red-700">
+                          {errors.smsConsent}
+                        </p>
+                      )}
+>>>>>>> version4
                       <label className="flex items-start gap-3">
                         <input
                           name="marketingConsent"

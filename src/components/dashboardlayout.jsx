@@ -1,5 +1,5 @@
 import { apiRequest } from "../util/api";
-import { Link, useNavigate, Outlet } from "react-router-dom";
+import { Link, useNavigate, Outlet, useOutletContext } from "react-router-dom";
 import {
   LayoutDashboard,
   User,
@@ -9,6 +9,7 @@ import {
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
+  const { user } = useOutletContext();
 
   async function logout() {
     try {
@@ -29,6 +30,14 @@ export default function DashboardLayout() {
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
+    ...(user?.role === "admin"
+      ? [
+          { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
+          { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },
+          { label: "Fee catalogs", href: "/admin/fees", icon: <ShieldCheck size={18} /> },
+          { label: "Memberships", href: "/admin/memberships", icon: <ShieldCheck size={18} /> },
+        ]
+      : []),
   ];
 
   return (
@@ -63,6 +72,7 @@ export default function DashboardLayout() {
           ))}
           </nav>
           <div className="mt-4 md:mt-auto">
+<<<<<<< HEAD
             <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
               <ShieldCheck className="mb-2 text-aeviora-gold" size={20} />
               <p className="text-xs text-gray-300">
@@ -70,6 +80,8 @@ export default function DashboardLayout() {
               </p>
             </div>
 
+=======
+>>>>>>> version4
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm hover:bg-white/20"
