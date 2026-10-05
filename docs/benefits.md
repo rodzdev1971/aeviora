@@ -1,5 +1,12 @@
 # Admin benefits
 
+Service fee entries can also be percentage discounts with selected-service or
+all-except eligibility rules. Choose them in the service picker as usual.
+Discount-only benefits store `pricingType: "discount"` and `price: null`, and
+display percentages rather than a dollar price. Their service entries store a
+`discount` rule instead of `amount`/`cost`. Mixed benefits retain their selling
+price and sum only the priced service costs. See [Fee catalogs](fee-catalogs.md).
+
 Sign in with an active admin account and open **Benefits** in the dashboard
 navigation (`/admin/benefits`), or **Manage benefits** from the admin account page.
 Enter a name, description, and selling price. Search the catalog by service name,

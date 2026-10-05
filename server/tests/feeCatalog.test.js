@@ -51,9 +51,12 @@ test("admin API creates and edits arrays in all catalogs, preserves legacy field
       return {
         find: () => ({ sort: () => ({ toArray: async () => [...records.values()] }) }),
         insertOne: async (data) => { records.set(id, { ...data, _id: id }); return { insertedId: id }; },
+        countDocuments: async (filter) => filter._id.$in.filter((key) => records.has(String(key))).length,
         findOneAndUpdate: async (filter, update) => {
           const key = String(filter._id); if (!records.has(key)) return null;
-          const doc = { ...records.get(key), ...update.$set }; records.set(key, doc); return doc;
+          const doc = { ...records.get(key), ...update.$set };
+          for (const field of Object.keys(update.$unset || {})) delete doc[field];
+          records.set(key, doc); return doc;
         },
       };
     },
@@ -90,4 +93,17 @@ test("admin API creates and edits arrays in all catalogs, preserves legacy field
     assert.equal((await request(`${source}/bad`, "PUT", input(source))).status, 400);
     assert.equal((await request(`${source}/222222222222222222222222`, "PUT", input(source))).status, 404);
   }
+  const discountFee = { name: "Discount", billcode: "D", description: "Selected services", pricingType: "discount",
+    discount: { percent: 10, laboratoryFees: { mode: "allExcept", feeIds: [id] }, diagnosticFees: { mode: "selected", feeIds: [id] } } };
+  const discounted = await (await request(`serviceFees/${id}`, "PUT", discountFee)).json();
+  assert.equal(discounted.fee.discount.percent, 10);
+  assert.equal(discounted.fee.servicePrices, undefined);
+  assert.equal(discounted.fee.retailPrice, undefined);
+  const stale = structuredClone(discountFee);
+  stale.discount.diagnosticFees.feeIds = ["222222222222222222222222"];
+  assert.equal((await request(`serviceFees/${id}`, "PUT", stale)).status, 400);
+  const pricedAgain = await (await request(`serviceFees/${id}`, "PUT", input("serviceFees"))).json();
+  assert.equal(pricedAgain.fee.discount, undefined);
+  assert.equal(pricedAgain.fee.pricingType, undefined);
+  assert.equal(pricedAgain.fee.servicePrices.length, 2);
 });

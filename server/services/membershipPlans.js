@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { discountSchema } from "../../shared/discounts.js";
 
 const money = z.number().finite().min(0).max(100000000).refine(
   (value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.00001,
@@ -28,6 +29,12 @@ export function resolveMembership(input, catalog) {
     billingInterval: "month", currency: "USD",
     benefits: data.benefits.map((selection) => {
       const benefit = catalogById.get(selection.benefitId);
+      const discounts = (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => discountSchema.parse(service.discount));
+      if (benefit.pricingType === "discount") {
+        if (selection.price !== null) throw Object.assign(new Error("Discount benefits use a percentage, not a member price."), { status: 409 });
+        return { benefitId: String(benefit._id), name: benefit.name, pricingType: "discount", discounts,
+          standardPrice: null, price: null, customPrice: false };
+      }
       const standardPrice = benefit.price?._bsontype === "Decimal128" ? Number(benefit.price.toString()) : benefit.price;
       if (!money.safeParse(standardPrice).success || typeof benefit.name !== "string" || !benefit.name.trim()) {
         const error = new Error("A catalog benefit needs a valid name and price. Update it in Benefits before saving this plan.");
@@ -35,7 +42,7 @@ export function resolveMembership(input, catalog) {
         throw error;
       }
       const price = selection.price;
-      return { benefitId: String(benefit._id), name: benefit.name, standardPrice,
+      return { benefitId: String(benefit._id), name: benefit.name, standardPrice, discounts,
         price: price ?? standardPrice, customPrice: price != null };
     }),
   };

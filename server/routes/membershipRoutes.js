@@ -6,7 +6,7 @@ import { logAudit } from "../utils/auditLogger.js";
 import { membershipInput, resolveMembership } from "../services/membershipPlans.js";
 
 export function createMembershipRouter({ plans = MembershipPlan,
-  catalog = () => Benefit.find().select("_id name description price").sort({ name: 1 }).lean(),
+  catalog = () => Benefit.find().select("_id name description price pricingType services").sort({ name: 1 }).lean(),
   authenticate = requireAuth, authorize = requireRole("admin"), audit = logAudit } = {}) {
   const router = express.Router();
   router.use(authenticate, authorize);

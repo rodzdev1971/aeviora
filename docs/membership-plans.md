@@ -1,5 +1,11 @@
 # Membership plans
 
+Percentage-discount benefits appear in the benefit dropdown with their discount
+percentage. They show **Discount prices** and eligibility summaries rather than a
+member dollar-price input. Their saved membership entries have `pricingType:
+"discount"`, `price: null`, `standardPrice: null`, and a `discounts` array of rules.
+Mixed priced benefits also retain their discount rules alongside the dollar price.
+
 Active admins can open **Memberships** in the dashboard (`/admin/memberships`).
 Create a plan or edit an existing plan, set its name and monthly USD price, and
 choose a benefit from the dropdown and click **Add benefit**. Repeat for each

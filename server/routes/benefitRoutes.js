@@ -11,7 +11,7 @@ async function loadOptions(selections) {
     const filter = selections ? { _id: { $in: selections.filter((item) => item.source === source)
       .map((item) => new mongoose.Types.ObjectId(item.feeId)) } } : {};
     const documents = await mongoose.connection.db.collection(source).find(filter, {
-      projection: { name: 1, description: 1, order: 1, billCode: 1, billcode: 1, labPrices: 1, diagnosticPrices: 1, servicePrices: 1 },
+      projection: { name: 1, description: 1, order: 1, billCode: 1, billcode: 1, labPrices: 1, diagnosticPrices: 1, servicePrices: 1, pricingType: 1, discount: 1 },
     }).toArray();
     return feeOptions(documents, source);
   }));

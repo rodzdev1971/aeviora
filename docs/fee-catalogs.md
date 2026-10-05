@@ -1,5 +1,43 @@
 # Fee catalogs
 
+## Percentage discounts
+
+In **Service fees**, choose **Percentage discount** for the service fee type.
+Enter the percentage (greater than 0 and up to 100), without a retail price or
+provider amounts. For laboratory and diagnostic services independently choose:
+
+- **Only selected services**: check each eligible service; an empty selection
+  means this category receives no discount.
+- **All except selected exclusions**: check only services that must not receive
+  the discount. An empty exclusion list includes every service in that category.
+  Future services are included automatically unless excluded.
+
+Search within either list to find services. Rules refer to fee document IDs and
+cover all providers for that fee. At least one category must have selected services
+or use all-except. Existing fixed-price service fees retain provider-price rows.
+
+Discount fees store `pricingType: "discount"` and `discount: { percent,
+laboratoryFees: { mode, feeIds }, diagnosticFees: { mode, feeIds } }`.
+They have no `retailPrice` or `servicePrices`. Switching types removes the old
+type's fields. The API verifies selected/excluded IDs against the correct catalog.
+
+Select the discount in the Benefits service picker. A benefit containing only
+discounts needs no selling price and displays **Discount prices** and percentages.
+Memberships preserve the percentage and eligibility snapshot instead of assigning
+a dollar member price. Mixed benefits can contain both priced services and
+discounts; their provider costs are summed without subtracting discount percentages.
+
+These are discount entitlements, not an implemented checkout or automatic billing
+calculation. They do not choose a retail/provider price base or combine overlapping
+discounts. Saved benefits/plans retain snapshots: refresh/reselect a changed
+discount in the benefit and resave the membership to publish updated rules there.
+
+For another database, run `node server/scripts/configure-service-fees.js` to update
+the `serviceFees` validator to accept both record types. This was applied to local
+`aeviora_wellness` without changing fee documents.
+
+## Fixed prices
+
 Active admins can open **Fee catalogs** in the dashboard (`/admin/fees`). Choose
 Laboratory, Diagnostic, or Service fees, enter the name, optional billing code,
 description, and retail price, then add one provider-price row per provider.

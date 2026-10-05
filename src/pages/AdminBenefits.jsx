@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 
+import { discountText } from "../../shared/discounts.js";
+
 const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 const emptyForm = () => ({ name: "", description: "", price: "", services: [] });
-const optionKey = (option) => JSON.stringify([option.source, option.feeId, option.provider, option.amount]);
+const optionKey = (option) => JSON.stringify([option.source, option.feeId, option.pricingType === "discount" ? option.discount : [option.provider, option.amount]]);
+const optionPrice = (option) => option.pricingType === "discount" ? discountText(option.discount) : money(option.amount);
 
 export default function AdminBenefits() {
   const [benefits, setBenefits] = useState([]);
@@ -38,7 +41,8 @@ export default function AdminBenefits() {
   const filtered = options.filter((option) => (source === "all" || option.source === source) &&
     `${option.name} ${option.provider} ${option.billCode}`.toLowerCase().includes(search.toLowerCase()));
   const chosen = filtered.find((option) => optionKey(option) === selected);
-  const cost = form.services.reduce((sum, service) => sum + Math.round(service.amount * 100), 0) / 100;
+  const cost = form.services.reduce((sum, service) => sum + Math.round((service.amount || 0) * 100), 0) / 100;
+  const discountOnly = form.services.length > 0 && form.services.every((service) => service.pricingType === "discount");
   const unavailable = form.services.some((service) => !options.some((option) => optionKey(option) === optionKey(service)));
 
   function reset() {
@@ -46,7 +50,7 @@ export default function AdminBenefits() {
   }
   function edit(benefit) {
     setEditingId(benefit._id);
-    setForm({ name: benefit.name, description: benefit.description, price: String(benefit.price),
+    setForm({ name: benefit.name, description: benefit.description, price: benefit.price == null ? "" : String(benefit.price),
       services: benefit.services.map((service) => ({ ...service, provider: service.lab || service.diagnostic_center || service.provider })) });
     setMessage(""); setError("");
     document.getElementById("benefit-name")?.focus();
@@ -58,8 +62,8 @@ export default function AdminBenefits() {
     try {
       const { benefit } = await apiRequest(`/api/admin/benefits${editingId ? `/${editingId}` : ""}`, {
         method: editingId ? "PUT" : "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, description: form.description, price: Number(form.price),
-          services: form.services.map(({ source, feeId, provider, amount }) => ({ source, feeId, provider, amount })) }),
+        body: JSON.stringify({ name: form.name, description: form.description, price: discountOnly ? null : Number(form.price),
+          services: form.services.map((service) => service.pricingType === "discount" ? { source: service.source, feeId: service.feeId, pricingType: "discount", discount: service.discount } : { source: service.source, feeId: service.feeId, provider: service.provider, amount: service.amount }) }),
       });
       setBenefits((current) => editingId ? current.map((item) => item._id === editingId ? benefit : item) : [benefit, ...current]);
       setMessage(editingId ? "Benefit updated." : "Benefit created."); reset();
@@ -102,9 +106,9 @@ export default function AdminBenefits() {
             <textarea id="benefit-description" className="input" required maxLength={4000} rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div><label className="label" htmlFor="benefit-price">Selling price ($)</label>
-              <input id="benefit-price" className="input" type="number" min="0" max="100000000" step="0.01" required value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></div>
-            <div><label className="label" htmlFor="benefit-cost">Calculated service cost</label>
-              <output id="benefit-cost" className="input block bg-aeviora-cream" aria-live="polite">{money(cost)}</output></div>
+              {discountOnly ? <p>Percentage discount benefit — no selling price required.</p> : <input id="benefit-price" className="input" type="number" min="0" max="100000000" step="0.01" required value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />}</div>
+            <div><label className="label" htmlFor="benefit-cost">{discountOnly ? "Discount prices" : "Calculated service cost"}</label>
+              <output id="benefit-cost" className="input block bg-aeviora-cream" aria-live="polite">{discountOnly ? form.services.map((service) => discountText(service.discount)).join("; ") : money(cost)}</output></div>
           </div>
           <div className="space-y-4 border-t border-aeviora-border pt-5">
             <h2 className="font-semibold">Add services</h2>
@@ -121,11 +125,11 @@ export default function AdminBenefits() {
               <select id="fee-option" className="input" value={selected} onChange={(event) => setSelected(event.target.value)}>
                 <option value="">Select a service ({filtered.length} options)</option>
                 {filtered.map((option, index) => <option key={`${optionKey(option)}-${index}`} value={optionKey(option)}>
-                  {option.name} — {option.provider} — {money(option.amount)}{option.billCode ? ` (${option.billCode})` : ""}
+                  {option.name} — {option.provider} — {optionPrice(option)}{option.billCode ? ` (${option.billCode})` : ""}
                 </option>)}
               </select></div>
             {!filtered.length && !loading && <p className="text-sm text-aeviora-slate">No matching fees. Add provider prices in Fee catalogs, then refresh this catalog.</p>}
-            {chosen && <p className="break-words text-sm">{chosen.name} · {chosen.provider} · {money(chosen.amount)}</p>}
+            {chosen && <p className="break-words text-sm">{chosen.name} · {chosen.provider} · {optionPrice(chosen)}</p>}
             <button className="btn-secondary disabled:opacity-50" type="button" disabled={!chosen || form.services.length >= 200} onClick={() => {
               setForm({ ...form, services: [...form.services, chosen] }); setSelected("");
             }}>Add service</button>
@@ -135,7 +139,7 @@ export default function AdminBenefits() {
             {!form.services.length && <p className="text-sm text-aeviora-slate">Add at least one service. You can add more services whenever you edit this benefit.</p>}
             {form.services.map((service, index) => <div key={index} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-aeviora-border p-3">
               <div className="min-w-0 flex-1 break-words"><p className="font-medium">{service.name}</p>
-                <p className="text-sm text-aeviora-slate">Provider: {service.provider} · {money(service.amount)}</p>
+                <p className="text-sm text-aeviora-slate">{service.pricingType !== "discount" && <>Provider: {service.provider} · </>}{optionPrice(service)}</p>
                 {!options.some((option) => optionKey(option) === optionKey(service)) && !loading && <p className="text-sm text-red-700">Unavailable or price changed. Remove and select a current fee.</p>}
               </div>
               <button type="button" className="text-sm font-semibold text-red-700 underline" aria-label={`Remove service ${index + 1}: ${service.name}`} onClick={() => setForm({ ...form, services: form.services.filter((_, position) => position !== index) })}>Remove</button>
@@ -154,9 +158,9 @@ export default function AdminBenefits() {
         {benefits.map((benefit) => <article key={benefit._id} className="card space-y-3">
           <h3 className="break-words text-xl font-semibold">{benefit.name}</h3>
           <p className="whitespace-pre-wrap break-words text-sm text-aeviora-slate">{benefit.description}</p>
-          <p className="text-sm">Cost: <strong>{money(benefit.cost)}</strong> · Price: <strong>{money(benefit.price)}</strong> · {benefit.services.length} services</p>
+          <p className="text-sm">{benefit.pricingType === "discount" ? "Discount prices" : <>Cost: <strong>{money(benefit.cost)}</strong> · Price: <strong>{money(benefit.price)}</strong></>} · {benefit.services.length} services</p>
           <details><summary className="cursor-pointer text-sm font-semibold">View included services</summary>
-            <ul className="mt-3 space-y-2 text-sm">{benefit.services.map((service, index) => <li className="break-words" key={index}>{service.name} · {service.lab || service.diagnostic_center || service.provider} · {money(service.cost)}</li>)}</ul>
+            <ul className="mt-3 space-y-2 text-sm">{benefit.services.map((service, index) => <li className="break-words" key={index}>{service.name} · {service.lab || service.diagnostic_center || service.provider} · {service.pricingType === "discount" ? discountText(service.discount) : money(service.cost)}</li>)}</ul>
           </details>
           <div className="flex flex-wrap gap-3">
             <button type="button" className="btn-secondary disabled:opacity-50" disabled={busy || loading} onClick={() => edit(benefit)}>Edit / add services</button>

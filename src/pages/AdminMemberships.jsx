@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 
+import { discountText } from "../../shared/discounts.js";
+
+const discountsFor = (benefit) => benefit.discounts || (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => service.discount);
+const benefitLabel = (benefit) => benefit.pricingType === "discount" ? discountsFor(benefit).map(discountText).join("; ") : money(benefit.price);
 const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 const emptyForm = () => ({ name: "", price: "", selectedBenefits: [], overrides: {} });
 
@@ -35,7 +39,7 @@ export default function AdminMemberships() {
     setEditingId(plan._id);
     setBenefitToAdd("");
     setForm({ name: plan.name, price: String(plan.price),
-      selectedBenefits: plan.benefits.map((benefit) => ({ _id: benefit.benefitId, name: benefit.name, price: benefit.standardPrice })),
+      selectedBenefits: plan.benefits.map((benefit) => ({ _id: benefit.benefitId, name: benefit.name, price: benefit.standardPrice, pricingType: benefit.pricingType, discounts: benefit.discounts })),
       overrides: Object.fromEntries(
       plan.benefits.filter((benefit) => benefit.customPrice).map((benefit) => [benefit.benefitId, String(benefit.price)]),
     ) });
@@ -47,7 +51,7 @@ export default function AdminMemberships() {
       const { membership } = await apiRequest(`/api/admin/memberships${editingId ? `/${editingId}` : ""}`, {
         method: editingId ? "PUT" : "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: form.name, price: Number(form.price), benefits: form.selectedBenefits.map((benefit) => ({
-          benefitId: benefit._id, price: form.overrides[benefit._id] == null ? null : Number(form.overrides[benefit._id]),
+          benefitId: benefit._id, price: benefits.find((item) => item._id === benefit._id)?.pricingType === "discount" || form.overrides[benefit._id] == null ? null : Number(form.overrides[benefit._id]),
         })) }),
       });
       setMemberships((current) => (editingId ? current.map((plan) => plan._id === editingId ? membership : plan) : [...current, membership])
@@ -92,7 +96,8 @@ export default function AdminMemberships() {
           <p className="text-sm text-aeviora-slate">{plan.benefits.length} saved benefits</p>
           <details><summary className="cursor-pointer text-sm font-semibold">View benefit prices</summary>
             <ul className="mt-3 space-y-2 text-sm">{plan.benefits.map((benefit) => <li className="break-words" key={benefit.benefitId}>
-              {benefit.name}: {money(benefit.price)}{benefit.customPrice ? " (adjusted)" : " (standard)"}
+              {benefit.name}: {benefitLabel(benefit)}{benefit.pricingType !== "discount" && (benefit.customPrice ? " (adjusted)" : " (standard)")}
+              {benefit.pricingType !== "discount" && discountsFor(benefit).map((discount, index) => <span key={index} className="block">{discountText(discount)}</span>)}
             </li>)}</ul>
           </details>
           <div className="flex flex-wrap gap-3">
@@ -118,7 +123,7 @@ export default function AdminMemberships() {
               <div className="min-w-0 flex-1"><label htmlFor="membership-benefit" className="label">Benefit to add</label>
                 <select id="membership-benefit" className="input" value={benefitToAdd} onChange={(event) => setBenefitToAdd(event.target.value)}>
                   <option value="">Select a benefit</option>
-                  {availableBenefits.map((benefit) => <option key={benefit._id} value={benefit._id}>{benefit.name} — {money(benefit.price)}</option>)}
+                  {availableBenefits.map((benefit) => <option key={benefit._id} value={benefit._id}>{benefit.name} — {benefitLabel(benefit)}</option>)}
                 </select>
               </div>
               <button type="button" className="btn-secondary disabled:opacity-50" disabled={!availableBenefits.some((benefit) => benefit._id === benefitToAdd)} onClick={() => {
@@ -138,14 +143,15 @@ export default function AdminMemberships() {
               return <div key={benefit._id} className="grid min-w-0 gap-4 rounded-xl border border-aeviora-border p-4 sm:grid-cols-2">
                 <div className="min-w-0"><h3 className="break-words font-semibold">{benefit.name}</h3>
                   <p className="mt-1 break-words text-sm text-aeviora-slate">{benefit.description}</p>
-                  <p className="mt-2 text-sm">Standard price: {money(benefit.price)}</p>
+                  <p className="mt-2 text-sm">{benefit.pricingType === "discount" ? "Discount prices" : `Standard price: ${money(benefit.price)}`}</p>
+                  {discountsFor(benefit).map((discount, index) => <p key={index} className="mt-2 text-sm">{discountText(discount)}</p>)}
                   {!currentBenefit && <p className="mt-2 text-sm text-red-700">This benefit is no longer available. Remove it before saving.</p>}
                   <button type="button" className="mt-3 text-sm font-semibold text-red-700 underline" aria-label={`Remove ${benefit.name} from membership`} onClick={() => {
                     const overrides = { ...form.overrides };
                     delete overrides[benefit._id];
                     setForm({ ...form, overrides, selectedBenefits: form.selectedBenefits.filter((item) => item._id !== benefit._id) });
                   }}>Remove benefit</button></div>
-                <div className="space-y-3">
+                {benefit.pricingType !== "discount" && <div className="space-y-3">
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={custom} onChange={(event) => {
                     const overrides = { ...form.overrides };
                     if (event.target.checked) overrides[benefit._id] = String(benefit.price);
@@ -155,7 +161,7 @@ export default function AdminMemberships() {
                   <label htmlFor={`benefit-${benefit._id}`} className="label">Member price for {benefit.name} ($)</label>
                   <input id={`benefit-${benefit._id}`} className="input" type="number" min="0" max="100000000" step="0.01" required readOnly={!custom}
                     value={custom ? form.overrides[benefit._id] : benefit.price} onChange={(event) => setForm({ ...form, overrides: { ...form.overrides, [benefit._id]: event.target.value } })} />
-                </div>
+                </div>}
               </div>;
             })}
           </div>
