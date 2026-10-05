@@ -14,8 +14,13 @@ import benefitRoutes from "./routes/benefitRoutes.js";
 import membershipRoutes from "./routes/membershipRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 
-export function createApp() {
+export function createApp({ connectDatabase, trustProxy = false } = {}) {
   const app = express();
+  app.set("trust proxy", trustProxy);
+  app.use("/api", (req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -24,8 +29,7 @@ export function createApp() {
           scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", "data:", "blob:"],
-          // connectSrc: ["'self'", "https://api.aeviorawellness.com"],
-          connectSrc: ["'self'", "https://localhost:5000"],
+          connectSrc: ["'self'"],
           frameAncestors: ["'none'"],
         },
       },
@@ -48,7 +52,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 // Express 5 exposes req.query as a getter. Sanitize mutable bodies only;
 // API inputs are also validated against strict allowlisted schemas.
 app.use((req, res, next) => {
-  if (req.body) mongoSanitize.sanitize(req.body);
+  if (req.body && !Buffer.isBuffer(req.body)) mongoSanitize.sanitize(req.body);
   next();
 });
 app.use(hpp());
@@ -68,6 +72,14 @@ app.get("/", (req, res) => {
   });
 });
 
+if (connectDatabase) {
+  app.use("/api", async (req, res, next) => {
+    try { await connectDatabase(); next(); }
+    catch { res.status(503).json({ message: "Database is temporarily unavailable." }); }
+  });
+}
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
@@ -77,6 +89,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/benefits", benefitRoutes);
 app.use("/api/admin/memberships", membershipRoutes);
 app.use("/api/admin/fees", feeRoutes);
+app.use("/api", (req, res) => res.status(404).json({ message: "API endpoint not found." }));
 
 
   app.use((error, req, res, next) => {

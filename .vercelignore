@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+dist
+server/tests
+notes.txt
