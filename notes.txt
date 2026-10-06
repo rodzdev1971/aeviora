@@ -11,3 +11,4 @@ version 5 after main changed to from hippa to non-hippa we are working now in fi
         COMPLETED
 version 6 Working on payment system:
         - We need to set stripe and zelle option for users
+        - We need to add membership plans dashboard for users to choose

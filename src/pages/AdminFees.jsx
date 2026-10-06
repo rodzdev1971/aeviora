@@ -48,6 +48,17 @@ function FeeEditor({ source }) {
   function updatePrice(index, field, value) {
     setForm({ ...form, prices: form.prices.map((row, position) => position === index ? { ...row, [field]: value } : row) });
   }
+  async function removeFee(fee) {
+    if (busy || !window.confirm(`Delete "${fee.name || fee.description || fee.order}" and all its provider prices? This cannot be undone. Existing benefits and discount rules are not changed automatically; review any that use this fee.`)) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const result = await apiRequest(`/api/admin/fees/${source}/${fee._id}`, { method: "DELETE" });
+      setFees((current) => current.filter((item) => item._id !== fee._id));
+      if (editingId === fee._id) reset();
+      setMessage(result.message);
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
   async function save(event) {
     event.preventDefault();
     if (!isDiscount && !form.prices.length) { setError("Add at least one provider price."); return; }
@@ -107,6 +118,7 @@ function FeeEditor({ source }) {
           <p className="text-sm">Code: {fee[config.billcode] || "—"} · {fee.pricingType === "discount" ? discountText(fee.discount) : `Retail: ${money(numericValue(fee.retailPrice))}`}</p>
           <ul className="space-y-1 text-sm">{(fee[config.prices] || []).map((row, index) => <li key={index} className="break-words">{row?.[config.provider]}: {money(numericValue(row?.amount))}</li>)}</ul>
           <button type="button" className="btn-secondary disabled:opacity-50" disabled={busy} onClick={() => edit(fee)}>Edit / add provider prices</button>
+          <button type="button" className="ml-3 px-3 py-2 font-semibold text-red-700 underline disabled:opacity-50" disabled={busy} onClick={() => removeFee(fee)} aria-label={`Delete ${fee.name || fee.description || fee.order}`}>Delete fee</button>
         </article>)}
         {!filtered.length && <p>No matching fees. Add an entry above or change your search.</p>}
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Page {currentPage} of {pages}</span><div className="flex gap-2">

@@ -56,6 +56,13 @@ export function createFeeRouter({ collection = (source) => mongoose.connection.d
   }
   router.post("/:source", save);
   router.put("/:source/:id", save);
+  router.delete("/:source/:id", async (req, res) => {
+    const result = await collection(req.params.source).deleteOne({ _id: new mongoose.Types.ObjectId(req.params.id) });
+    if (!result.deletedCount) return res.status(404).json({ message: "Fee not found. It may already have been deleted." });
+    await audit({ req, actorId: req.user.id, actorRole: req.user.role,
+      action: "FEE_DELETED", targetType: req.params.source, targetId: req.params.id });
+    return res.json({ message: "Fee deleted. Review any benefits or discount rules that used this fee." });
+  });
   return router;
 }
 

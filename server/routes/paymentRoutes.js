@@ -1,10 +1,19 @@
 import express from "express";
 import Stripe from "stripe";
 import User from "../models/users.js";
+import MembershipPlan from "../models/membershipPlans.js";
+import { memberStatus } from "../services/memberStatus.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 const router = express.Router();
+
+router.get("/memberships", requireAuth, async (req, res) => {
+  const user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId");
+  if (!user) return res.status(404).json({ message: "Account not found." });
+  const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
+  res.json({ plans, ...memberStatus(user) });
+});
 
 function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured.");
@@ -28,20 +37,35 @@ async function getOrCreateCustomer(stripe, user) {
 
 router.post("/checkout-session", requireAuth, async (req, res) => {
   try {
-    if (!process.env.STRIPE_PRICE_ID) return res.status(503).json({ message: "Stripe pricing is not configured." });
+    if (!/^[a-f\d]{24}$/i.test(req.body?.planId || "")) return res.status(400).json({ message: "Choose a membership plan." });
+    const plan = await MembershipPlan.findById(req.body.planId);
+    if (!plan) return res.status(404).json({ message: "Membership plan is no longer available." });
     const stripe = stripeClient();
-    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId");
+    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId");
     if (!user) return res.status(404).json({ message: "Account not found." });
+    if (user.stripeSubscriptionId) return res.status(409).json({ message: "Manage your existing subscription through billing before choosing another plan." });
     const customerId = await getOrCreateCustomer(stripe, user);
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 100 });
+    if (subscriptions.data.some((subscription) => !["canceled", "incomplete_expired"].includes(subscription.status))) {
+      return res.status(409).json({ message: "You already have a subscription. Refresh your membership status or manage billing." });
+    }
+    const openSessions = await stripe.checkout.sessions.list({ customer: customerId, status: "open", limit: 100 });
+    const pendingCheckout = openSessions.data.find((session) => session.mode === "subscription");
+    if (pendingCheckout) {
+      if (pendingCheckout.metadata?.membershipPlanId === String(plan._id)) return res.json({ url: pendingCheckout.url });
+      return res.status(409).json({ message: "A checkout for another plan is already open. Complete it or wait for it to expire before choosing another plan." });
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      payment_method_types: ["card"],
+      expires_at: Math.floor(Date.now() / 1000) + 1800,
       customer: customerId,
-      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      line_items: [{ price_data: { currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "month" }, product_data: { name: plan.name } }, quantity: 1 }],
       success_url: `${frontendUrl()}/dashboard?payment=success`,
       cancel_url: `${frontendUrl()}/dashboard?payment=cancelled`,
       client_reference_id: user._id.toString(),
-      metadata: { aevioraUserId: user._id.toString() },
-      subscription_data: { metadata: { aevioraUserId: user._id.toString() } },
+      metadata: { aevioraUserId: user._id.toString(), membershipPlanId: String(plan._id), membershipName: plan.name },
+      subscription_data: { metadata: { aevioraUserId: user._id.toString(), membershipPlanId: String(plan._id), membershipName: plan.name } },
     });
     await logAudit({ req, actorId: user._id, actorRole: user.role, action: "PAYMENT_CHECKOUT_STARTED", targetType: "StripeCheckoutSession", targetId: session.id });
     return res.json({ url: session.url });
@@ -82,7 +106,7 @@ router.post("/webhook", async (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     update.stripeSubscriptionId = typeof object.subscription === "string" ? object.subscription : object.subscription?.id;
-    update.subscriptionStatus = "active";
+    update.subscriptionStatus = object.payment_status === "paid" || object.payment_status === "no_payment_required" ? "active" : "incomplete";
   }
   if (event.type === "customer.subscription.updated") {
     update.stripeSubscriptionId = object.id;
@@ -91,6 +115,13 @@ router.post("/webhook", async (req, res) => {
   if (event.type === "customer.subscription.deleted") {
     update.stripeSubscriptionId = null;
     update.subscriptionStatus = "canceled";
+    update.membershipPlanId = null;
+    update.membershipName = "";
+  }
+
+  if (["checkout.session.completed", "customer.subscription.updated"].includes(event.type) && /^[a-f\d]{24}$/i.test(object.metadata?.membershipPlanId || "")) {
+    update.membershipPlanId = object.metadata.membershipPlanId;
+    update.membershipName = object.metadata.membershipName || "Membership";
   }
 
   if (Object.keys(update).length > 0) {

@@ -64,3 +64,11 @@ Writes are recorded in the existing audit log.
 
 Run `node --test server/tests/*.test.js`, `npm run lint`, and `npm run build`.
 Tests use synthetic in-memory records without writing to the local MongoDB data.
+# Member dashboard
+
+The member dashboard reads plan options from `membershipPlans` through the authenticated `/api/payments/memberships` endpoint. Accounts without a current subscription display **Free membership**. Legacy subscriptions without a linked catalog plan display **Existing membership** rather than an invented tier.
+
+Choosing a plan opens Stripe subscription checkout using the database price in USD per month. `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `FRONTEND_ORIGIN` must be configured. The old single `STRIPE_PRICE_ID` is not used for plan selection. Subscribe the Stripe webhook to `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`. Plan ID and name are recorded through these signed events, not a browser success redirect. Refresh membership status after checkout if the webhook is still pending.
+
+Existing subscribers use billing management; switching to another catalog plan is not performed directly by the plan cards. Catalog edits affect new checkout pricing, not existing Stripe subscriptions. Verify checkout, webhook delivery, cancellation, and billing portal settings in Stripe test mode before production use. No live charge was tested during implementation.
+

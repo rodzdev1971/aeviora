@@ -40,6 +40,8 @@ const userSchema = new mongoose.Schema({
   stripeCustomerId: { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
   subscriptionStatus: { type: String, default: "inactive" },
+  membershipPlanId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  membershipName: { type: String, default: "" },
 }, { timestamps: true, strict: "throw", collection: "users" });
 
 export default mongoose.model("User", userSchema);

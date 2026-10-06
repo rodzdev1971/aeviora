@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
 import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
+import MembershipOptions from "../components/MembershipOptions.jsx";
 import PatientDirectory from "../components/PatientDirectory.jsx";
 
 const telehealthServices = [
@@ -117,9 +118,6 @@ const clinicalPortals = [
 
 export default function MainDashboard() {
   const [showTherapyQuiz, setShowTherapyQuiz] = useState(false);
-  const [subscriptionEnabled] = useState(true);
-  const [pendingSubscriptionState, setPendingSubscriptionState] =
-    useState(null);
   const [paymentError, setPaymentError] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [notification] = useState(() => {
@@ -153,27 +151,6 @@ export default function MainDashboard() {
       setDirectoryRevision((value) => value + 1);
       setSelectedPatient(null);
     } catch (error) { setStaffError(error.message); }
-  }
-
-  function requestSubscriptionChange(nextState) {
-    setPendingSubscriptionState(nextState);
-  }
-
-  async function confirmSubscriptionChange() {
-    setPaymentLoading(true);
-    setPaymentError("");
-    try {
-      const endpoint = pendingSubscriptionState
-        ? "/api/payments/checkout-session"
-        : "/api/payments/billing-portal";
-      const result = await apiRequest(endpoint, { method: "POST" });
-      window.location.assign(result.url);
-    } catch (error) {
-      setPaymentError(error.message);
-      setPendingSubscriptionState(null);
-    } finally {
-      setPaymentLoading(false);
-    }
   }
 
   async function openBillingPortal() {
@@ -276,28 +253,7 @@ export default function MainDashboard() {
           </button>
         </section>
 
-        <section className="card lg:col-span-2">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-                Subscription
-              </p>
-              <h2 className="mt-2 font-display text-2xl">
-                Aeviora wellness subscription
-              </h2>
-              <p className="mt-2 text-sm text-gray-600">
-                Status: <strong>{subscriptionEnabled ? "On" : "Off"}</strong>
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => requestSubscriptionChange(!subscriptionEnabled)}
-              className="btn-primary"
-            >
-              Turn {subscriptionEnabled ? "off" : "on"} subscription
-            </button>
-          </div>
-        </section>
+        <MembershipOptions />
 
         <section className="card lg:col-span-2">
           <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
@@ -336,49 +292,6 @@ export default function MainDashboard() {
         {staffError && <p role="alert" className="text-red-700">{staffError}</p>}
       </div>
 
-      {pendingSubscriptionState !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-aeviora-black/60 p-6"
-          role="presentation"
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="subscription-confirmation"
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
-          >
-            <h2
-              id="subscription-confirmation"
-              className="font-display text-2xl"
-            >
-              Confirm subscription change
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-600">
-              Are you sure you want to turn this subscription{" "}
-              {pendingSubscriptionState ? "on" : "off"}?
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setPendingSubscriptionState(null)}
-                className="btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmSubscriptionChange}
-                disabled={paymentLoading}
-                className="btn-primary disabled:opacity-60"
-              >
-                {paymentLoading
-                  ? "Opening secure billing..."
-                  : "Confirm change"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {paymentError && (
         <p
           role="alert"

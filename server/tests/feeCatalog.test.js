@@ -52,6 +52,7 @@ test("admin API creates and edits arrays in all catalogs, preserves legacy field
         find: () => ({ sort: () => ({ toArray: async () => [...records.values()] }) }),
         insertOne: async (data) => { records.set(id, { ...data, _id: id }); return { insertedId: id }; },
         countDocuments: async (filter) => filter._id.$in.filter((key) => records.has(String(key))).length,
+        deleteOne: async (filter) => ({ deletedCount: records.delete(String(filter._id)) ? 1 : 0 }),
         findOneAndUpdate: async (filter, update) => {
           const key = String(filter._id); if (!records.has(key)) return null;
           const doc = { ...records.get(key), ...update.$set };
@@ -106,4 +107,12 @@ test("admin API creates and edits arrays in all catalogs, preserves legacy field
   assert.equal(pricedAgain.fee.discount, undefined);
   assert.equal(pricedAgain.fee.pricingType, undefined);
   assert.equal(pricedAgain.fee.servicePrices.length, 2);
+  for (const source of Object.keys(feeCatalogs)) {
+    assert.equal((await request(`${source}/${id}`, "DELETE", undefined, "")).status, 401);
+    assert.equal((await request(`${source}/${id}`, "DELETE", undefined, "user")).status, 403);
+    assert.equal((await request(`${source}/bad`, "DELETE")).status, 400);
+    assert.equal((await request(`${source}/${id}`, "DELETE")).status, 200);
+    assert.equal((await (await request(source)).json()).fees.length, 0);
+    assert.equal((await request(`${source}/${id}`, "DELETE")).status, 404);
+  }
 });
