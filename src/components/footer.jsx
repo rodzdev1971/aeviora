@@ -42,6 +42,8 @@ export default function Footer() {
             
             <div>
               <Link to='/termsofuse'  className="text-sm text-gray-300 hover:text-aeviora-gold"><p>Terms of Use</p></Link>
+              <Link to="/account-terms" className="mt-3 block text-sm text-gray-300 hover:text-aeviora-gold">Account Terms</Link>
+              <Link to="/account-privacy" className="mt-3 block text-sm text-gray-300 hover:text-aeviora-gold">Account Privacy</Link>
             </div>
 
           </div>

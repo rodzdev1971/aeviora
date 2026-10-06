@@ -7,6 +7,7 @@ import MainDashboard from "./pages/MainDashboard";
 import Profile from "./pages/Profile";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
+import AccountTerms from "./pages/AccountTerms.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminBenefits from "./pages/AdminBenefits.jsx";
 import AdminMemberships from "./pages/AdminMemberships.jsx";
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/termsofuse" element={<TermsOfUse />} />
       <Route path="/account-privacy" element={<AccountPrivacy />} />
+      <Route path="/account-terms" element={<AccountTerms />} />
       {/* <Route path="test" element={<DashboardLayout />} /> */}
 
       <Route element={<ProtectedRoute />}>
