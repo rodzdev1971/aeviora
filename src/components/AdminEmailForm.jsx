@@ -9,6 +9,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [configured, setConfigured] = useState(null);
+  const [configurationIssues, setConfigurationIssues] = useState([]);
   const [templateId, setTemplateId] = useState("");
   function applyTemplate() {
     if ((subject || text) && !window.confirm("Replace the current subject and message with this template?")) return;
@@ -19,7 +20,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
   useEffect(() => {
     const controller = new AbortController();
     apiRequest("/api/admin/email/status", { signal: controller.signal })
-      .then((data) => setConfigured(data.configured))
+      .then((data) => { setConfigured(data.configured); setConfigurationIssues(data.issues || []); })
       .catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
     return () => controller.abort();
   }, []);
@@ -42,6 +43,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
       <p className="break-words">To: {recipient.firstName} {recipient.lastName} ({recipient.email})</p>
       <p className="text-sm text-aeviora-slate">Send account support messages. Do not include medical records or use this form for marketing campaigns.</p>
       {configured === false && <p role="alert">Email is not configured. Add SMTP settings on the server before sending.</p>}
+      {configured === false && <ul className="list-disc pl-5 text-sm text-red-700">{configurationIssues.map((issue) => <li key={issue.variable}>{issue.variable}: {issue.reason}. {issue.hint}</li>)}</ul>}
       {error && <p role="alert" className="text-red-700">{error}</p>}
       {message && <p role="status" className="text-green-800">{message}</p>}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

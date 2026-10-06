@@ -3,11 +3,30 @@ import { z } from "zod";
 
 const settings = z.object({
   SMTP_HOST: z.string().trim().min(1),
-  SMTP_PORT: z.enum(["465", "587"]),
-  SMTP_USER: z.string().min(1),
+  SMTP_PORT: z.string().trim().pipe(z.enum(["465", "587"])),
+  SMTP_USER: z.string().trim().min(1),
   SMTP_PASS: z.string().min(1),
-  SMTP_FROM: z.email(),
+  SMTP_FROM: z.string().trim().pipe(z.email()),
 });
+
+export function emailConfigurationStatus(env = process.env) {
+  const parsed = settings.safeParse(env);
+  const hints = {
+    SMTP_HOST: "Enter the SMTP hostname.",
+    SMTP_PORT: "Use 465 or 587.",
+    SMTP_USER: "Enter the SMTP username.",
+    SMTP_PASS: "Enter the SMTP password.",
+    SMTP_FROM: "Use a single email address, without a display name or angle brackets.",
+  };
+  return {
+    configured: parsed.success,
+    issues: parsed.success ? [] : parsed.error.issues.map((issue) => ({
+      variable: issue.path[0],
+      reason: typeof env[issue.path[0]] !== "string" || !env[issue.path[0]].trim() ? "missing" : "invalid",
+      hint: hints[issue.path[0]],
+    })),
+  };
+}
 
 export function emailConfigured(env = process.env) {
   return settings.safeParse(env).success;

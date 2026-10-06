@@ -4,7 +4,7 @@ import { z } from "zod";
 import User from "../models/users.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
-import { emailConfigured, emailFailure, sendEmail } from "../services/email.js";
+import { emailConfigured, emailConfigurationStatus, emailFailure, sendEmail } from "../services/email.js";
 
 const input = z.strictObject({
   userId: z.uuid(),
@@ -14,10 +14,10 @@ const input = z.strictObject({
 
 export function createEmailRouter({ authenticate = requireAuth, authorize = requireRole("admin"),
   findUser = (id) => User.findById(id).select("email accountStatus"),
-  send = sendEmail, configured = emailConfigured, audit = logAudit } = {}) {
+  send = sendEmail, configured = emailConfigured, diagnostics = emailConfigurationStatus, audit = logAudit } = {}) {
   const router = express.Router();
   router.use(authenticate, authorize);
-  router.get("/status", (req, res) => res.json({ configured: configured() }));
+  router.get("/status", (req, res) => res.json({ configured: configured(), issues: diagnostics().issues }));
   router.post("/", rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, keyGenerator: (req) => req.user.id,
     standardHeaders: true, legacyHeaders: false, message: { message: "Email limit reached. Try again later." } }), async (req, res) => {
     const parsed = input.safeParse(req.body);

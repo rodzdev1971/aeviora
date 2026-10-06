@@ -1,10 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import express from "express";
-import { emailConfigured, sendEmail, sendRegistrationEmail } from "../services/email.js";
+import { emailConfigured, emailConfigurationStatus, sendEmail, sendRegistrationEmail } from "../services/email.js";
 import { createEmailRouter } from "../routes/emailRoutes.js";
 
 const env = { SMTP_HOST: "smtp.example.com", SMTP_PORT: "587", SMTP_USER: "test", SMTP_PASS: "synthetic", SMTP_FROM: "support@example.com" };
+test("configuration diagnostics identify fields without returning values or credentials", () => {
+  const result = emailConfigurationStatus({ ...env, SMTP_PORT: "25", SMTP_FROM: "Aeviora <private@example.com>", SMTP_PASS: undefined });
+  assert.equal(result.configured, false);
+  assert.deepEqual(result.issues.map(({ variable, reason }) => ({ variable, reason })), [
+    { variable: "SMTP_PORT", reason: "invalid" }, { variable: "SMTP_PASS", reason: "missing" }, { variable: "SMTP_FROM", reason: "invalid" },
+  ]);
+  assert.equal(JSON.stringify(result).includes("private@example.com"), false);
+  assert.equal(emailConfigurationStatus({ ...env, SMTP_PORT: " 587 ", SMTP_FROM: " support@example.com " }).configured, true);
+});
 test("SMTP requires valid configuration, TLS and disables content access", async () => {
   assert.equal(emailConfigured({}), false);
   await assert.rejects(sendEmail({ to: "test@example.com" }, { env: {} }), { code: "SMTP_CONFIG" });
