@@ -145,7 +145,7 @@ export default function Register() {
             Aeviora Wellness
           </Link>
           <ShieldCheck className="mb-5 mt-10 h-12 w-12 text-aeviora-softGold" />
-          <h1 className="font-display text-4xl">Create your account</h1>
+          <h1 className="font-display text-4xl">Create your free account</h1>
           <p className="mt-5 leading-7">
             Take the first step toward Aeviora membership and discounted prices
             on eligible wellness and preventive care services. Start with your
@@ -154,6 +154,7 @@ export default function Register() {
           <p className="mt-4 text-sm leading-6">
             Your ZIP code helps us check service availability. An account does
             not confirm eligibility for a service or enroll you in a paid membership.
+            Account signup is free; membership plans and services are priced separately.
           </p>
         </section>
         <section className="p-6 sm:p-10">
@@ -426,7 +427,7 @@ export default function Register() {
                       disabled={submitting}
                       className="btn-primary w-full disabled:opacity-60"
                     >
-                      {submitting ? "Creating account…" : "Create account"}
+                      {submitting ? "Creating account…" : "Sign up for free"}
                     </button>
                   </fieldset>
                 </form>

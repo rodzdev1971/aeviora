@@ -29,7 +29,7 @@ export default function Navbar() {
             Login
           </Link>
           <Link to="/register" className="btn-secondary">
-            Get started
+            Sign up for free
           </Link>
         </nav>
 
@@ -38,7 +38,7 @@ export default function Navbar() {
             Login
           </Link>
           <Link to="/register" className="text-aeviora-gold">
-            Join
+            Join free
           </Link>
         </div>
       </div>

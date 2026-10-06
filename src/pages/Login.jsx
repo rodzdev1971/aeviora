@@ -56,7 +56,7 @@ export default function Login() {
 
         <div className="mt-6 flex justify-between text-sm">
           <Link to="/register" className="text-aeviora-gold">
-            Create account
+            Sign up for free
           </Link>
           <button className="text-gray-500">
             Forgot password?

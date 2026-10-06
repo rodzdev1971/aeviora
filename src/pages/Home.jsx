@@ -31,7 +31,7 @@ export default function Home() {
                   to="/register"
                   className="inline-flex items-center justify-center border border-aeviora-gold bg-aeviora-gold px-5 py-3 text-sm font-semibold text-aeviora-black transition hover:bg-aeviora-lightGold"
                 >
-                  Get started with Aeviora
+                  Sign up for free
                 </Link>
                 <a
                   href="#memberships"
@@ -78,12 +78,12 @@ export default function Home() {
             <div className="mt-8 border-l-2 border-aeviora-gold pl-5">
               <h3 className="font-display text-2xl text-aeviora-charcoal">Start with your Aeviora account</h3>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-aeviora-slate">
-                Create an account to begin. Review membership options and confirm
+                Create your free account to begin. Review membership options and confirm
                 the included services, participating providers, and prices before
                 enrolling. Creating an account does not enroll you in a paid plan.
               </p>
               <Link to="/register" className="mt-5 inline-flex items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-aeviora-primaryDark">
-                Get started <ArrowRight aria-hidden="true" size={17} />
+                Sign up for free <ArrowRight aria-hidden="true" size={17} />
               </Link>
             </div>
             <p className="mt-6 text-sm leading-6 text-aeviora-slate">
@@ -143,7 +143,7 @@ export default function Home() {
                 to="/register"
                 className="inline-flex shrink-0 items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-aeviora-primaryDark"
               >
-                Create an account <ArrowRight aria-hidden="true" size={17} />
+                Sign up for free <ArrowRight aria-hidden="true" size={17} />
               </Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -165,7 +165,7 @@ export default function Home() {
                     to="/register"
                     className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary underline underline-offset-4 hover:text-aeviora-primaryDark"
                   >
-                    Get started with Aeviora
+                    Sign up for free
                     <ArrowRight aria-hidden="true" size={15} />
                   </Link>
                 </article>

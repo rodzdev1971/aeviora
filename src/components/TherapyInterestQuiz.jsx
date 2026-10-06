@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { protocols } from "../util/constants";
+import { company, protocols } from "../util/constants";
 
 const informationTopics = [
   "General overview",
@@ -61,7 +61,7 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
             Therapy topic explorer
           </p>
           <h2 id="therapy-quiz-title" className="mt-2 font-display text-2xl text-aeviora-charcoal">
-            {step < questions.length ? "Choose what to explore" : "Your topic guide"}
+            {step < questions.length ? "Choose what to explore" : "Your next step toward wellness"}
           </h2>
         </div>
         {onClose && (
@@ -141,7 +141,7 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
               onClick={() => setStep((current) => current + 1)}
               className="inline-flex items-center gap-2 bg-aeviora-primary px-4 py-2 text-sm font-semibold text-white hover:bg-aeviora-primaryDark disabled:opacity-40"
             >
-              {step === questions.length - 1 ? "View topic guide" : "Next"}
+              {step === questions.length - 1 ? "Explore my next steps" : "Next"}
               <ArrowRight size={16} />
             </button>
           </footer>
@@ -157,6 +157,48 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
           <p className="mt-2 text-sm leading-6 text-aeviora-slate">
             {selectedProtocol?.description}
           </p>
+          <div className="mt-6 border border-aeviora-primary bg-aeviora-ivory p-5 sm:p-6">
+            <p className="text-xs font-semibold uppercase text-aeviora-primary">Keep your wellness journey moving</p>
+            <h4 className="mt-2 font-display text-2xl text-aeviora-charcoal">
+              Curious about {selectedProtocol?.name}? Take the next step with Aeviora.
+            </h4>
+            <p className="mt-3 text-sm leading-6 text-aeviora-slate">
+              Explore how an Aeviora membership can help you access discounted
+              prices on eligible wellness, laboratory, and diagnostic services.
+              Our team can answer questions about membership benefits and
+              participating providers.
+            </p>
+            {showSignupCta && (
+              <p className="mt-3 text-sm leading-6 text-aeviora-slate">
+                Start by creating your free account. After activation, sign in to
+                access provider links and take your next step. Creating an account
+                is free and does not enroll you in a paid membership.
+              </p>
+            )}
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {showSignupCta && (
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white hover:bg-aeviora-primaryDark"
+                >
+                  Sign up for free <ArrowRight aria-hidden="true" size={16} />
+                </Link>
+              )}
+              <a
+                href={`mailto:${company.email}?subject=${encodeURIComponent("Information about Aeviora wellness memberships")}`}
+                className="inline-flex items-center justify-center border border-aeviora-primary px-5 py-3 text-sm font-semibold text-aeviora-primary hover:bg-aeviora-softSage"
+              >
+                I’d like more information
+              </a>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-aeviora-slate">
+              The information link opens your email app. Prefer to talk?{' '}
+              <a className="font-semibold underline underline-offset-4" href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`}>
+                Call {company.telephone}
+              </a>.
+              {' '}Discounts depend on your plan and provider; your selected therapy may not be included.
+            </p>
+          </div>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="border border-aeviora-border p-4">
               <dt className="text-xs font-semibold uppercase text-aeviora-slate">Information topic</dt>
@@ -177,27 +219,9 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
             sent to Aeviora or saved to your account, and disappear when you
             leave or refresh this page.
           </p>
-          {showSignupCta && (
-            <div className="mt-5 border-l-2 border-aeviora-gold bg-aeviora-ivory p-4">
-              <p className="font-semibold text-aeviora-charcoal text-2xl">
-                Make Aeviora part of your wellness journey
-              </p>
-              <p className="mt-1 text-sm leading-6 text-aeviora-slate">
-                Create an account to get started with membership options and
-                discounted prices on eligible wellness services. Access provider
-                links after account activation and sign-in.
-              </p>
-              <Link
-                to="/register"
-                className="mt-3 inline-flex items-center gap-2 bg-aeviora-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-aeviora-primaryDark"
-              >
-                Create an account <ArrowRight aria-hidden="true" size={16} />
-              </Link>
-            </div>
-          )}
           <div className="mt-5 flex flex-wrap gap-2">
-            <button type="button" onClick={resetQuiz} className="btn-secondary">
-              Start over
+            <button type="button" onClick={resetQuiz} className="px-3 py-2 text-sm text-aeviora-slate underline underline-offset-4 hover:text-aeviora-primary">
+              Explore another therapy
             </button>
             {onClose && (
               <button type="button" onClick={onClose} className="btn-primary">
