@@ -147,11 +147,13 @@ export default function Register() {
           <ShieldCheck className="mb-5 mt-10 h-12 w-12 text-aeviora-softGold" />
           <h1 className="font-display text-4xl">Create your account</h1>
           <p className="mt-5 leading-7">
-            Start with your contact details and communication preferences.
+            Take the first step toward Aeviora membership and discounted prices
+            on eligible wellness and preventive care services. Start with your
+            contact details and communication preferences.
           </p>
           <p className="mt-4 text-sm leading-6">
             Your ZIP code helps us check service availability. An account does
-            not confirm eligibility for a service.
+            not confirm eligibility for a service or enroll you in a paid membership.
           </p>
         </section>
         <section className="p-6 sm:p-10">

@@ -180,11 +180,12 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
           {showSignupCta && (
             <div className="mt-5 border-l-2 border-aeviora-gold bg-aeviora-ivory p-4">
               <p className="font-semibold text-aeviora-charcoal text-2xl">
-                Continue exploring in your Aeviora portal
+                Make Aeviora part of your wellness journey
               </p>
               <p className="mt-1 text-sm leading-6 text-aeviora-slate">
-                Create an account to use the guide and access provider links
-                after account activation and sign-in.
+                Create an account to get started with membership options and
+                discounted prices on eligible wellness services. Access provider
+                links after account activation and sign-in.
               </p>
               <Link
                 to="/register"

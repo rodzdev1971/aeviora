@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/20 bg-aeviora-primaryDark backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
             A
@@ -19,20 +19,26 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a href="#therapies" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
+          <a href="/#memberships" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
+            Memberships
+          </a>
+          <a href="/#therapies" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Therapy Topics
           </a>
           <Link to="/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">
             Login
           </Link>
           <Link to="/register" className="btn-secondary">
-            Patient Portal
+            Get started
           </Link>
         </nav>
 
-        <div className="md:hidden">
-          <Link to="/login" className="text-aeviora-gold">
-            Portal
+        <div className="flex items-center gap-4 md:hidden">
+          <Link to="/login" className="text-aeviora-softSage">
+            Login
+          </Link>
+          <Link to="/register" className="text-aeviora-gold">
+            Join
           </Link>
         </div>
       </div>

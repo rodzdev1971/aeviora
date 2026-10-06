@@ -11,7 +11,8 @@ export default function Footer() {
                 Aeviora Wellness
               </h3>
               <p className="mt-3 text-sm text-gray-300">
-                Personalized wellness, longevity care, and preventive health support.
+                Explore wellness therapies and join a membership for discounted
+                prices on eligible wellness and preventive care services.
               </p>
             </div>
   
