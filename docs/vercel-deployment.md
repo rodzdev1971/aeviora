@@ -60,6 +60,30 @@ The function disables automatic body parsing so Express can validate raw signatu
 
 ## Verification after deployment
 
+### Safe connection diagnostics
+
+After deploying the logging changes, request `/api/health` and open Vercel Runtime
+Logs for that request. Search for `database_connection_failed`. The JSON log includes
+one of these categories and a fixed troubleshooting hint:
+
+- `MISSING_CONFIGURATION`: neither `MONGO_URI` nor `MONGODB_URI` is available.
+- `INVALID_CONFIGURATION`: the driver rejected the URI or connection arguments.
+- `AUTHENTICATION_FAILED`: database authentication was rejected.
+- `DNS_FAILURE`: cluster hostname discovery failed.
+- `NETWORK_TIMEOUT`: a network/connection attempt timed out.
+- `NETWORK_FAILURE`: a connection was refused, reset, or otherwise unreachable.
+- `SERVER_SELECTION_FAILED`: no suitable server was found; this alone does not
+  prove an IP access-list issue.
+- `CONNECTION_FAILED`: another connection failure.
+
+Logs include the selected variable's name, configuration-presence booleans, and
+elapsed milliseconds. They never contain environment values, credentials, hostnames,
+raw driver messages, stacks, or request details. Concurrent requests sharing a
+connection attempt emit one failure log. The public API still returns a generic
+503. Share the category and fixed hint to diagnose a failure without sharing secrets.
+
+### Smoke checks
+
 1. Open `/api/health`: expect JSON `{"status":"ok"}`. A 503 indicates the database
    URI, network access, database credentials or availability needs attention.
 2. Open `/api/auth/registration-config`: expect configured policy metadata.
