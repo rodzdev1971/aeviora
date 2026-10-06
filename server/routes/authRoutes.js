@@ -7,6 +7,7 @@ import { registrationConfig } from "../config/registration.js";
 import { requireAuth } from "../middleware/auth.js";
 import { z } from "zod";
 import { logAudit } from "../utils/auditLogger.js";
+import { sendRegistrationEmail } from "../services/email.js";
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.get("/registration-config", (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const user = await registerAccount(req.body);
+    await sendRegistrationEmail(user);
     await logAudit({ req, actorId: user._id, actorRole: user.role, action: "USER_CREATED", targetType: "User", targetId: user._id });
     return res.status(201).json({
       message: user.accountStatus === "pending" ? "Account created. Activation is pending." : "Account created. You can now sign in.",

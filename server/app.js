@@ -13,6 +13,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import benefitRoutes from "./routes/benefitRoutes.js";
 import membershipRoutes from "./routes/membershipRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
 
 export function createApp({ connectDatabase, trustProxy = false } = {}) {
   const app = express();
@@ -89,6 +90,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/benefits", benefitRoutes);
 app.use("/api/admin/memberships", membershipRoutes);
 app.use("/api/admin/fees", feeRoutes);
+app.use("/api/admin/email", emailRoutes);
 app.use("/api", (req, res) => res.status(404).json({ message: "API endpoint not found." }));
 
 

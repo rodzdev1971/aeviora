@@ -29,7 +29,15 @@ router.get("/me", requireAuth, async (req, res) => {
 });
 
 router.get("/", requireAuth, requireRole("provider", "admin"), async (req, res) => {
-  const users = await User.find()
+  if (req.query.search !== undefined && (typeof req.query.search !== "string" || req.query.search.length > 100)) {
+    return res.status(400).json({ message: "Search must be at most 100 characters." });
+  }
+  const search = (req.query.search || "").trim();
+  const filter = search ? { $and: search.split(/\s+/).map((term) => {
+    const literal = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return { $or: ["firstName", "lastName", "email", "phone"].map((field) => ({ [field]: { $regex: literal, $options: "i" } })) };
+  }) } : {};
+  const users = await User.find(filter)
     .where("role").in(["patient", "user"])
     .select(publicFields)
     .sort({ createdAt: -1 })

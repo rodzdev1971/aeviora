@@ -8,4 +8,4 @@ version 2 this version created a server backend to connect to mongodb and update
 version 5 after main changed to from hippa to non-hippa we are working now in finishing setup registration
         - we need to add user and placed him as only admin for now
         - we need to set up payment for users
-        - 
+        - we need an smtp server for email handling

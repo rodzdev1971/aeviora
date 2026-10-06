@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { apiRequest } from "../util/api";
+import AdminEmailForm from "../components/AdminEmailForm.jsx";
 
 const pageSize = 25;
 
@@ -13,6 +14,7 @@ export default function AdminDashboard() {
   const [actionMessage, setActionMessage] = useState("");
   const [busyUserId, setBusyUserId] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [emailRecipient, setEmailRecipient] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -65,6 +67,7 @@ export default function AdminDashboard() {
           {result ? `${result.total} accounts` : "Account records"}
         </p>
       </header>
+      {emailRecipient && <AdminEmailForm key={emailRecipient._id} recipient={emailRecipient} onClose={() => setEmailRecipient(null)} />}
 
       {error ? (
         <div role="alert" className="mt-6 border-l-4 border-red-600 bg-red-50 p-4 text-red-800">
@@ -115,7 +118,10 @@ export default function AdminDashboard() {
                     <td className="px-3 py-4 font-medium">
                       {account.firstName} {account.lastName}
                     </td>
-                    <td className="px-3 py-4">{account.email}</td>
+                    <td className="px-3 py-4">
+                      {account.email}
+                      <button type="button" disabled={Boolean(emailRecipient) || account.accountStatus === "deleted"} onClick={() => setEmailRecipient(account)} className="mt-2 block font-semibold text-aeviora-primary underline disabled:opacity-50">Email user</button>
+                    </td>
                     <td className="px-3 py-4">{account.phone}</td>
                     <td className="px-3 py-4 capitalize">{account.accountStatus}</td>
                     <td className="px-3 py-4 capitalize">{account.role}</td>

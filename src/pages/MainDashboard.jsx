@@ -1,8 +1,9 @@
-import { ExternalLink, Mail, Phone, ShieldCheck, FlaskConical, Sparkles, UserRound, Video } from "lucide-react";
+import { ExternalLink, ShieldCheck, FlaskConical, Sparkles, UserRound, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
 import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
+import PatientDirectory from "../components/PatientDirectory.jsx";
 
 const telehealthServices = [
   {
@@ -127,7 +128,7 @@ export default function MainDashboard() {
     return savedNotification || "";
   });
   const [account, setAccount] = useState(null);
-  const [patients, setPatients] = useState([]);
+  const [directoryRevision, setDirectoryRevision] = useState(0);
   const [staffError, setStaffError] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientUpdate, setPatientUpdate] = useState({ addressLine1: "", city: "", state: "", zipCode: "", timeZone: "" });
@@ -136,14 +137,6 @@ export default function MainDashboard() {
     apiRequest("/api/users/me")
       .then(({ user }) => {
         setAccount(user);
-        if (["provider", "admin"].includes(user.role)) return apiRequest("/api/users");
-        return null;
-      })
-      .then((result) => {
-        if (result) {
-          const users = Array.isArray(result.users) ? result.users : [];
-          setPatients(users.filter((user) => ["patient", "user"].includes(user.role)));
-        }
       })
       .catch((error) => setStaffError(error.message));
   }, []);
@@ -157,7 +150,7 @@ export default function MainDashboard() {
     event.preventDefault();
     try {
       await apiRequest(`/api/users/${selectedPatient._id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patientUpdate) });
-      setPatients((current) => current.map((patient) => patient._id === selectedPatient._id ? { ...patient, ...patientUpdate } : patient));
+      setDirectoryRevision((value) => value + 1);
       setSelectedPatient(null);
     } catch (error) { setStaffError(error.message); }
   }
@@ -339,12 +332,8 @@ export default function MainDashboard() {
           </div>
         </section>
 
-        {account && ["provider", "admin"].includes(account.role) && <section className="card lg:col-span-2">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div><p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">{account.role === "admin" ? "Administrator" : "Provider"} workspace</p><h2 className="mt-2 font-display text-2xl">Patient directory</h2></div><span className="text-sm text-gray-500">{patients.length} patient accounts</span></div>
-          <p className="mt-3 text-sm leading-6 text-gray-600">{account.role === "admin" ? "Review account details and apply verified profile updates received from authorized sources." : "Select a patient to contact by email or phone. Clinical records remain in their assigned external portals."}</p>
-          {staffError && <p role="alert" className="mt-4 text-sm text-red-700">{staffError}</p>}
-          <div className="mt-6 grid gap-3">{patients.map((patient) => <div key={patient._id} className="flex flex-col justify-between gap-4 rounded-2xl border border-aeviora-border p-4 sm:flex-row sm:items-center"><div><p className="font-semibold">{patient.firstName} {patient.lastName}</p><p className="text-sm text-gray-500">{patient.email} · {patient.phone}</p></div><div className="flex flex-wrap gap-2"><a href={`mailto:${patient.email}`} className="btn-outline inline-flex items-center gap-2" aria-label={`Email ${patient.firstName} ${patient.lastName}`}><Mail size={16} aria-hidden="true" />Email</a><a href={`tel:${patient.phone}`} className="btn-outline inline-flex items-center gap-2" aria-label={`Call ${patient.firstName} ${patient.lastName}`}><Phone size={16} aria-hidden="true" />Call</a>{account.role === "admin" && <button type="button" onClick={() => selectPatient(patient)} className="btn-secondary">Update profile</button>}</div></div>)}</div>
-        </section>}
+        {account && ["provider", "admin"].includes(account.role) && <PatientDirectory role={account.role} onEdit={selectPatient} refreshKey={directoryRevision} />}
+        {staffError && <p role="alert" className="text-red-700">{staffError}</p>}
       </div>
 
       {pendingSubscriptionState !== null && (
