@@ -32,7 +32,7 @@ export function resolveMembership(input, catalog) {
       const discounts = (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => discountSchema.parse(service.discount));
       if (benefit.pricingType === "discount") {
         if (selection.price !== null) throw Object.assign(new Error("Discount benefits use a percentage, not a member price."), { status: 409 });
-        return { benefitId: String(benefit._id), name: benefit.name, pricingType: "discount", discounts,
+        return { benefitId: String(benefit._id), name: benefit.name, pricingType: "discount", discountPercent: benefit.discountPercent ?? null, discounts,
           standardPrice: null, price: null, customPrice: false };
       }
       const standardPrice = benefit.price?._bsontype === "Decimal128" ? Number(benefit.price.toString()) : benefit.price;

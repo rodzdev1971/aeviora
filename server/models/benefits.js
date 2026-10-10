@@ -19,6 +19,7 @@ const benefitSchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true, maxlength: 4000 },
   cost: { type: Number, required: true, min: 0 },
   pricingType: { type: String, enum: ["price", "discount"] },
+  discountPercent: { type: Number, min: 0.01, max: 100, default: null },
   price: { type: Number, required: function () { return (this.pricingType || this.getUpdate?.()?.$set?.pricingType) !== "discount"; }, min: 0 },
   services: { type: [serviceSchema], required: true },
 }, { timestamps: true, collection: "membershipBenefits", strict: "throw" });

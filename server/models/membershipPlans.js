@@ -5,6 +5,7 @@ const planBenefitSchema = new mongoose.Schema({
   benefitId: { type: mongoose.Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
   pricingType: { type: String, enum: ["price", "discount"] },
+  discountPercent: { type: Number, min: 0.01, max: 100, default: null },
   discounts: [storedDiscountSchema],
   standardPrice: { type: Number, required: function () { return (this.pricingType || this.getUpdate?.()?.$set?.pricingType) !== "discount"; }, min: 0 },
   price: { type: Number, required: function () { return (this.pricingType || this.getUpdate?.()?.$set?.pricingType) !== "discount"; }, min: 0 },

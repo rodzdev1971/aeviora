@@ -10,6 +10,7 @@ export const benefitInput = z.strictObject({
   name: z.string().trim().min(1).max(160),
   description: z.string().trim().min(1).max(4000),
   price: money.nullable(),
+  discountPercent: z.number().finite().gt(0).max(100).multipleOf(0.01).nullable().optional(),
   services: z.array(z.union([z.strictObject({
     source: z.enum(["laboratoryFees", "diagnosticFees", "serviceFees"]),
     feeId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -31,6 +32,7 @@ export function feeOptions(documents, source) {
         discount: parsed.data, provider: "", billCode: document.billcode || "" }] : [];
     }
     const prices = document[config.prices];
+    const retail = document.retailPrice?._bsontype === "Decimal128" ? Number(document.retailPrice.toString()) : document.retailPrice;
     if (!Array.isArray(prices)) return [];
     return prices.flatMap((entry) => {
       if (!entry || typeof entry !== "object") return [];
@@ -39,6 +41,7 @@ export function feeOptions(documents, source) {
         ? Number(entry.amount.toString()) : entry.amount;
       if (typeof provider !== "string" || !provider.trim() || !money.safeParse(amount).success) return [];
       return [{ source, feeId: String(document._id), name: name.trim(), provider: provider.trim(), amount,
+        retailPrice: money.safeParse(retail).success ? retail : null,
         billCode: String(document[config.billcode] || "") }];
     });
   });
@@ -67,9 +70,9 @@ export function resolveBenefit(input, options) {
       amount: option.amount,
     };
   });
-  const discountOnly = services.every((service) => service.pricingType === "discount");
+  const discountOnly = data.discountPercent != null || services.every((service) => service.pricingType === "discount");
   if (!discountOnly && data.price === null) throw Object.assign(new Error("Enter a selling price for a benefit containing priced services."), { status: 409 });
   const cost = services.reduce((total, service) => total + Math.round((service.cost || 0) * 100), 0) / 100;
   return { name: data.name, description: data.description, pricingType: discountOnly ? "discount" : "price",
-    price: discountOnly ? null : data.price, cost, services };
+    price: discountOnly ? null : data.price, discountPercent: data.discountPercent ?? null, cost, services };
 }

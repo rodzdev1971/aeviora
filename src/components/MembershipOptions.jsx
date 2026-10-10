@@ -34,7 +34,7 @@ export default function MembershipOptions() {
       <p className="mt-2 text-sm text-aeviora-slate">Review monthly pricing and benefits. New memberships begin after secure checkout is confirmed. Benefit service prices are separate from the monthly membership fee.</p>
       <div className="mt-5 grid gap-4 md:grid-cols-3">{data.plans.map((plan) => <article key={plan._id} className="flex flex-col border border-aeviora-border p-5">
         <h4 className="font-display text-xl">{plan.name}</h4><p className="mt-2 font-semibold">{money(plan.price)} / month</p>
-        <ul className="my-4 flex-1 space-y-2 text-sm">{plan.benefits.map((benefit) => <li key={benefit.benefitId}>{benefit.name}{benefit.pricingType === "discount" ? " — eligible service discounts; exclusions apply" : ` — ${money(benefit.price)}`}</li>)}</ul>
+        <ul className="my-4 flex-1 space-y-2 text-sm">{plan.benefits.map((benefit) => <li key={benefit.benefitId}>{benefit.name}{benefit.pricingType === "discount" ? (benefit.discountPercent != null ? ` — ${benefit.discountPercent}% off selected services` : " — eligible service discounts; exclusions apply") : ` — ${money(benefit.price)}`}</li>)}</ul>
         {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">Current membership</p> : !data.subscribed && <button type="button" disabled={busy} onClick={() => choose(plan._id)} className="btn-primary disabled:opacity-50">{busy ? "Opening checkout…" : `Choose ${plan.name}`}</button>}
       </article>)}</div>
       {data.plans.length === 0 && <p className="mt-4">Membership options will appear here when available.</p>}

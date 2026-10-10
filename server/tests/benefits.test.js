@@ -16,6 +16,17 @@ const options = [
 const input = () => ({ name: "Example benefit", description: "Synthetic benefit for testing", price: 50,
   services: options.map(({ source, feeId, provider, amount }) => ({ source, feeId, provider, amount })) });
 
+test("percentage benefits retain selected services without a selling price", async () => {
+  const data = resolveBenefit({ ...input(), price: null, discountPercent: 15.5 }, options);
+  assert.equal(data.pricingType, "discount");
+  assert.equal(data.price, null);
+  assert.equal(data.discountPercent, 15.5);
+  assert.equal(data.services.length, 2);
+  await new Benefit(data).validate();
+  for (const discountPercent of [0, -1, 101, 1.234]) assert.equal(benefitInput.safeParse({ ...input(), discountPercent }).success, false);
+  assert.equal(resolveBenefit({ ...input(), discountPercent: null }, options).pricingType, "price");
+});
+
 test("benefits calculate exact cents and retain each catalog name and provider", async () => {
   const data = resolveBenefit(input(), options);
   assert.equal(data.cost, 30.3);

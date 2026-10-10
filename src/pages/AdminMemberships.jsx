@@ -5,7 +5,7 @@ import { apiRequest } from "../util/api";
 import { discountText } from "../../shared/discounts.js";
 
 const discountsFor = (benefit) => benefit.discounts || (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => service.discount);
-const benefitLabel = (benefit) => benefit.pricingType === "discount" ? discountsFor(benefit).map(discountText).join("; ") : money(benefit.price);
+const benefitLabel = (benefit) => benefit.discountPercent != null ? `${benefit.discountPercent}% off selected services` : benefit.pricingType === "discount" ? discountsFor(benefit).map(discountText).join("; ") : money(benefit.price);
 const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 const emptyForm = () => ({ name: "", price: "", selectedBenefits: [], overrides: {} });
 
@@ -39,7 +39,7 @@ export default function AdminMemberships() {
     setEditingId(plan._id);
     setBenefitToAdd("");
     setForm({ name: plan.name, price: String(plan.price),
-      selectedBenefits: plan.benefits.map((benefit) => ({ _id: benefit.benefitId, name: benefit.name, price: benefit.standardPrice, pricingType: benefit.pricingType, discounts: benefit.discounts })),
+      selectedBenefits: plan.benefits.map((benefit) => ({ _id: benefit.benefitId, name: benefit.name, price: benefit.standardPrice, pricingType: benefit.pricingType, discountPercent: benefit.discountPercent, discounts: benefit.discounts })),
       overrides: Object.fromEntries(
       plan.benefits.filter((benefit) => benefit.customPrice).map((benefit) => [benefit.benefitId, String(benefit.price)]),
     ) });
@@ -143,7 +143,7 @@ export default function AdminMemberships() {
               return <div key={benefit._id} className="grid min-w-0 gap-4 rounded-xl border border-aeviora-border p-4 sm:grid-cols-2">
                 <div className="min-w-0"><h3 className="break-words font-semibold">{benefit.name}</h3>
                   <p className="mt-1 break-words text-sm text-aeviora-slate">{benefit.description}</p>
-                  <p className="mt-2 text-sm">{benefit.pricingType === "discount" ? "Discount prices" : `Standard price: ${money(benefit.price)}`}</p>
+                  <p className="mt-2 text-sm">{benefit.pricingType === "discount" ? benefitLabel(benefit) : `Standard price: ${money(benefit.price)}`}</p>
                   {discountsFor(benefit).map((discount, index) => <p key={index} className="mt-2 text-sm">{discountText(discount)}</p>)}
                   {!currentBenefit && <p className="mt-2 text-sm text-red-700">This benefit is no longer available. Remove it before saving.</p>}
                   <button type="button" className="mt-3 text-sm font-semibold text-red-700 underline" aria-label={`Remove ${benefit.name} from membership`} onClick={() => {
