@@ -1,3 +1,4 @@
+import EmailTemplate from "../models/emailTemplates.js";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -41,7 +42,10 @@ router.get("/registration-config", (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const user = await registerAccount(req.body);
-    await sendRegistrationEmail(user);
+    let welcomeTemplate;
+    try { welcomeTemplate = await EmailTemplate.findById("registration").lean(); }
+    catch { console.warn("Registration template unavailable; using default."); }
+    await sendRegistrationEmail(user, welcomeTemplate ? { template: welcomeTemplate } : undefined);
     await logAudit({ req, actorId: user._id, actorRole: user.role, action: "USER_CREATED", targetType: "User", targetId: user._id });
     return res.status(201).json({
       message: user.accountStatus === "pending" ? "Account created. Activation is pending." : "Account created. You can now sign in.",

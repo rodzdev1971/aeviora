@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminBenefits from "./pages/AdminBenefits.jsx";
 import AdminMemberships from "./pages/AdminMemberships.jsx";
 import AdminFees from "./pages/AdminFees.jsx";
+import AdminEmailTemplates from "./pages/AdminEmailTemplates.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="admin/benefits" element={<AdminBenefits />} />
               <Route path="admin/memberships" element={<AdminMemberships />} />
               <Route path="admin/fees" element={<AdminFees />} />
+              <Route path="admin/email-templates" element={<AdminEmailTemplates />} />
             </Route>
         </Route>
       </Route>

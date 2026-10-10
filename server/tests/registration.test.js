@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import User from "../models/users.js";
+import EmailTemplate from "../models/emailTemplates.js";
 import AuditLog from "../models/AuditLog.js";
 import { registerAccount } from "../services/registration.js";
 import { registrationConfig } from "../config/registration.js";
@@ -184,6 +185,7 @@ test("stale policy versions, duplicate emails and duplicate races fail without c
 });
 
 test("HTTP registration, pending/active login, cookie auth, account isolation and logout", async (t) => {
+  t.mock.method(EmailTemplate, "findById", () => ({ lean: async () => null }));
   // Isolated synthetic storage: these tests never connect to MongoDB or read .env.
   t.mock.method(User, "findOne", ({ email }) => {
     const user = accounts.find((item) => item.email === email) || null;

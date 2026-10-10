@@ -60,6 +60,7 @@ export default function AdminDashboard() {
           Administration
         </p>
         <h1 className="mt-2 font-display text-3xl">Account overview</h1>
+        <Link to="/admin/email-templates" className="mt-4 inline-block btn-secondary">Manage email templates</Link>
         <Link to="/admin/benefits" className="mt-4 inline-block btn-secondary">Manage benefits</Link>
         <Link to="/admin/fees" className="mt-4 ml-3 inline-block btn-secondary">Manage fee catalogs</Link>
         <Link to="/admin/memberships" className="mt-4 ml-3 inline-block btn-secondary">Manage memberships</Link>
