@@ -5,6 +5,7 @@ import {
   User,
   LogOut,
   ShieldCheck,
+  Mail,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -33,6 +34,7 @@ export default function DashboardLayout() {
     ...(user?.role === "admin"
       ? [
           { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
+          { label: "Email manager", href: "/admin/email-templates", icon: <Mail size={18} aria-hidden="true" /> },
           { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },
           { label: "Fee catalogs", href: "/admin/fees", icon: <ShieldCheck size={18} /> },
           { label: "Memberships", href: "/admin/memberships", icon: <ShieldCheck size={18} /> },
