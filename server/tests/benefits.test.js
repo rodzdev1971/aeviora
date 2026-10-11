@@ -27,6 +27,12 @@ test("percentage benefits retain selected services without a selling price", asy
   assert.equal(resolveBenefit({ ...input(), discountPercent: null }, options).pricingType, "price");
 });
 
+test("benefits allow 1000 services and reject 1001", () => {
+  const data = input();
+  assert.equal(benefitInput.safeParse({ ...data, services: Array.from({ length: 1000 }, () => data.services[0]) }).success, true);
+  assert.equal(benefitInput.safeParse({ ...data, services: Array.from({ length: 1001 }, () => data.services[0]) }).success, false);
+});
+
 test("benefits calculate exact cents and retain each catalog name and provider", async () => {
   const data = resolveBenefit(input(), options);
   assert.equal(data.cost, 30.3);

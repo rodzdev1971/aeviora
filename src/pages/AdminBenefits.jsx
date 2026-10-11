@@ -53,8 +53,8 @@ export default function AdminBenefits() {
     const remaining = form.services.filter((service) => !keys.has(optionKey(service)));
     const additions = [...new Map(options.filter((option) => keys.has(optionKey(option))).map((option) => [optionKey(option), option])).values()];
     const services = include ? [...remaining, ...additions] : remaining;
-    if (services.length > 200) {
-      setError("This selection exceeds the 200-service limit. Choose fewer services or split them into separate benefits.");
+    if (services.length > 1000) {
+      setError("This selection exceeds the 1,000-service limit. Choose fewer services or split them into separate benefits.");
       return;
     }
     setForm({ ...form, services }); setSelected([]); setError("");
@@ -169,7 +169,7 @@ export default function AdminBenefits() {
             </details>
           </div>
           <div className="space-y-3">
-            <h2 className="font-semibold">Included services ({form.services.length}/200)</h2>
+            <h2 className="font-semibold">Included services ({form.services.length}/1000)</h2>
             {!form.services.length && <p className="text-sm text-aeviora-slate">Add at least one service. You can add more services whenever you edit this benefit.</p>}
             {form.services.map((service, index) => <div key={index} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-aeviora-border p-3">
               <div className="min-w-0 flex-1 break-words"><p className="font-medium">{service.name}</p>

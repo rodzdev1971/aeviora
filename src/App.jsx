@@ -7,6 +7,7 @@ import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import MainDashboard from "./pages/MainDashboard";
 import Profile from "./pages/Profile";
 import Directory from "./pages/Directory.jsx";
+import MembershipPlans from "./pages/MembershipPlans.jsx";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AccountTerms from "./pages/AccountTerms.jsx";
@@ -39,6 +40,7 @@ export default function App() {
             <Route path='dashboard' element={<MainDashboard />}/>
             <Route path='profile' element={<Profile />} />
             <Route path="directory" element={<Directory />} />
+            <Route path="memberships" element={<MembershipPlans />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />

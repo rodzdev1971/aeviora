@@ -15,7 +15,7 @@ Repeat for each included service, then click **Create benefit**.
 
 Saved benefits support **Edit / add services**, removing services, changing the
 name/description/price, and deletion with a confirmation. At least one service is
-required, with a maximum of 200. Each added row counts once toward the cost;
+required, with a maximum of 1,000. Each added row counts once toward the cost;
 adding the same service again counts its cost again. Amounts use USD and up to
 two decimal places; zero-cost services are allowed.
 

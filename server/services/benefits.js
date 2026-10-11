@@ -17,7 +17,7 @@ export const benefitInput = z.strictObject({
     provider: z.string().trim().min(1).max(300),
     amount: money,
   }), z.strictObject({ source: z.literal("serviceFees"), feeId: z.string().regex(/^[a-f\d]{24}$/i),
-    pricingType: z.literal("discount"), discount: discountSchema })])).min(1).max(200),
+    pricingType: z.literal("discount"), discount: discountSchema })])).min(1).max(1000),
 });
 
 export function feeOptions(documents, source) {

@@ -31,7 +31,7 @@ export function createBenefitRouter({ benefits = Benefit, catalog = loadOptions,
   });
   async function save(req, res) {
     const parsed = benefitInput.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Enter a name, description, valid price, and 1–200 catalog services. Amounts must have at most two decimal places." });
+    if (!parsed.success) return res.status(400).json({ message: "Enter a name, description, valid price, and 1–1000 catalog services. Amounts must have at most two decimal places." });
     let data;
     try {
       data = resolveBenefit(parsed.data, await catalog(parsed.data.services));
