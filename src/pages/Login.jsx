@@ -58,9 +58,9 @@ export default function Login() {
           <Link to="/register" className="text-aeviora-gold">
             Sign up for free
           </Link>
-          <button className="text-gray-500">
+          <Link to="/forgot-password" className="text-gray-500">
             Forgot password?
-          </button>
+          </Link>
         </div>
       </div>
     </main>

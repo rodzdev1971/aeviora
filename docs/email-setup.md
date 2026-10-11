@@ -1,5 +1,13 @@
 # Email setup and operation
 
+## Self-service password recovery
+
+Users choose **Forgot password?** on the login page. The backend emails a single-use link valid for 30 minutes using the existing SMTP settings. `FRONTEND_ORIGIN` must be the trusted application URL (HTTPS in production); no request-supplied hostname is used. Reset tokens are random, stored only as SHA-256 hashes, and carried in the email link's fragment to avoid server URL logs. Do not log email bodies or reset request bodies.
+
+Requests return the same message for unknown, inactive, and eligible accounts. Active and pending accounts can reset passwords; suspended/deleted accounts cannot. A per-account one-minute cooldown and per-IP limit reduce repeated requests. Rate limits are per instance; multi-instance production abuse protection needs shared storage. SMTP delivery failure does not disclose account existence; provider delivery must be tested after deployment.
+
+Resetting consumes the token atomically, changes the password, and increments a session version to invalidate existing login cookies. Reset does not activate pending accounts. New requests invalidate older links. Run `node --test server/tests/passwordReset.test.js` for synthetic reset verification.
+
 The React dashboard calls authenticated Node.js endpoints. Only Node.js connects to the SMTP provider; credentials never belong in React or `VITE_*` variables. The application does not host a mail server or create a mailbox.
 
 ## 1. Configure the backend that you are using

@@ -17,6 +17,7 @@ function createAccessToken(user) {
     {
       userId: user._id.toString(),
       role: user.role,
+      sessionVersion: user.sessionVersion || 0,
     },
     process.env.JWT_ACCESS_SECRET,
     { expiresIn: "15m" }

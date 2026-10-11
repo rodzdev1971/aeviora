@@ -6,6 +6,7 @@ import {
   LogOut,
   ShieldCheck,
   Mail,
+  Users,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -31,6 +32,9 @@ export default function DashboardLayout() {
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
+    ...(["admin", "provider"].includes(user?.role)
+      ? [{ label: "Patient & User Directory", href: "/directory", icon: <Users size={18} aria-hidden="true" /> }]
+      : []),
     ...(user?.role === "admin"
       ? [
           { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
@@ -103,7 +107,7 @@ export default function DashboardLayout() {
           </div>
         </div> */}
         <div className=''>
-          <Outlet />
+          <Outlet context={{ user }} />
         </div>
       </main>
       {/* <div className=''>

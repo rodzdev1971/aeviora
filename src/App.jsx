@@ -3,8 +3,10 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import MainDashboard from "./pages/MainDashboard";
 import Profile from "./pages/Profile";
+import Directory from "./pages/Directory.jsx";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AccountTerms from "./pages/AccountTerms.jsx";
@@ -25,6 +27,8 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<PasswordRecovery key="forgot" />} />
+      <Route path="/reset-password" element={<PasswordRecovery key="reset" reset />} />
       <Route path="/termsofuse" element={<TermsOfUse />} />
       <Route path="/account-privacy" element={<AccountPrivacy />} />
       <Route path="/account-terms" element={<AccountTerms />} />
@@ -34,6 +38,7 @@ export default function App() {
         <Route element={<DashboardLayout />}>
             <Route path='dashboard' element={<MainDashboard />}/>
             <Route path='profile' element={<Profile />} />
+            <Route path="directory" element={<Directory />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />

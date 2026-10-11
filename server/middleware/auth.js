@@ -19,10 +19,10 @@ export async function requireAuth(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
     const user = await User.findById(decoded.userId).select(
-      "_id email role firstName lastName accountStatus"
+      "_id email role firstName lastName accountStatus sessionVersion"
     );
 
-    if (!user || user.accountStatus !== "active") {
+    if (!user || user.accountStatus !== "active" || (decoded.sessionVersion || 0) !== (user.sessionVersion || 0)) {
       await logAudit({
         req,
         actorId: decoded.userId,
