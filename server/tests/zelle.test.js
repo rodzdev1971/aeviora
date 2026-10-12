@@ -22,7 +22,7 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   process.env.JWT_ACCESS_SECRET = "synthetic-test-secret";
   t.after(() => { if (priorSecret === undefined) delete process.env.JWT_ACCESS_SECRET; else process.env.JWT_ACCESS_SECRET = priorSecret; });
   const user = { _id: "patient-test", accountStatus: "active", zelle: { status: "pending", price: 20, dueAt: new Date("2026-01-01T00:00:00Z") } };
-  t.mock.method(User, "findById", (id) => id === "admin-test" ? { select: async () => ({ _id: id, accountStatus: "active", role: "admin" }) } : Promise.resolve(user));
+  t.mock.method(User, "findById", (id) => ["admin-test", "ordinary-user"].includes(id) ? { select: async () => ({ _id: id, accountStatus: "active", role: id === "admin-test" ? "admin" : "patient" }) } : Promise.resolve(user));
   t.mock.method(AuditLog, "create", async () => ({}));
   let writes = 0;
   t.mock.method(User, "updateOne", async (filter, update) => {
@@ -37,6 +37,9 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   const token = jwt.sign({ userId: "admin-test", role: "admin" }, process.env.JWT_ACCESS_SECRET);
   const post = (path, body) => fetch(`http://127.0.0.1:${server.address().port}/${path}`, { method: "POST", headers: { Cookie: `accessToken=${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
   const input = { dueAt: user.zelle.dueAt.toISOString(), reference: "synthetic-bank-reference" };
+  const denied = await fetch(`http://127.0.0.1:${server.address().port}/patient-test/confirm`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "ordinary-user", role: "patient" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  assert.equal(denied.status, 403);
+  assert.equal(writes, 0);
   assert.equal((await post("patient-test/confirm", input)).status, 200);
   assert.equal((await post("patient-test/confirm", input)).status, 409);
   assert.equal(writes, 1);

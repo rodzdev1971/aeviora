@@ -3,14 +3,19 @@ import Stripe from "stripe";
 import User from "../models/users.js";
 import MembershipPlan from "../models/membershipPlans.js";
 import { memberStatus } from "../services/memberStatus.js";
+import { syncMembership } from "../services/syncMembership.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 const router = express.Router();
 
 router.get("/memberships", requireAuth, async (req, res) => {
-  const user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId zelle");
+  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId zelle");
   if (!user) return res.status(404).json({ message: "Account not found." });
+  if (user.stripeCustomerId && !["pending", "active"].includes(user.zelle?.status)) {
+    try { user = await syncMembership(user, stripeClient(), User); }
+    catch { return res.status(503).json({ message: "Unable to verify your latest membership with Stripe. Please refresh shortly; do not purchase another plan." }); }
+  }
   const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
   res.json({ plans, ...memberStatus(user) });
 });
@@ -62,7 +67,7 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
       expires_at: Math.floor(Date.now() / 1000) + 1800,
       customer: customerId,
       line_items: [{ price_data: { currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "month" }, product_data: { name: plan.name } }, quantity: 1 }],
-      success_url: `${frontendUrl()}/dashboard?payment=success`,
+      success_url: `${frontendUrl()}/memberships?payment=success`,
       cancel_url: `${frontendUrl()}/dashboard?payment=cancelled`,
       client_reference_id: user._id.toString(),
       metadata: { aevioraUserId: user._id.toString(), membershipPlanId: String(plan._id), membershipName: plan.name },

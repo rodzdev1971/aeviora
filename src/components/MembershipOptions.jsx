@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 import { CheckCircle2 } from "lucide-react";
 import { discountText } from "../../shared/discounts.js";
@@ -9,6 +10,7 @@ export default function MembershipOptions() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
+  const returnedFromPayment = new URLSearchParams(window.location.search).get("payment") === "success";
   async function zelle(planId) {
     if (!window.confirm(planId ? "Select this plan for monthly Zelle payments? Membership starts after admin payment confirmation." : "Cancel your Zelle membership?")) return;
     setBusy(true); setError("");
@@ -19,10 +21,12 @@ export default function MembershipOptions() {
   }
   useEffect(() => {
     const controller = new AbortController();
+    let retry;
     apiRequest("/api/payments/memberships", { signal: controller.signal }).then(setData)
+      .then(() => { if (returnedFromPayment && revision < 4) retry = setTimeout(() => setRevision((value) => value + 1), 3000); })
       .catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
-    return () => controller.abort();
-  }, [revision]);
+    return () => { controller.abort(); clearTimeout(retry); };
+  }, [revision, returnedFromPayment]);
   async function choose(planId) {
     setBusy(true); setError("");
     try {
@@ -35,7 +39,9 @@ export default function MembershipOptions() {
   const money = (amount) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
   return <section className="card lg:col-span-2" aria-labelledby="membership-heading">
     <h2 id="membership-heading" className="font-display text-2xl">Your membership</h2>
+    {returnedFromPayment && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">{data?.subscribed ? `Your membership is ${data.current.name}. Status: ${data.current.status}.` : "Checking your payment with Stripe. Your plan will appear once the subscription is confirmed."}</p>}
     {error && <p role="alert" className="mt-3 text-red-700">{error}</p>}
+    {error && <button type="button" className="mt-2 underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>Retry membership check</button>}
     {!data ? <p role="status">Loading memberships…</p> : <>
       <p className="mt-3 text-lg font-semibold">{data.current.name}</p>
       <p className="mt-1 text-sm">{data.current.status === "free" ? "Free account — $0.00. Choose a plan below for membership benefits." : `Subscription status: ${data.current.status}`}</p>
@@ -68,8 +74,7 @@ export default function MembershipOptions() {
           </div>
         </li>)}</ul>
         {!plan.benefits.length && <p className="mb-5 text-sm text-aeviora-slate">No benefits listed yet. Contact us for plan details.</p>}
-        {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">Current membership</p> : !data.subscribed && <button type="button" disabled={busy} onClick={() => choose(plan._id)} className="btn-primary disabled:opacity-50">{busy ? "Opening checkout…" : `Choose ${plan.name}`}</button>}
-        {!data.subscribed && plan.price > 0 && <button type="button" disabled={busy} onClick={() => zelle(plan._id)} className="btn-secondary mt-3">Choose {plan.name} with Zelle</button>}
+        {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">Current membership</p> : !data.subscribed && <Link to={`/memberships/${plan._id}/payment`} className="btn-primary text-center">Choose {plan.name}</Link>}
         </div>
       </article>)}</div>
       {data.plans.length === 0 && <p className="mt-4">Membership options will appear here when available.</p>}

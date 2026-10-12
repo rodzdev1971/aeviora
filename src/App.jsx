@@ -8,6 +8,7 @@ import MainDashboard from "./pages/MainDashboard";
 import Profile from "./pages/Profile";
 import Directory from "./pages/Directory.jsx";
 import MembershipPlans from "./pages/MembershipPlans.jsx";
+import MembershipCheckout from "./pages/MembershipCheckout.jsx";
 import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AccountTerms from "./pages/AccountTerms.jsx";
@@ -42,6 +43,7 @@ export default function App() {
             <Route path='profile' element={<Profile />} />
             <Route path="directory" element={<Directory />} />
             <Route path="memberships" element={<MembershipPlans />} />
+            <Route path="memberships/:planId/payment" element={<MembershipCheckout />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />
