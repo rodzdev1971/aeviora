@@ -2,12 +2,21 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
 import { CheckCircle2 } from "lucide-react";
 import { discountText } from "../../shared/discounts.js";
+import { zelleRecipient } from "../../shared/zelle.js";
 
 export default function MembershipOptions() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
+  async function zelle(planId) {
+    if (!window.confirm(planId ? "Select this plan for monthly Zelle payments? Membership starts after admin payment confirmation." : "Cancel your Zelle membership?")) return;
+    setBusy(true); setError("");
+    try {
+      await apiRequest(`/api/membership-billing/zelle${planId ? "" : "/cancel"}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId }) });
+      setRevision((value) => value + 1);
+    } catch (failure) { setError(failure.message); } finally { setBusy(false); }
+  }
   useEffect(() => {
     const controller = new AbortController();
     apiRequest("/api/payments/memberships", { signal: controller.signal }).then(setData)
@@ -31,9 +40,16 @@ export default function MembershipOptions() {
       <p className="mt-3 text-lg font-semibold">{data.current.name}</p>
       <p className="mt-1 text-sm">{data.current.status === "free" ? "Free account — $0.00. Choose a plan below for membership benefits." : `Subscription status: ${data.current.status}`}</p>
       <button type="button" disabled={busy} className="mt-3 text-sm underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>Refresh membership status</button>
-      {data.subscribed && <button type="button" disabled={busy} onClick={() => choose(null)} className="btn-secondary mt-4 ml-3">Manage current membership</button>}
+      {data.subscribed && data.current.paymentMethod !== "zelle" && <button type="button" disabled={busy} onClick={() => choose(null)} className="btn-secondary mt-4 ml-3">Manage current membership</button>}
+      {data.current.paymentMethod === "zelle" && <div className="mt-4 rounded-xl border border-aeviora-border p-4">
+        <h3 className="font-semibold">Pay with Zelle</h3>
+        <p>{zelleRecipient.name} · {zelleRecipient.phone}</p>
+        <p>{money(data.current.price)} monthly · Next unpaid period starts {new Date(data.current.dueAt).toLocaleDateString()}</p>
+        <p className="mt-2 text-sm">Include your account email in the payment memo. An administrator verifies receipt; selecting Zelle does not send money.</p>
+        <button type="button" disabled={busy} onClick={() => zelle(null)} className="mt-3 text-sm text-red-700 underline">Cancel Zelle membership</button>
+      </div>}
       <h3 className="mt-7 font-display text-xl">Membership options</h3>
-      <p className="mt-2 text-sm text-aeviora-slate">Review monthly pricing and benefits. New memberships begin after secure checkout is confirmed. Benefit service prices are separate from the monthly membership fee.</p>
+      <p className="mt-2 text-sm text-aeviora-slate">Pay by card through Stripe or choose Zelle. Membership begins after checkout confirmation or administrator verification of your Zelle payment. Benefit service prices are separate from the monthly membership fee.</p>
       <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{data.plans.map((plan) => <article key={plan._id} className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border-2 bg-white ${data.current.planId === plan._id ? "border-aeviora-primary" : "border-aeviora-border"}`}>
         <div className="border-b border-aeviora-border bg-aeviora-ivory p-5">
           <h4 className="break-words font-display text-2xl text-aeviora-primaryDark">{plan.name}</h4>
@@ -53,6 +69,7 @@ export default function MembershipOptions() {
         </li>)}</ul>
         {!plan.benefits.length && <p className="mb-5 text-sm text-aeviora-slate">No benefits listed yet. Contact us for plan details.</p>}
         {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">Current membership</p> : !data.subscribed && <button type="button" disabled={busy} onClick={() => choose(plan._id)} className="btn-primary disabled:opacity-50">{busy ? "Opening checkout…" : `Choose ${plan.name}`}</button>}
+        {!data.subscribed && plan.price > 0 && <button type="button" disabled={busy} onClick={() => zelle(plan._id)} className="btn-secondary mt-3">Choose {plan.name} with Zelle</button>}
         </div>
       </article>)}</div>
       {data.plans.length === 0 && <p className="mt-4">Membership options will appear here when available.</p>}

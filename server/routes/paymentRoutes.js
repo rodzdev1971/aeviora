@@ -9,7 +9,7 @@ import { logAudit } from "../utils/auditLogger.js";
 const router = express.Router();
 
 router.get("/memberships", requireAuth, async (req, res) => {
-  const user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId");
+  const user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId zelle");
   if (!user) return res.status(404).json({ message: "Account not found." });
   const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
   res.json({ plans, ...memberStatus(user) });
@@ -41,9 +41,10 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
     const plan = await MembershipPlan.findById(req.body.planId);
     if (!plan) return res.status(404).json({ message: "Membership plan is no longer available." });
     const stripe = stripeClient();
-    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId");
+    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId zelle");
     if (!user) return res.status(404).json({ message: "Account not found." });
     if (user.stripeSubscriptionId) return res.status(409).json({ message: "Manage your existing subscription through billing before choosing another plan." });
+    if (["pending", "active"].includes(user.zelle?.status)) return res.status(409).json({ message: "Cancel your Zelle membership before starting Stripe checkout." });
     const customerId = await getOrCreateCustomer(stripe, user);
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 100 });
     if (subscriptions.data.some((subscription) => !["canceled", "incomplete_expired"].includes(subscription.status))) {

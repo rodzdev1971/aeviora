@@ -46,6 +46,16 @@ const userSchema = new mongoose.Schema({
   subscriptionStatus: { type: String, default: "inactive" },
   membershipPlanId: { type: mongoose.Schema.Types.ObjectId, default: null },
   membershipName: { type: String, default: "" },
+  zelle: {
+    status: { type: String, enum: ["pending", "active", "canceled"], default: "canceled" },
+    planId: mongoose.Schema.Types.ObjectId,
+    name: String,
+    price: Number,
+    dueAt: Date,
+    reminderAt: Date,
+    payments: [{ periodStart: Date, periodEnd: Date, amount: Number, reference: String, confirmedBy: String, confirmedAt: Date }],
+  },
+  paymentReminderAt: Date,
 }, { timestamps: true, strict: "throw", collection: "users" });
 
 export default mongoose.model("User", userSchema);
