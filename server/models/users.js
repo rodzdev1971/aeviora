@@ -44,6 +44,8 @@ const userSchema = new mongoose.Schema({
   stripeCustomerId: { type: String, default: null },
   stripeSubscriptionId: { type: String, default: null },
   subscriptionStatus: { type: String, default: "inactive" },
+  stripePeriodEnd: Date,
+  stripeCancelAtPeriodEnd: { type: Boolean, default: false },
   membershipPlanId: { type: mongoose.Schema.Types.ObjectId, default: null },
   membershipName: { type: String, default: "" },
   zelle: {

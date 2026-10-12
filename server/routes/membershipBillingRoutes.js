@@ -10,6 +10,7 @@ import { nextBillingDate, zelleRecipient } from "../../shared/zelle.js";
 import { syncMembership } from "../services/syncMembership.js";
 import { zelleBalance, invoiceSubscription, validateZelleInvoice } from "../services/billingSummary.js";
 import ManualPayment from "../models/manualMembershipPayment.js";
+import { zellePaidThrough } from "../services/membershipPeriods.js";
 
 const router = express.Router();
 router.use(requireAuth);
@@ -20,6 +21,7 @@ async function selectZelle(req, res, accountId) {
   const account = await User.findById(accountId);
   if (!account) return res.status(404).json({ message: "Account not found." });
   if (account.accountStatus !== "active") return res.status(409).json({ message: "Activate this account before assigning a membership." });
+  if (account.zelle?.status === "canceled" && zellePaidThrough(account.zelle) > new Date()) return res.status(409).json({ message: "This membership is still paid. Ask an administrator to reactivate renewal without replacing the paid period." });
   if (account.stripeCustomerId) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const [subscriptions, sessions] = await Promise.all([stripe.subscriptions.list({ customer: account.stripeCustomerId, status: "all", limit: 100 }), stripe.checkout.sessions.list({ customer: account.stripeCustomerId, status: "open", limit: 100 })]);
@@ -31,9 +33,8 @@ async function selectZelle(req, res, accountId) {
   res.json({ message: "Zelle membership selected. Send payment, then an administrator will confirm it." });
 }
 router.post("/zelle", (req, res) => selectZelle(req, res, req.user.id));
-router.post("/zelle/cancel", async (req, res) => {
-  await User.updateOne({ _id: req.user.id }, { $set: { "zelle.status": "canceled" } });
-  res.json({ message: "Zelle membership canceled. No further reminders will be sent." });
+router.post("/zelle/cancel", (req, res) => {
+  res.status(403).json({ message: "Zelle memberships are managed by an administrator. Contact our team for assistance." });
 });
 router.use(requireRole("admin"));
 router.get("/plans", async (req, res) => {
@@ -46,7 +47,7 @@ router.post("/:id/zelle", async (req, res) => {
 });
 router.get("/accounts", async (req, res) => {
   const users = await User.find({}).select("firstName lastName email phone accountStatus zelle membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId").sort({ firstName: 1 });
-  res.json({ users: users.map((user) => ({ ...user.toObject(), zelleBalance: zelleBalance(user.zelle) })) });
+  res.json({ users: users.map((user) => ({ ...user.toObject(), zellePaidThrough: zellePaidThrough(user.zelle), zelleBalance: zelleBalance(user.zelle) })) });
 });
 router.get("/:id/details", async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -113,7 +114,18 @@ router.post("/:id/confirm", async (req, res) => {
 });
 router.post("/:id/cancel", async (req, res) => {
   await User.updateOne({ _id: req.params.id }, { $set: { "zelle.status": "canceled" } });
-  res.json({ message: "Zelle membership canceled." });
+  res.json({ message: "Zelle renewal canceled. Confirmed paid access continues until the paid period ends." });
+});
+router.post("/:id/reactivate", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user || user.accountStatus !== "active" || user.zelle?.status !== "canceled" || !user.zelle.planId) return res.status(409).json({ message: "No canceled Zelle membership to reactivate." });
+  if (user.stripeSubscriptionId) return res.status(409).json({ message: "Manage the existing Stripe membership first." });
+  const now = new Date(), paidThrough = zellePaidThrough(user.zelle);
+  const stillPaid = paidThrough > now;
+  const result = await User.updateOne({ _id: user._id, accountStatus: "active", stripeSubscriptionId: null, "zelle.status": "canceled", "zelle.dueAt": user.zelle.dueAt }, { $set: { "zelle.status": stillPaid ? "active" : "pending", "zelle.dueAt": stillPaid ? paidThrough : now }, $unset: { paymentReminderAt: "", "zelle.reminderAt": "" } });
+  if (!result.modifiedCount) return res.status(409).json({ message: "Membership changed. Refresh and try again." });
+  await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ZELLE_MEMBERSHIP_REACTIVATED", targetType: "User", targetId: user._id });
+  res.json({ message: stillPaid ? "Renewal reactivated. The current period remains paid; the next payment is due at the end of that period." : "Membership reactivated pending a new verified Zelle payment." });
 });
 router.post("/:id/remind", async (req, res) => {
   // Re-read membership and payment state for every recipient, never trust a browser list.

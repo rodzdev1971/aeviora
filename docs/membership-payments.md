@@ -26,6 +26,16 @@ Configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `FRONTEND_ORIGIN` in
 Test checkout, webhook delivery, cancellation, and reminder eligibility using Stripe test mode before release. Zelle has no automatic bank verification: an admin must check the actual receipt. No live payments or reminder emails were sent during implementation.
 # Administrator Zelle receipts and balances
 
+## Paid periods, cancellation, and reactivation
+
+Cancellation stops renewal; confirmed Zelle access remains available until the latest receipt's period end. Administrators can **Reactivate Zelle renewal**. Before that date, reactivation keeps the existing paid-through date and makes the next period due on that date. After expiry, reactivation is pending until a new payment is verified. Reactivation never creates a receipt or marks a future period paid. Users still contact an administrator for Zelle changes.
+
+Stripe members can **Cancel renewal** or **Reactivate renewal** before a scheduled cancellation completes. The application updates `cancel_at_period_end` without changing the billing anchor or generating prorations. It shows the period end and next billing date. Portal sessions use an application-specific configuration with cancellation set to `at_period_end`; the application creates that configuration when needed. Ended Stripe subscriptions require a new checkout. Past-due balances must be handled separately.
+
+These changes preserve existing billing-period lengths (currently calendar months); they do not migrate subscriptions to the draft 30-day schedule. External manual Stripe cancellations/refunds must be reconciled separately.
+
+User dashboards show Zelle selections as **Pending payment confirmation**, without an active membership, until an administrator records the verified receipt. Pending selections cannot start another checkout. Users have no Zelle cancellation button, and the self-service cancellation endpoint rejects requests. Administrators retain membership management controls.
+
 Admins can search all accounts by name, email, or phone in **Membership payments**, then select a user from the dropdown. For an active account without an ongoing membership, choose a paid plan and click **Assign Zelle membership**. Then click **Record Zelle payment**, enter the bank reference, verify receipt, and save. The receipt activates the membership and advances its next unpaid period. Assignment alone leaves payment pending. Existing Stripe subscriptions continue to use the invoice-specific Zelle receipt workflow below.
 
 In **Membership payments**, search for the member. Zelle enrollments show the amount due and number of unpaid monthly periods. Use **Record Zelle payment** to confirm one full period at a time after verifying the bank receipt. Previously canceled Stripe subscriptions are reconciled when the member selects Zelle, so an old Stripe subscription ID does not block enrollment. Existing live Stripe subscriptions and open checkouts must still be closed before starting a separate Zelle membership.

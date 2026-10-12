@@ -1,3 +1,5 @@
+import { stripePeriod } from "./membershipPeriods.js";
+
 export async function syncMembership(user, stripe, users) {
   if (!user.stripeCustomerId || ["pending", "active"].includes(user.zelle?.status)) return user;
   let subscription;
@@ -12,6 +14,7 @@ export async function syncMembership(user, stripe, users) {
   const ended = ["canceled", "incomplete_expired"].includes(subscription.status);
   const planId = subscription.metadata?.membershipPlanId;
   const update = {
+    ...stripePeriod(subscription),
     stripeSubscriptionId: ended ? null : subscription.id,
     subscriptionStatus: subscription.status,
     membershipPlanId: ended ? null : /^[a-f\d]{24}$/i.test(planId || "") ? planId : user.membershipPlanId || null,

@@ -15,6 +15,9 @@ test("Zelle periods handle month ends and cancellation returns to Free", () => {
   assert.equal(nextBillingDate("2028-01-31T12:00:00Z").toISOString(), "2028-02-29T12:00:00.000Z");
   assert.equal(zelleRecipient.phone, "786-280-7650");
   assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).current.status, "Awaiting Zelle payment confirmation");
+  assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).subscribed, false);
+  assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).pending, true);
+  assert.equal(memberStatus({ zelle: { status: "active", name: "Gold" } }).subscribed, true);
   assert.equal(memberStatus({ zelle: { status: "canceled" } }).current.name, "Free membership");
 });
 
@@ -40,12 +43,17 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   const input = { dueAt: user.zelle.dueAt.toISOString(), reference: "synthetic-bank-reference" };
   const denied = await fetch(`http://127.0.0.1:${server.address().port}/patient-test/confirm`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "ordinary-user", role: "patient" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify(input) });
   assert.equal(denied.status, 403);
-  for (const path of ["patient-test/details", "patient-test/confirm-invoice", "patient-test/zelle"]) {
+  for (const path of ["patient-test/details", "patient-test/confirm-invoice", "patient-test/zelle", "patient-test/reactivate"]) {
     const response = await fetch(`http://127.0.0.1:${server.address().port}/${path}`, { method: path.endsWith("details") ? "GET" : "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "ordinary-user", role: "patient" }, process.env.JWT_ACCESS_SECRET)}` } });
     assert.equal(response.status, 403);
   }
   assert.equal(writes, 0);
+  assert.equal((await post("zelle/cancel")).status, 403);
+  assert.equal(user.zelle.status, "pending");
+  assert.equal(writes, 0);
   assert.equal((await post("patient-test/confirm", input)).status, 200);
+  assert.equal(memberStatus(user).subscribed, true);
+  assert.equal(memberStatus(user).pending, false);
   assert.equal((await post("patient-test/confirm", input)).status, 409);
   assert.equal(writes, 1);
   user.zelle.status = "canceled";
@@ -63,4 +71,22 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   assert.equal((await post("patient-test/zelle", { planId: "111111111111111111111111" })).status, 200);
   user.accountStatus = "suspended";
   assert.equal((await post("patient-test/zelle", { planId: "111111111111111111111111" })).status, 409);
+  user.accountStatus = "active"; user.zelle.status = "canceled"; user.zelle.planId = "111111111111111111111111";
+  const paidEnd = new Date(Date.now() + 86400000);
+  user.zelle.payments = [{ periodEnd: paidEnd }];
+  t.mock.method(User, "updateOne", async (filter, update) => {
+    assert.equal(filter["zelle.status"], "canceled");
+    assert.equal(update.$push, undefined, "Reactivation must not invent a payment");
+    assert.equal(update.$set["zelle.status"], "active");
+    assert.equal(update.$set["zelle.dueAt"].getTime(), paidEnd.getTime());
+    return { modifiedCount: 1 };
+  });
+  assert.equal((await post("patient-test/reactivate")).status, 200);
+  user.zelle.payments = [];
+  t.mock.method(User, "updateOne", async (_, update) => {
+    assert.equal(update.$set["zelle.status"], "pending");
+    assert.equal(update.$push, undefined);
+    return { modifiedCount: 1 };
+  });
+  assert.equal((await post("patient-test/reactivate")).status, 200);
 });

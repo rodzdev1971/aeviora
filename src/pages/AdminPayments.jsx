@@ -36,7 +36,7 @@ export default function AdminPayments() {
   }, [revision]);
   async function action(user, kind) {
     if (kind === "confirm" && !reference.trim()) return;
-    if (kind === "cancel" && !window.confirm("Cancel this Zelle membership and stop reminders?")) return;
+    if (kind === "cancel" && !window.confirm("Stop Zelle renewal and reminders? Confirmed paid access will continue until its period ends.")) return;
     setBusy(true); setError(""); setMessage("");
     try { const result = await apiRequest(`/api/membership-billing/${user._id}/${kind}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(kind === "confirm" ? { dueAt: user.zelle.dueAt, reference } : {}) }); setMessage(result.message); setConfirming(null); setReference(""); setRevision((value) => value + 1); }
     catch (failure) { setError(failure.message); } finally { setBusy(false); }
@@ -80,7 +80,7 @@ export default function AdminPayments() {
       <h2 className="font-semibold">{user.firstName} {user.lastName} · {user.email}</h2>
       <p>Account: {user.accountStatus}</p>
       {user.accountStatus !== "active" && <p>Activate this account before recording a payment.</p>}
-      {!["pending", "active"].includes(user.zelle?.status) && !user.stripeSubscriptionId && <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); assignZelle(user); }}>
+      {!["pending", "active"].includes(user.zelle?.status) && !(user.zellePaidThrough && new Date(user.zellePaidThrough) > new Date()) && !user.stripeSubscriptionId && <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); assignZelle(user); }}>
         <h3 className="font-semibold">Set up membership paid by Zelle</h3>
         <p>Choose the user's plan, then record their bank receipt. Assigning a plan alone does not mark it paid.</p>
         <fieldset disabled={busy || user.accountStatus !== "active"} className="space-y-3">
@@ -90,6 +90,8 @@ export default function AdminPayments() {
       </form>}
       <p className="font-semibold">Zelle balance due: {user.zelleBalance?.amount === null ? "Review canceled membership history" : `$${(user.zelleBalance?.amount || 0).toFixed(2)} · ${user.zelleBalance?.periods || 0} unpaid periods`}</p>
       {user.zelle?.planId && <><p>Zelle: {user.zelle.name} · {user.zelle.status} · ${user.zelle.price.toFixed(2)} monthly</p><p>Next unpaid period: {new Date(user.zelle.dueAt).toLocaleDateString()}</p>
+        {user.zellePaidThrough && <p>Confirmed paid through: {new Date(user.zellePaidThrough).toLocaleString()}. Cancellation does not remove this paid period.</p>}
+        {user.zelle.status === "canceled" && !user.stripeSubscriptionId && <button disabled={busy || user.accountStatus !== "active"} className="btn-primary" onClick={() => action(user, "reactivate")}>Reactivate Zelle renewal</button>}
         {["pending", "active"].includes(user.zelle.status) && <div className="flex gap-3"><button disabled={busy || user.accountStatus !== "active"} className="btn-primary" onClick={() => { setConfirming(user); setReference(""); setError(""); }}>Record Zelle payment</button><button disabled={busy} className="btn-secondary" onClick={() => action(user, "cancel")}>Cancel Zelle membership</button></div>}
         <details><summary>Zelle payment history ({user.zelle.payments?.length || 0})</summary><ul>{(user.zelle.payments || []).map((payment) => <li key={payment._id}>{new Date(payment.periodStart).toLocaleDateString()} – {new Date(payment.periodEnd).toLocaleDateString()}: ${payment.amount.toFixed(2)} · Zelle · {payment.reference}</li>)}</ul></details>
       </>}

@@ -6,11 +6,12 @@ import { memberStatus } from "../services/memberStatus.js";
 import { syncMembership } from "../services/syncMembership.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
+import { changeStripeRenewal, stripePeriod, zellePaidThrough, membershipPortalConfig } from "../services/membershipPeriods.js";
 
 const router = express.Router();
 
 router.get("/memberships", requireAuth, async (req, res) => {
-  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId zelle");
+  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId stripePeriodEnd stripeCancelAtPeriodEnd zelle");
   if (!user) return res.status(404).json({ message: "Account not found." });
   if (user.stripeCustomerId && !["pending", "active"].includes(user.zelle?.status)) {
     try { user = await syncMembership(user, stripeClient(), User); }
@@ -18,6 +19,17 @@ router.get("/memberships", requireAuth, async (req, res) => {
   }
   const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
   res.json({ plans, ...memberStatus(user) });
+});
+
+router.post("/renewal", requireAuth, async (req, res) => {
+  if (typeof req.body?.cancel !== "boolean") return res.status(400).json({ message: "Choose whether to cancel renewal." });
+  try {
+    const stripe = stripeClient(), user = await User.findById(req.user.id);
+    const subscription = await changeStripeRenewal(user, stripe, req.body.cancel);
+    await User.updateOne({ _id: user._id, stripeSubscriptionId: subscription.id }, { $set: { ...stripePeriod(subscription), subscriptionStatus: subscription.status } });
+    await logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action: req.body.cancel ? "STRIPE_RENEWAL_CANCELED" : "STRIPE_RENEWAL_REACTIVATED", targetType: "StripeSubscription", targetId: subscription.id });
+    res.json({ message: req.body.cancel ? "Renewal canceled. Your paid membership continues until the period ends." : "Renewal reactivated for the next billing date. The current period is not charged again." });
+  } catch { res.status(409).json({ message: "Unable to update renewal. Refresh your membership and review its status or contact our team." }); }
 });
 
 function stripeClient() {
@@ -49,7 +61,7 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
     const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId zelle");
     if (!user) return res.status(404).json({ message: "Account not found." });
     if (user.stripeSubscriptionId) return res.status(409).json({ message: "Manage your existing subscription through billing before choosing another plan." });
-    if (["pending", "active"].includes(user.zelle?.status)) return res.status(409).json({ message: "Cancel your Zelle membership before starting Stripe checkout." });
+    if (["pending", "active"].includes(user.zelle?.status) || zellePaidThrough(user.zelle) > new Date()) return res.status(409).json({ message: "Your Zelle membership is pending or still covers this period. Contact our team to change payment method." });
     const customerId = await getOrCreateCustomer(stripe, user);
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 100 });
     if (subscriptions.data.some((subscription) => !["canceled", "incomplete_expired"].includes(subscription.status))) {
@@ -87,7 +99,8 @@ router.post("/billing-portal", requireAuth, async (req, res) => {
     const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId");
     if (!user) return res.status(404).json({ message: "Account not found." });
     const customerId = await getOrCreateCustomer(stripe, user);
-    const session = await stripe.billingPortal.sessions.create({ customer: customerId, return_url: `${frontendUrl()}/dashboard` });
+    const configuration = await membershipPortalConfig(stripe);
+    const session = await stripe.billingPortal.sessions.create({ customer: customerId, configuration, return_url: `${frontendUrl()}/memberships` });
     return res.json({ url: session.url });
   } catch (error) {
     console.error("Stripe billing portal error:", error.message);
@@ -115,6 +128,7 @@ router.post("/webhook", async (req, res) => {
     update.subscriptionStatus = object.payment_status === "paid" || object.payment_status === "no_payment_required" ? "active" : "incomplete";
   }
   if (event.type === "customer.subscription.updated") {
+    Object.assign(update, stripePeriod(object));
     update.stripeSubscriptionId = object.id;
     update.subscriptionStatus = object.status;
   }
