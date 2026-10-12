@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
+import AdminPaymentDetails from "../components/AdminPaymentDetails";
 
 export default function AdminPayments() {
   const [users, setUsers] = useState([]);
@@ -10,6 +11,24 @@ export default function AdminPayments() {
   const [search, setSearch] = useState("");
   const [confirming, setConfirming] = useState(null);
   const [reference, setReference] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [plans, setPlans] = useState([]);
+  const [planId, setPlanId] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest("/api/membership-billing/plans", { signal: controller.signal }).then((data) => setPlans(data.plans)).catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
+    return () => controller.abort();
+  }, []);
+  const matchingUsers = users.filter((user) => `${user.firstName} ${user.lastName} ${user.email} ${user.phone || ""}`.toLowerCase().includes(search.toLowerCase()));
+  async function assignZelle(user) {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await apiRequest(`/api/membership-billing/${user._id}/zelle`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId }) });
+      setMessage("Zelle membership assigned. Select Record Zelle payment below to enter the verified bank receipt.");
+      setPlanId(""); setRevision((value) => value + 1);
+    } catch (failure) { setError(failure.message); }
+    finally { setBusy(false); }
+  }
   useEffect(() => {
     const controller = new AbortController();
     apiRequest("/api/membership-billing/accounts", { signal: controller.signal }).then((data) => setUsers(data.users)).catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
@@ -54,15 +73,28 @@ export default function AdminPayments() {
         <div className="flex flex-wrap gap-3"><button type="submit" className="btn-primary">{busy ? "Recording…" : "Confirm payment received"}</button><button type="button" className="btn-secondary" onClick={() => setConfirming(null)}>Cancel</button></div>
       </fieldset>
     </form>}
-    <label className="block">Search accounts<input className="input" type="search" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-    {users.filter((user) => `${user.firstName} ${user.lastName} ${user.email}`.toLowerCase().includes(search.toLowerCase())).map((user) => <article key={user._id} className="card space-y-3">
+    <label className="block">Search by name, email, or phone<input className="input" type="search" value={search} onChange={(event) => { setSearch(event.target.value); setSelectedUser(""); setConfirming(null); }} /></label>
+    <label className="block">Select a user to manage<select className="input" value={selectedUser} onChange={(event) => { setSelectedUser(event.target.value); setConfirming(null); setPlanId(""); setMessage(""); }}><option value="">Choose a user ({matchingUsers.length} found)</option>{matchingUsers.map((user) => <option key={user._id} value={user._id}>{user.firstName} {user.lastName} — {user.email}</option>)}</select></label>
+    {!matchingUsers.length && <p>No matching accounts found.</p>}
+    {users.filter((user) => user._id === selectedUser).map((user) => <article key={user._id} className="card space-y-3">
       <h2 className="font-semibold">{user.firstName} {user.lastName} · {user.email}</h2>
       <p>Account: {user.accountStatus}</p>
+      {user.accountStatus !== "active" && <p>Activate this account before recording a payment.</p>}
+      {!["pending", "active"].includes(user.zelle?.status) && !user.stripeSubscriptionId && <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); assignZelle(user); }}>
+        <h3 className="font-semibold">Set up membership paid by Zelle</h3>
+        <p>Choose the user's plan, then record their bank receipt. Assigning a plan alone does not mark it paid.</p>
+        <fieldset disabled={busy || user.accountStatus !== "active"} className="space-y-3">
+          <label className="block">Membership plan<select className="input" required value={planId} onChange={(event) => setPlanId(event.target.value)}><option value="">Choose a paid plan</option>{plans.map((plan) => <option key={plan._id} value={plan._id}>{plan.name} — ${plan.price.toFixed(2)} per month</option>)}</select></label>
+          <button type="submit" className="btn-primary">Assign Zelle membership</button>
+        </fieldset>
+      </form>}
+      <p className="font-semibold">Zelle balance due: {user.zelleBalance?.amount === null ? "Review canceled membership history" : `$${(user.zelleBalance?.amount || 0).toFixed(2)} · ${user.zelleBalance?.periods || 0} unpaid periods`}</p>
       {user.zelle?.planId && <><p>Zelle: {user.zelle.name} · {user.zelle.status} · ${user.zelle.price.toFixed(2)} monthly</p><p>Next unpaid period: {new Date(user.zelle.dueAt).toLocaleDateString()}</p>
         {["pending", "active"].includes(user.zelle.status) && <div className="flex gap-3"><button disabled={busy || user.accountStatus !== "active"} className="btn-primary" onClick={() => { setConfirming(user); setReference(""); setError(""); }}>Record Zelle payment</button><button disabled={busy} className="btn-secondary" onClick={() => action(user, "cancel")}>Cancel Zelle membership</button></div>}
-        <details><summary>Payment history ({user.zelle.payments?.length || 0})</summary><ul>{(user.zelle.payments || []).map((payment) => <li key={payment._id}>{new Date(payment.periodStart).toLocaleDateString()} – {new Date(payment.periodEnd).toLocaleDateString()}: ${payment.amount.toFixed(2)} · {payment.reference}</li>)}</ul></details>
+        <details><summary>Zelle payment history ({user.zelle.payments?.length || 0})</summary><ul>{(user.zelle.payments || []).map((payment) => <li key={payment._id}>{new Date(payment.periodStart).toLocaleDateString()} – {new Date(payment.periodEnd).toLocaleDateString()}: ${payment.amount.toFixed(2)} · Zelle · {payment.reference}</li>)}</ul></details>
       </>}
       {user.stripeSubscriptionId && <p>Stripe: {user.membershipName || "Membership"} · {user.subscriptionStatus}. Payments are verified through Stripe.</p>}
+      {user.stripeCustomerId && <AdminPaymentDetails user={user} onRecorded={() => setRevision((value) => value + 1)} />}
     </article>)}
   </section>;
 }

@@ -7,31 +7,98 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { sendEmail, emailFailure } from "../services/email.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { nextBillingDate, zelleRecipient } from "../../shared/zelle.js";
+import { syncMembership } from "../services/syncMembership.js";
+import { zelleBalance, invoiceSubscription, validateZelleInvoice } from "../services/billingSummary.js";
+import ManualPayment from "../models/manualMembershipPayment.js";
 
 const router = express.Router();
 router.use(requireAuth);
-router.post("/zelle", async (req, res) => {
+async function selectZelle(req, res, accountId) {
   if (!/^[a-f\d]{24}$/i.test(req.body?.planId || "")) return res.status(400).json({ message: "Choose a plan." });
   const plan = await Plan.findById(req.body.planId);
   if (!plan || plan.price <= 0) return res.status(400).json({ message: "Choose a paid plan for Zelle." });
-  const account = await User.findById(req.user.id);
+  const account = await User.findById(accountId);
+  if (!account) return res.status(404).json({ message: "Account not found." });
+  if (account.accountStatus !== "active") return res.status(409).json({ message: "Activate this account before assigning a membership." });
   if (account.stripeCustomerId) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const [subscriptions, sessions] = await Promise.all([stripe.subscriptions.list({ customer: account.stripeCustomerId, status: "all", limit: 100 }), stripe.checkout.sessions.list({ customer: account.stripeCustomerId, status: "open", limit: 100 })]);
     if (subscriptions.data.some((item) => !["canceled", "incomplete_expired"].includes(item.status)) || sessions.data.some((item) => item.mode === "subscription")) return res.status(409).json({ message: "An existing Stripe subscription or checkout must be closed first." });
+    await syncMembership(account, stripe, User);
   }
-  const user = await User.findOneAndUpdate({ _id: req.user.id, stripeSubscriptionId: null, "zelle.status": { $nin: ["pending", "active"] } }, { $set: { "zelle.status": "pending", "zelle.planId": plan._id, "zelle.name": plan.name, "zelle.price": plan.price, "zelle.dueAt": new Date() }, $unset: { "zelle.reminderAt": "" } }, { new: true });
+  const user = await User.findOneAndUpdate({ _id: accountId, accountStatus: "active", stripeSubscriptionId: null, "zelle.status": { $nin: ["pending", "active"] } }, { $set: { "zelle.status": "pending", "zelle.planId": plan._id, "zelle.name": plan.name, "zelle.price": plan.price, "zelle.dueAt": new Date() }, $unset: { "zelle.reminderAt": "" } }, { new: true });
   if (!user) return res.status(409).json({ message: "You already have a membership. Refresh the page." });
   res.json({ message: "Zelle membership selected. Send payment, then an administrator will confirm it." });
-});
+}
+router.post("/zelle", (req, res) => selectZelle(req, res, req.user.id));
 router.post("/zelle/cancel", async (req, res) => {
   await User.updateOne({ _id: req.user.id }, { $set: { "zelle.status": "canceled" } });
   res.json({ message: "Zelle membership canceled. No further reminders will be sent." });
 });
 router.use(requireRole("admin"));
+router.get("/plans", async (req, res) => {
+  const plans = await Plan.find({ price: { $gt: 0 } }).select("name price").sort({ price: 1 });
+  res.json({ plans });
+});
+router.post("/:id/zelle", async (req, res) => {
+  await selectZelle(req, res, req.params.id);
+  if (res.statusCode === 200) await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ADMIN_ZELLE_MEMBERSHIP_SELECTED", targetType: "User", targetId: req.params.id });
+});
 router.get("/accounts", async (req, res) => {
-  const users = await User.find({ $or: [{ "zelle.planId": { $exists: true } }, { stripeSubscriptionId: { $ne: null } }] }).select("firstName lastName email accountStatus zelle membershipName subscriptionStatus stripeSubscriptionId").sort({ firstName: 1 });
-  res.json({ users });
+  const users = await User.find({}).select("firstName lastName email phone accountStatus zelle membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId").sort({ firstName: 1 });
+  res.json({ users: users.map((user) => ({ ...user.toObject(), zelleBalance: zelleBalance(user.zelle) })) });
+});
+router.get("/:id/details", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "Account not found." });
+  try {
+    const manual = await ManualPayment.find({ userId: user._id });
+    const invoices = [], balances = {};
+    if (user.stripeCustomerId) {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      for await (const invoice of stripe.invoices.list({ customer: user.stripeCustomerId, limit: 100 })) {
+        if (!invoiceSubscription(invoice)) continue;
+        const receipt = manual.find((payment) => payment.invoiceId === invoice.id);
+        if (["open", "uncollectible"].includes(invoice.status)) balances[invoice.currency] = (balances[invoice.currency] || 0) + invoice.amount_remaining;
+        invoices.push({ id: invoice.id, number: invoice.number, status: invoice.status, currency: invoice.currency, amountRemaining: invoice.amount_remaining, amountPaid: invoice.amount_paid, periodStart: invoice.period_start, periodEnd: invoice.period_end, method: receipt?.status === "confirmed" ? "Zelle" : invoice.status === "paid" ? "Stripe / credits or external payment" : "Unpaid", reference: receipt?.reference, pending: receipt?.status === "pending", amountCents: receipt?.amountCents });
+      }
+    }
+    res.json({ invoices, balances, zelleBalance: zelleBalance(user.zelle) });
+  } catch { res.status(502).json({ message: "Unable to verify Stripe balances. Balance is unknown; try again shortly." }); }
+});
+router.post("/:id/confirm-invoice", async (req, res) => {
+  const parsed = z.strictObject({ invoiceId: z.string().regex(/^in_[a-zA-Z0-9]+$/), reference: z.string().trim().min(1).max(150), amountCents: z.number().int().positive() }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ message: "Provide the invoice, displayed balance, and bank reference." });
+  const user = await User.findById(req.params.id);
+  if (!user || user.accountStatus !== "active") return res.status(409).json({ message: "An active account is required." });
+  const { invoiceId, reference, amountCents } = parsed.data;
+  try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    let receipt = await ManualPayment.findOne({ invoiceId });
+    if (receipt && (receipt.userId !== user._id || receipt.reference !== reference || receipt.amountCents !== amountCents)) return res.status(409).json({ message: "This invoice already has a different payment record." });
+    if (receipt?.status === "confirmed") return res.json({ message: "This Zelle payment was already recorded." });
+    if (!receipt) {
+      const invoice = await stripe.invoices.retrieve(invoiceId);
+      try { validateZelleInvoice(invoice, user, amountCents); }
+      catch (error) { return res.status(409).json({ message: error.message }); }
+      if (await User.exists({ "zelle.payments.reference": reference })) return res.status(409).json({ message: "This bank reference has already been used." });
+      receipt = await ManualPayment.create({ userId: user._id, invoiceId, reference, amountCents, confirmedBy: req.user.id });
+    }
+    const latest = await stripe.invoices.retrieve(invoiceId);
+    if (latest.status !== "paid") {
+      try { validateZelleInvoice(latest, user, amountCents); }
+      catch (error) { return res.status(409).json({ message: error.message }); }
+    }
+    // Persist the intent first and reuse a stable Stripe key after network/database failures.
+    const paid = await stripe.invoices.pay(invoiceId, { paid_out_of_band: true }, { idempotencyKey: `aeviora-zelle-${receipt._id}` });
+    if (paid.status !== "paid") throw new Error("Invoice not settled");
+    await ManualPayment.updateOne({ _id: receipt._id }, { $set: { status: "confirmed", confirmedAt: new Date() } });
+    await syncMembership(user, stripe, User);
+    await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ZELLE_INVOICE_PAYMENT_CONFIRMED", targetType: "StripeInvoice", targetId: invoiceId });
+    res.json({ message: "Zelle payment recorded and Stripe invoice marked paid. Future card billing is unchanged." });
+  } catch (error) {
+    res.status(error.code === 11000 ? 409 : 502).json({ message: error.code === 11000 ? "Invoice or bank reference already recorded. Refresh payments." : "Confirmation could not finish. Refresh and retry the same reference; do not enter a second payment." });
+  }
 });
 router.post("/:id/confirm", async (req, res) => {
   const parsed = z.strictObject({ dueAt: z.iso.datetime(), reference: z.string().trim().min(1).max(150) }).safeParse(req.body);

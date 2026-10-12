@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
 import AuditLog from "../models/AuditLog.js";
+import Plan from "../models/membershipPlans.js";
 import billingRouter from "../routes/membershipBillingRoutes.js";
 
 test("Zelle periods handle month ends and cancellation returns to Free", () => {
@@ -39,6 +40,10 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   const input = { dueAt: user.zelle.dueAt.toISOString(), reference: "synthetic-bank-reference" };
   const denied = await fetch(`http://127.0.0.1:${server.address().port}/patient-test/confirm`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "ordinary-user", role: "patient" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify(input) });
   assert.equal(denied.status, 403);
+  for (const path of ["patient-test/details", "patient-test/confirm-invoice", "patient-test/zelle"]) {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/${path}`, { method: path.endsWith("details") ? "GET" : "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "ordinary-user", role: "patient" }, process.env.JWT_ACCESS_SECRET)}` } });
+    assert.equal(response.status, 403);
+  }
   assert.equal(writes, 0);
   assert.equal((await post("patient-test/confirm", input)).status, 200);
   assert.equal((await post("patient-test/confirm", input)).status, 409);
@@ -47,4 +52,15 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   assert.equal((await (await post("patient-test/remind")).json()).outcome, "skipped");
   user.zelle.status = "active"; user.zelle.dueAt = new Date(Date.now() + 86400000);
   assert.equal((await (await post("patient-test/remind")).json()).outcome, "skipped");
+  t.mock.method(Plan, "findById", async () => ({ _id: "111111111111111111111111", name: "Bronze", price: 20 }));
+  t.mock.method(User, "findOneAndUpdate", async (filter, update) => {
+    assert.equal(filter._id, "patient-test");
+    assert.equal(filter.accountStatus, "active");
+    assert.equal(filter.stripeSubscriptionId, null);
+    assert.equal(update.$set["zelle.status"], "pending");
+    return user;
+  });
+  assert.equal((await post("patient-test/zelle", { planId: "111111111111111111111111" })).status, 200);
+  user.accountStatus = "suspended";
+  assert.equal((await post("patient-test/zelle", { planId: "111111111111111111111111" })).status, 409);
 });
