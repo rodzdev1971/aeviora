@@ -4,7 +4,7 @@ The account pages are public routes and display draft status. They are not yet a
 
 | Policy | Proposed version | URL after deployment |
 | --- | --- | --- |
-| Account Terms | `account-terms-2026-10-06-v1` | https://www.aeviorawellness.com/account-terms |
+| Account Terms | `account-terms-2026-10-11-v2` | https://www.aeviorawellness.com/account-terms |
 | Account Privacy | `account-privacy-2026-10-06-v1` | https://www.aeviorawellness.com/account-privacy |
 
 ## Review and activate
@@ -15,7 +15,7 @@ The account pages are public routes and display draft status. They are not yet a
 4. Only after approval, set these server-side variables in the relevant Vercel environment, then redeploy:
 
 ```dotenv
-ACCOUNT_TERMS_VERSION=account-terms-2026-10-06-v1
+ACCOUNT_TERMS_VERSION=account-terms-2026-10-11-v2
 ACCOUNT_TERMS_URL=https://www.aeviorawellness.com/account-terms
 ACCOUNT_PRIVACY_VERSION=account-privacy-2026-10-06-v1
 ACCOUNT_PRIVACY_URL=https://www.aeviorawellness.com/account-privacy
@@ -30,3 +30,11 @@ Do not use a `VITE_` prefix. The version is an identifier; the URL is the public
 Privacy promises must match actual business practices: [FTC consumer privacy guidance](https://www.ftc.gov/business-guidance/privacy-security/consumer-privacy). Review retention and protection practices using the [FTC business information guide](https://www.ftc.gov/business-guidance/resources/protecting-personal-information-guide-business-0).
 
 An account privacy policy is not a substitute for any required healthcare Notice of Privacy Practices. Assess that obligation separately using [HHS guidance](https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/privacy-practices-for-protected-health-information/index.html).
+
+## Subscription terms revision: October 11, 2026
+
+The v2 terms specify 30 consecutive days from purchase and continued paid-plan access after cancellation until that period ends. The prior v1 source is retained in `docs/policy-archive/account-terms-2026-10-06-v1.jsx.txt`.
+
+**Do not activate v2 until billing behavior matches:** Stripe checkout currently uses calendar-month recurrence; Zelle advances by calendar month and immediately hides canceled membership status. Implement fixed 30-day periods, persist the paid-through date, schedule cancellation without removing paid access, and show that date to users. Reconcile existing paid subscriptions before changing their billing schedule. The terms edit does not migrate or change any subscriptions.
+
+Review the legal entity, cancellation/refund wording, and effective date before publication. Only the terms version changes; the privacy version remains unchanged. Keep checkout disclosures consistent with the policy and do not overwrite prior consent records.
