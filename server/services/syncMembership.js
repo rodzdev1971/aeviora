@@ -28,7 +28,10 @@ export async function syncMembership(user, stripe, users) {
     membershipPlanId: ended && !keepPaid ? null : /^[a-f\d]{24}$/i.test(planId || "") ? planId : user.membershipPlanId || null,
     membershipName: ended && !keepPaid ? "" : planName || user.membershipName || "Existing membership",
   };
-  if (paid && periodEnd && periodStart && (!user.stripePaidThrough || periodEnd * 1000 >= new Date(user.stripePaidThrough).getTime())) Object.assign(update, { stripePaidThrough: new Date(periodEnd * 1000), stripePaidStart: new Date(periodStart * 1000), stripePaidInvoiceId: invoice.id, stripePaidPrice: item?.price?.unit_amount / 100 });
+  if (paid && periodEnd && periodStart && (!user.stripePaidThrough || periodEnd * 1000 >= new Date(user.stripePaidThrough).getTime())) {
+    Object.assign(update, { stripePaidThrough: new Date(periodEnd * 1000), stripePaidStart: new Date(periodStart * 1000), stripePaidInvoiceId: invoice.id });
+    if (Number.isFinite(item?.price?.unit_amount)) update.stripePaidPrice = item.price.unit_amount / 100;
+  }
   const completedUpgrade = paid && Boolean(user.upgradeQuote?.priceId) && user.upgradeQuote.priceId === item?.price?.id && user.upgradeQuote.state !== "complete";
   if (completedUpgrade) {
     update["upgradeQuote.state"] = "complete";

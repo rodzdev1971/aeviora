@@ -1,0 +1,66 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import express from "express";
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
+import Stripe from "stripe";
+import User from "../models/users.js";
+import Plan from "../models/membershipPlans.js";
+import router from "../routes/membershipUpgradeRoutes.js";
+
+test("Stripe preview supports legacy dates, rejects missing dates, and safely explains provider errors", async (t) => {
+  const priorJwt = process.env.JWT_ACCESS_SECRET, priorStripe = process.env.STRIPE_SECRET_KEY;
+  process.env.JWT_ACCESS_SECRET = "synthetic-secret"; process.env.STRIPE_SECRET_KEY = "sk_test_synthetic";
+  t.after(() => {
+    if (priorJwt === undefined) delete process.env.JWT_ACCESS_SECRET; else process.env.JWT_ACCESS_SECRET = priorJwt;
+    if (priorStripe === undefined) delete process.env.STRIPE_SECRET_KEY; else process.env.STRIPE_SECRET_KEY = priorStripe;
+  });
+  const now = Math.floor(Date.now() / 1000);
+  const user = { _id: "test", role: "patient", accountStatus: "active", stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test", zelle: { status: "canceled" } };
+  const subscription = { id: "sub_test", customer: "cus_test", status: "active", current_period_start: now - 15 * 86400, current_period_end: now + 15 * 86400, latest_invoice: { id: "in_test", status: "paid" }, metadata: { membershipPlanId: "111111111111111111111111", membershipName: "Bronze" }, items: { data: [{ id: "si_test", price: { unit_amount: 2000 } }] } };
+  t.mock.method(User, "findById", () => ({ select: async () => user, then: (resolve) => resolve(user) }));
+  t.mock.method(User, "findOneAndUpdate", async (_, update) => { Object.assign(user, update.$set); return user; });
+  t.mock.method(Plan, "findById", async () => ({ _id: "222222222222222222222222", name: "Gold", price: 60 }));
+  let saves = 0;
+  t.mock.method(User, "updateOne", async (_, update) => {
+    const doc = new User({ upgradeQuote: update.$set.upgradeQuote });
+    assert.equal(doc.upgradeQuote.periodDays, 30);
+    assert.equal(doc.upgradeQuote.amountCents, 5000);
+    saves++;
+    return { modifiedCount: 1 };
+  });
+  const stripe = new Stripe("sk_test_synthetic");
+  t.mock.method(Object.getPrototypeOf(stripe.subscriptions), "retrieve", async () => subscription);
+  let priceCreates = 0, failPreview = false;
+  t.mock.method(Object.getPrototypeOf(stripe.prices), "create", async () => { priceCreates++; return { id: "price_test" }; });
+  t.mock.method(Object.getPrototypeOf(stripe.invoices), "createPreview", async () => {
+    if (failPreview) throw Object.assign(new Error("SENSITIVE_RAW_ERROR"), { type: "StripeInvalidRequestError", param: "subscription_details.proration_date" });
+    return { amount_due: 5000, lines: { data: [{ amount: -1000 }, { amount: 6000 }] } };
+  });
+  const logs = [];
+  t.mock.method(console, "warn", (entry) => logs.push(entry));
+  const app = express(); app.use(express.json(), cookieParser(), router);
+  const server = app.listen(0, "127.0.0.1"); await new Promise((resolve) => server.once("listening", resolve));
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const post = () => fetch(`http://127.0.0.1:${server.address().port}/preview`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "test" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify({ planId: "222222222222222222222222" }) });
+  assert.equal((await post()).status, 200);
+  assert.equal(saves, 1);
+  subscription.items.data[0].current_period_start = subscription.current_period_start;
+  subscription.items.data[0].current_period_end = subscription.current_period_end;
+  delete subscription.current_period_start; delete subscription.current_period_end;
+  assert.equal((await post()).status, 200);
+  failPreview = true;
+  const failed = await post();
+  assert.equal(failed.status, 409);
+  const body = await failed.json();
+  assert.ok(body.reference);
+  assert.match(logs[0], /preview_invoice/);
+  assert.equal(JSON.stringify([body, logs]).includes("SENSITIVE_RAW_ERROR"), false);
+  delete subscription.items.data[0].current_period_start;
+  const before = priceCreates;
+  assert.equal((await post()).status, 409);
+  assert.equal(priceCreates, before);
+  user.zelle = { status: "active", name: "Bronze", price: 20, planId: "111111111111111111111111", payments: [{ periodEnd: new Date(Date.now() + 15 * 86400000) }] };
+  delete process.env.STRIPE_SECRET_KEY;
+  assert.equal((await post()).status, 200, "Zelle previews must not require a Stripe key just because the account has Stripe history");
+});

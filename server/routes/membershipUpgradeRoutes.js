@@ -10,15 +10,23 @@ import { nextBillingDate } from "../../shared/zelle.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { upgradePricing } from "../services/upgradePricing.js";
 import { planChangeBlocked, planChangeFilter, planChangeMessage } from "../services/planChangePolicy.js";
+import { upgradeFailure, upgradeDiagnostics } from "../services/upgradeErrors.js";
 
 const router = express.Router();
 router.use(requireAuth);
+router.use((req, res, next) => { res.locals.upgradeStage = "validate_request"; next(); });
+function stripeClient() {
+  if (!process.env.STRIPE_SECRET_KEY?.trim()) throw Object.assign(new Error("Stripe configuration missing"), { code: "STRIPE_CONFIG" });
+  return new Stripe(process.env.STRIPE_SECRET_KEY, { timeout: 15000, maxNetworkRetries: 1 });
+}
 router.post("/preview", async (req, res) => {
   if (!/^[a-f\d]{24}$/i.test(req.body?.planId || "")) return res.status(400).json({ message: "Choose an upgrade plan." });
   let user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "Account not found." });
   const plan = await Plan.findById(req.body.planId);
   if (!plan) return res.status(404).json({ message: "Plan not found." });
-  const stripe = user.stripeCustomerId ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+  res.locals.upgradeStage = "sync_membership";
+  const stripe = user.stripeCustomerId && !["pending", "active"].includes(user.zelle?.status) ? stripeClient() : null;
   if (stripe) user = await syncMembership(user, stripe, User);
   if (planChangeBlocked(user)) return res.status(409).json({ message: planChangeMessage(user) });
   const state = memberStatus(user);
@@ -30,12 +38,20 @@ router.post("/preview", async (req, res) => {
   quote.remainingDays = (new Date(quote.sourceEnd) - now) / 86400000;
   quote.periodDays = 30;
   if (quote.method === "stripe") {
+    res.locals.upgradeStage = "retrieve_subscription";
     const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, { expand: ["latest_invoice"] });
-    if (subscription.status !== "active" || subscription.latest_invoice?.status !== "paid" || subscription.pending_update || subscription.cancel_at_period_end || subscription.items.data.length !== 1) return res.status(409).json({ message: "Reactivate renewal and resolve outstanding invoices before upgrading." });
+    if (subscription.status !== "active" || subscription.latest_invoice?.status !== "paid" || subscription.pending_update || subscription.cancel_at_period_end || subscription.items?.data?.length !== 1) return res.status(409).json({ message: "Reactivate renewal and resolve outstanding invoices before upgrading." });
+    if (subscription.schedule) return res.status(409).json({ message: "This membership has a scheduled billing change. Contact support to finish that change before upgrading." });
     const item = subscription.items.data[0];
-    quote.periodDays = (item.current_period_end - item.current_period_start) / 86400;
+    const start = item.current_period_start ?? subscription.current_period_start;
+    const end = item.current_period_end ?? subscription.current_period_end;
+    const prorationDate = Math.floor(now.getTime() / 1000);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start || prorationDate < start || prorationDate >= end) return res.status(409).json({ message: "Stripe's current billing dates could not be verified. Refresh membership status before upgrading." });
+    quote.periodDays = (end - start) / 86400;
+    res.locals.upgradeStage = "create_upgrade_price";
     const price = await stripe.prices.create({ currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "day", interval_count: 30 }, product_data: { name: plan.name }, metadata: { membershipPlanId: String(plan._id), membershipName: plan.name } }, { idempotencyKey: quote.id });
     Object.assign(quote, { subscriptionId: subscription.id, itemId: item.id, priceId: price.id });
+    res.locals.upgradeStage = "preview_invoice";
     const preview = await stripe.invoices.createPreview({ customer: user.stripeCustomerId, subscription: subscription.id, subscription_details: { items: [{ id: item.id, price: price.id }], billing_cycle_anchor: "now", proration_behavior: "always_invoice", proration_date: Math.floor(now.getTime() / 1000) } });
     quote.amountCents = preview.amount_due;
     quote.creditCents = Math.max(0, -preview.lines.data.filter((line) => line.amount < 0).reduce((sum, line) => sum + line.amount, 0));
@@ -43,6 +59,8 @@ router.post("/preview", async (req, res) => {
     try { Object.assign(quote, upgradePricing(state.current.price, plan.price, quote.sourceEnd, now)); }
     catch (error) { return res.status(409).json({ message: error.message }); }
   }
+  if (![quote.sourcePrice, quote.periodDays, quote.remainingDays, quote.amountCents, quote.creditCents].every(Number.isFinite)) return res.status(409).json({ message: "The upgrade calculation is incomplete. Refresh membership status or contact support." });
+  res.locals.upgradeStage = "save_quote";
   const saved = await User.updateOne({ _id: user._id, ...planChangeFilter(), "upgradeQuote.state": { $ne: "executing" } }, { $set: { upgradeQuote: quote } });
   if (!saved.modifiedCount) return res.status(409).json({ message: "Membership changed. Refresh." });
   res.json({ quote: { ...quote, estimatedExpiration: nextBillingDate(now) } });
@@ -73,7 +91,8 @@ router.post("/confirm", async (req, res) => {
     await logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action: "ZELLE_UPGRADE_CONFIRMED", targetType: "User", targetId: user._id });
     return res.json({ message: "Upgrade payment confirmed. The new 30-day period is active.", expiration: end });
   }
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  res.locals.upgradeStage = "confirm_subscription";
+  const stripe = stripeClient();
   if (quote.state === "executing" && Date.now() - new Date(quote.quotedAt).getTime() > 23 * 3600000) {
     await syncMembership(user, stripe, User);
     return res.status(409).json({ message: "This payment attempt needs reconciliation. Refresh membership status or contact support; no new charge was made." });
@@ -82,7 +101,8 @@ router.post("/confirm", async (req, res) => {
     if (req.body?.accepted !== true) return res.status(400).json({ message: "Accept the upgrade calculation and expiration before confirming payment." });
     const latest = await stripe.subscriptions.retrieve(quote.subscriptionId);
     const customer = typeof latest.customer === "string" ? latest.customer : latest.customer?.id;
-    if (customer !== user.stripeCustomerId || latest.pending_update || latest.status !== "active" || latest.cancel_at_period_end || latest.items.data[0]?.current_period_end * 1000 !== new Date(quote.sourceEnd).getTime()) return res.status(409).json({ message: "Subscription changed. Preview the upgrade again." });
+    const latestEnd = latest.items?.data?.[0]?.current_period_end ?? latest.current_period_end;
+    if (customer !== user.stripeCustomerId || latest.pending_update || latest.status !== "active" || latest.cancel_at_period_end || latestEnd * 1000 !== new Date(quote.sourceEnd).getTime()) return res.status(409).json({ message: "Subscription changed. Preview the upgrade again." });
     const lock = await User.updateOne({ _id: id, ...planChangeFilter(), "upgradeQuote.id": quote.id, "upgradeQuote.state": "quoted" }, { $set: { "upgradeQuote.state": "executing", "upgradeQuote.acceptedAt": new Date() } });
     if (!lock.modifiedCount) return res.status(409).json({ message: "Upgrade is already processing. Refresh." });
   }
@@ -90,5 +110,12 @@ router.post("/confirm", async (req, res) => {
   await syncMembership(user, stripe, User);
   const invoice = subscription.latest_invoice;
   res.json({ message: subscription.pending_update ? "Complete payment to activate the upgrade. Your existing paid membership is unchanged." : "Upgrade paid. Your new expiration date is available in membership status.", url: subscription.pending_update ? invoice?.hosted_invoice_url : undefined });
+});
+router.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  const reference = randomUUID();
+  const failure = upgradeFailure(error);
+  console.warn(JSON.stringify(upgradeDiagnostics(error, res.locals.upgradeStage, reference)));
+  res.status(failure.status).json({ message: `${failure.message} Reference: ${reference}`, reference });
 });
 export default router;
