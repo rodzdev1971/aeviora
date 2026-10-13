@@ -30,7 +30,7 @@ function cookieOptions() {
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "strict" : "lax",
+    sameSite: "lax", // Allow top-level navigation back from Stripe.
     maxAge: 15 * 60 * 1000,
   };
 }

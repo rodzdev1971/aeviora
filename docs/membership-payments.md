@@ -49,3 +49,11 @@ For an open USD invoice, an administrator can choose **Record Zelle for this inv
 Manual Stripe-invoice receipts are stored in `manualmembershippayments` with unique invoice and bank reference indexes, administrator ID, amount, and confirmation time. Deployments must allow these indexes to be created before enabling this workflow. A pending confirmation can be retried with its original reference and a stable Stripe idempotency key. If a retry remains unresolved, reconcile the invoice in Stripe before making any other adjustment. No live payments or emails are sent during automated tests.
 
 Balances are outstanding charges/periods, not future subscription commitments or a refund/credit accounting ledger. Zelle amounts continue to use the existing calendar-month schedule; this change does not activate the draft 30-day terms.
+
+### Login session when returning from Stripe
+
+Checkout success/cancellation and billing portal returns preserve the initiating browser Origin when it is trusted. When FRONTEND_ORIGIN is either https://aeviorawellness.com or https://www.aeviorawellness.com, both exact HTTPS origins are trusted; other origins fall back to FRONTEND_ORIGIN. Cookies remain host-only. Production login cookies use Secure, HttpOnly, and SameSite=Lax to support navigation back from Stripe.
+
+After deploying this change, sign out and sign in once to replace an existing Strict cookie, then start a new checkout. Existing Stripe sessions retain their original return URLs. Keep the Vercel canonical-domain redirect, FRONTEND_ORIGIN, and the hostname used to sign in consistent. For the same-origin Vercel deployment, leave VITE_API_BASE_URL unset. No credentials should be added to Stripe return URLs.
+
+The existing login token and cookie expire 15 minutes after login. Checkout does not extend that session: an expired session requires signing in again, and the payment remains recorded independently through Stripe webhooks. Verify a fresh login and a Stripe test checkout return on the canonical domain before using live payments.

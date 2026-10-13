@@ -8,6 +8,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { changeStripeRenewal, stripePeriod, zellePaidThrough, membershipPortalConfig } from "../services/membershipPeriods.js";
 import { nextPlanChangeAt, planChangeBlocked, planChangeMessage } from "../services/planChangePolicy.js";
+import { paymentReturnOrigin } from "../services/paymentReturnOrigin.js";
 
 const router = express.Router();
 
@@ -36,10 +37,6 @@ router.post("/renewal", requireAuth, async (req, res) => {
 function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured.");
   return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
-function frontendUrl() {
-  return (process.env.FRONTEND_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 }
 
 async function getOrCreateCustomer(stripe, user) {
@@ -81,8 +78,8 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
       expires_at: Math.floor(Date.now() / 1000) + 1800,
       customer: customerId,
       line_items: [{ price_data: { currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "day", interval_count: 30 }, product_data: { name: plan.name } }, quantity: 1 }],
-      success_url: `${frontendUrl()}/memberships?payment=success`,
-      cancel_url: `${frontendUrl()}/dashboard?payment=cancelled`,
+      success_url: `${paymentReturnOrigin(req)}/memberships?payment=success`,
+      cancel_url: `${paymentReturnOrigin(req)}/dashboard?payment=cancelled`,
       client_reference_id: user._id.toString(),
       metadata: { aevioraUserId: user._id.toString(), membershipPlanId: String(plan._id), membershipName: plan.name },
       subscription_data: { metadata: { aevioraUserId: user._id.toString(), membershipPlanId: String(plan._id), membershipName: plan.name } },
@@ -102,7 +99,7 @@ router.post("/billing-portal", requireAuth, async (req, res) => {
     if (!user) return res.status(404).json({ message: "Account not found." });
     const customerId = await getOrCreateCustomer(stripe, user);
     const configuration = await membershipPortalConfig(stripe);
-    const session = await stripe.billingPortal.sessions.create({ customer: customerId, configuration, return_url: `${frontendUrl()}/memberships` });
+    const session = await stripe.billingPortal.sessions.create({ customer: customerId, configuration, return_url: `${paymentReturnOrigin(req)}/memberships` });
     return res.json({ url: session.url });
   } catch (error) {
     console.error("Stripe billing portal error:", error.message);
