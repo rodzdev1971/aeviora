@@ -11,6 +11,7 @@ import { syncMembership } from "../services/syncMembership.js";
 import { zelleBalance, invoiceSubscription, validateZelleInvoice } from "../services/billingSummary.js";
 import ManualPayment from "../models/manualMembershipPayment.js";
 import { zellePaidThrough } from "../services/membershipPeriods.js";
+import { planChangeBlocked, planChangeMessage } from "../services/planChangePolicy.js";
 
 const router = express.Router();
 router.use(requireAuth);
@@ -20,6 +21,7 @@ async function selectZelle(req, res, accountId) {
   if (!plan || plan.price <= 0) return res.status(400).json({ message: "Choose a paid plan for Zelle." });
   const account = await User.findById(accountId);
   if (!account) return res.status(404).json({ message: "Account not found." });
+  if (planChangeBlocked(account) && String(plan._id) !== account.lastMembershipChangePlanId) return res.status(409).json({ message: planChangeMessage(account) });
   if (account.accountStatus !== "active") return res.status(409).json({ message: "Activate this account before assigning a membership." });
   if (account.zelle?.status === "canceled" && zellePaidThrough(account.zelle) > new Date()) return res.status(409).json({ message: "This membership is still paid. Ask an administrator to reactivate renewal without replacing the paid period." });
   if (account.stripeCustomerId) {

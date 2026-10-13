@@ -29,7 +29,13 @@ export async function syncMembership(user, stripe, users) {
     membershipName: ended && !keepPaid ? "" : planName || user.membershipName || "Existing membership",
   };
   if (paid && periodEnd && periodStart && (!user.stripePaidThrough || periodEnd * 1000 >= new Date(user.stripePaidThrough).getTime())) Object.assign(update, { stripePaidThrough: new Date(periodEnd * 1000), stripePaidStart: new Date(periodStart * 1000), stripePaidInvoiceId: invoice.id, stripePaidPrice: item?.price?.unit_amount / 100 });
-  if (paid && user.upgradeQuote?.priceId === item?.price?.id) update["upgradeQuote.state"] = "complete";
+  const completedUpgrade = paid && Boolean(user.upgradeQuote?.priceId) && user.upgradeQuote.priceId === item?.price?.id && user.upgradeQuote.state !== "complete";
+  if (completedUpgrade) {
+    update["upgradeQuote.state"] = "complete";
+    update.lastMembershipChangePlanId = String(planId);
+  }
   if (user.upgradeQuote?.state === "executing" && !subscription.pending_update && new Date(user.upgradeQuote.expiresAt).getTime() + 86400000 < Date.now() && user.upgradeQuote.priceId !== item?.price?.id) update["upgradeQuote.state"] = "expired";
-  return await users.findOneAndUpdate({ _id: user._id, stripeCustomerId: user.stripeCustomerId, "zelle.status": { $nin: ["pending", "active"] } }, { $set: update }, { new: true }) || user;
+  const mutation = { $set: update };
+  if (completedUpgrade) mutation.$max = { lastMembershipChangeAt: invoice.status_transitions?.paid_at ? new Date(invoice.status_transitions.paid_at * 1000) : new Date() };
+  return await users.findOneAndUpdate({ _id: user._id, stripeCustomerId: user.stripeCustomerId, "zelle.status": { $nin: ["pending", "active"] } }, mutation, { new: true }) || user;
 }

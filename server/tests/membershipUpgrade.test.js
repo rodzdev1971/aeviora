@@ -22,13 +22,16 @@ test("Zelle upgrade remains unpaid until an admin confirms; confirmation is idem
   let receipts = 0;
   t.mock.method(User, "updateOne", async (filter, update) => {
     if (update.$set.upgradeQuote) user.upgradeQuote = update.$set.upgradeQuote;
+    else if (update.$set["upgradeQuote.acceptedAt"]) user.upgradeQuote.acceptedAt = update.$set["upgradeQuote.acceptedAt"];
     else {
       assert.equal(filter["zelle.planId"], user.zelle.planId);
       assert.equal(update.$push["zelle.payments"].amount, 50);
       assert.equal(update.$push["zelle.payments"].periodEnd - update.$push["zelle.payments"].periodStart, 30 * 86400000);
       user.upgradeQuote.state = "complete"; receipts++;
+      user.lastMembershipChangeAt = update.$set.lastMembershipChangeAt;
+      assert.ok(filter.$or, "The database write must enforce the cooldown atomically");
     }
-    return { modifiedCount: 1 };
+    return { modifiedCount: 1, matchedCount: 1 };
   });
   const app = express(); app.use(express.json(), cookieParser(), router);
   const server = app.listen(0, "127.0.0.1"); await new Promise((resolve) => server.once("listening", resolve));
@@ -40,7 +43,11 @@ test("Zelle upgrade remains unpaid until an admin confirms; confirmation is idem
   assert.equal(quote.amountCents, 5000);
   assert.equal(receipts, 0);
   assert.equal((await post("confirm", { quoteId: quote.id, reference: "bank-ref" })).status, 403);
+  assert.equal((await post("confirm", { userId: "member", quoteId: quote.id, reference: "bank-ref" }, "admin")).status, 409);
+  assert.equal((await post("accept", { quoteId: quote.id, accepted: false })).status, 400);
+  assert.equal((await post("accept", { quoteId: quote.id, accepted: true })).status, 200);
   assert.equal((await post("confirm", { userId: "member", quoteId: quote.id, reference: "bank-ref" }, "admin")).status, 200);
   assert.equal((await post("confirm", { userId: "member", quoteId: quote.id, reference: "bank-ref" }, "admin")).status, 200);
   assert.equal(receipts, 1);
+  assert.equal((await post("preview", { planId: "222222222222222222222222" })).status, 409);
 });

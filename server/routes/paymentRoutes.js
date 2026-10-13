@@ -7,18 +7,19 @@ import { syncMembership } from "../services/syncMembership.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { changeStripeRenewal, stripePeriod, zellePaidThrough, membershipPortalConfig } from "../services/membershipPeriods.js";
+import { nextPlanChangeAt, planChangeBlocked, planChangeMessage } from "../services/planChangePolicy.js";
 
 const router = express.Router();
 
 router.get("/memberships", requireAuth, async (req, res) => {
-  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId stripePeriodEnd stripeCancelAtPeriodEnd stripePaidThrough stripePaidStart stripePaidInvoiceId stripePaidPrice upgradeQuote zelle");
+  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId stripePeriodEnd stripeCancelAtPeriodEnd stripePaidThrough stripePaidStart stripePaidInvoiceId stripePaidPrice upgradeQuote lastMembershipChangeAt lastMembershipChangePlanId zelle");
   if (!user) return res.status(404).json({ message: "Account not found." });
   if (user.stripeCustomerId && !["pending", "active"].includes(user.zelle?.status)) {
     try { user = await syncMembership(user, stripeClient(), User); }
     catch { return res.status(503).json({ message: "Unable to verify your latest membership with Stripe. Please refresh shortly; do not purchase another plan." }); }
   }
   const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
-  res.json({ plans, upgradeQuote: user.upgradeQuote, ...memberStatus(user) });
+  res.json({ plans, nextPlanChangeAt: nextPlanChangeAt(user), upgradeQuote: user.upgradeQuote, ...memberStatus(user) });
 });
 
 router.post("/renewal", requireAuth, async (req, res) => {
@@ -58,8 +59,9 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
     const plan = await MembershipPlan.findById(req.body.planId);
     if (!plan) return res.status(404).json({ message: "Membership plan is no longer available." });
     const stripe = stripeClient();
-    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId zelle");
+    const user = await User.findById(req.user.id).select("firstName lastName email role stripeCustomerId stripeSubscriptionId lastMembershipChangeAt lastMembershipChangePlanId zelle");
     if (!user) return res.status(404).json({ message: "Account not found." });
+    if (planChangeBlocked(user) && String(plan._id) !== user.lastMembershipChangePlanId) return res.status(409).json({ message: planChangeMessage(user) });
     if (user.stripeSubscriptionId) return res.status(409).json({ message: "Manage your existing subscription through billing before choosing another plan." });
     if (["pending", "active"].includes(user.zelle?.status) || zellePaidThrough(user.zelle) > new Date()) return res.status(409).json({ message: "Your Zelle membership is pending or still covers this period. Contact our team to change payment method." });
     const customerId = await getOrCreateCustomer(stripe, user);
