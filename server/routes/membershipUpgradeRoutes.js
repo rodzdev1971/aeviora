@@ -52,7 +52,7 @@ router.post("/preview", async (req, res) => {
     const price = await stripe.prices.create({ currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "day", interval_count: 30 }, product_data: { name: plan.name }, metadata: { membershipPlanId: String(plan._id), membershipName: plan.name } }, { idempotencyKey: quote.id });
     Object.assign(quote, { subscriptionId: subscription.id, itemId: item.id, priceId: price.id });
     res.locals.upgradeStage = "preview_invoice";
-    const preview = await stripe.invoices.createPreview({ customer: user.stripeCustomerId, subscription: subscription.id, subscription_details: { items: [{ id: item.id, price: price.id }], billing_cycle_anchor: "now", proration_behavior: "always_invoice", proration_date: Math.floor(now.getTime() / 1000) } });
+    const preview = await stripe.invoices.createPreview({ customer: user.stripeCustomerId, subscription: subscription.id, subscription_details: { items: [{ id: item.id, price: price.id }], billing_cycle_anchor: "now", proration_behavior: "always_invoice" } });
     quote.amountCents = preview.amount_due;
     quote.creditCents = Math.max(0, -preview.lines.data.filter((line) => line.amount < 0).reduce((sum, line) => sum + line.amount, 0));
   } else {
@@ -106,7 +106,7 @@ router.post("/confirm", async (req, res) => {
     const lock = await User.updateOne({ _id: id, ...planChangeFilter(), "upgradeQuote.id": quote.id, "upgradeQuote.state": "quoted" }, { $set: { "upgradeQuote.state": "executing", "upgradeQuote.acceptedAt": new Date() } });
     if (!lock.modifiedCount) return res.status(409).json({ message: "Upgrade is already processing. Refresh." });
   }
-  const subscription = await stripe.subscriptions.update(quote.subscriptionId, { items: [{ id: quote.itemId, price: quote.priceId }], billing_cycle_anchor: "now", proration_behavior: "always_invoice", proration_date: Math.floor(new Date(quote.quotedAt).getTime() / 1000), payment_behavior: "pending_if_incomplete", expand: ["latest_invoice"] }, { idempotencyKey: `upgrade-${quote.id}` });
+  const subscription = await stripe.subscriptions.update(quote.subscriptionId, { items: [{ id: quote.itemId, price: quote.priceId }], billing_cycle_anchor: "now", proration_behavior: "always_invoice", payment_behavior: "pending_if_incomplete", expand: ["latest_invoice"] }, { idempotencyKey: `upgrade-${quote.id}` });
   await syncMembership(user, stripe, User);
   const invoice = subscription.latest_invoice;
   res.json({ message: subscription.pending_update ? "Complete payment to activate the upgrade. Your existing paid membership is unchanged." : "Upgrade paid. Your new expiration date is available in membership status.", url: subscription.pending_update ? invoice?.hosted_invoice_url : undefined });

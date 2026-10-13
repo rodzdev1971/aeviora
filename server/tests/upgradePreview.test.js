@@ -23,6 +23,8 @@ test("Stripe preview supports legacy dates, rejects missing dates, and safely ex
   t.mock.method(Plan, "findById", async () => ({ _id: "222222222222222222222222", name: "Gold", price: 60 }));
   let saves = 0;
   t.mock.method(User, "updateOne", async (_, update) => {
+    if (!update.$set.upgradeQuote) return { modifiedCount: 1 };
+    user.upgradeQuote = update.$set.upgradeQuote;
     const doc = new User({ upgradeQuote: update.$set.upgradeQuote });
     assert.equal(doc.upgradeQuote.periodDays, 30);
     assert.equal(doc.upgradeQuote.amountCents, 5000);
@@ -33,7 +35,10 @@ test("Stripe preview supports legacy dates, rejects missing dates, and safely ex
   t.mock.method(Object.getPrototypeOf(stripe.subscriptions), "retrieve", async () => subscription);
   let priceCreates = 0, failPreview = false;
   t.mock.method(Object.getPrototypeOf(stripe.prices), "create", async () => { priceCreates++; return { id: "price_test" }; });
-  t.mock.method(Object.getPrototypeOf(stripe.invoices), "createPreview", async () => {
+  t.mock.method(Object.getPrototypeOf(stripe.invoices), "createPreview", async (params) => {
+    assert.equal(params.subscription_details.billing_cycle_anchor, "now");
+    assert.equal(params.subscription_details.proration_behavior, "always_invoice");
+    assert.equal("proration_date" in params.subscription_details, false, "Stripe rejects an explicit proration date when resetting the anchor to now");
     if (failPreview) throw Object.assign(new Error("SENSITIVE_RAW_ERROR"), { type: "StripeInvalidRequestError", param: "subscription_details.proration_date" });
     return { amount_due: 5000, lines: { data: [{ amount: -1000 }, { amount: 6000 }] } };
   });
@@ -45,6 +50,20 @@ test("Stripe preview supports legacy dates, rejects missing dates, and safely ex
   const post = () => fetch(`http://127.0.0.1:${server.address().port}/preview`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "test" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify({ planId: "222222222222222222222222" }) });
   assert.equal((await post()).status, 200);
   assert.equal(saves, 1);
+  let confirmations = 0;
+  t.mock.method(Object.getPrototypeOf(stripe.subscriptions), "update", async (id, params, options) => {
+    assert.equal(id, subscription.id);
+    assert.equal(params.billing_cycle_anchor, "now");
+    assert.equal(params.proration_behavior, "always_invoice");
+    assert.equal(params.payment_behavior, "pending_if_incomplete");
+    assert.equal("proration_date" in params, false);
+    assert.equal(options.idempotencyKey, `upgrade-${user.upgradeQuote.id}`);
+    confirmations++;
+    return subscription;
+  });
+  const confirmed = await fetch(`http://127.0.0.1:${server.address().port}/confirm`, { method: "POST", headers: { Cookie: `accessToken=${jwt.sign({ userId: "test" }, process.env.JWT_ACCESS_SECRET)}`, "Content-Type": "application/json" }, body: JSON.stringify({ quoteId: user.upgradeQuote.id, accepted: true }) });
+  assert.equal(confirmed.status, 200);
+  assert.equal(confirmations, 1);
   subscription.items.data[0].current_period_start = subscription.current_period_start;
   subscription.items.data[0].current_period_end = subscription.current_period_end;
   delete subscription.current_period_start; delete subscription.current_period_end;
