@@ -16,7 +16,8 @@ const membershipPlanSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true, maxlength: 100 },
   nameKey: { type: String, required: true, unique: true },
   price: { type: Number, required: true, min: 0 },
-  billingInterval: { type: String, enum: ["month"], default: "month" },
+  billingInterval: { type: String, enum: ["month", "day"], default: "day" },
+  billingIntervalCount: { type: Number, default: 30 },
   currency: { type: String, enum: ["USD"], default: "USD" },
   benefits: { type: [planBenefitSchema], default: [] },
 }, { timestamps: true, collection: "membershipPlans", strict: "throw" });

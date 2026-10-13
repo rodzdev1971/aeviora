@@ -11,14 +11,14 @@ import { changeStripeRenewal, stripePeriod, zellePaidThrough, membershipPortalCo
 const router = express.Router();
 
 router.get("/memberships", requireAuth, async (req, res) => {
-  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId stripePeriodEnd stripeCancelAtPeriodEnd zelle");
+  let user = await User.findById(req.user.id).select("membershipPlanId membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId stripePeriodEnd stripeCancelAtPeriodEnd stripePaidThrough stripePaidStart stripePaidInvoiceId stripePaidPrice upgradeQuote zelle");
   if (!user) return res.status(404).json({ message: "Account not found." });
   if (user.stripeCustomerId && !["pending", "active"].includes(user.zelle?.status)) {
     try { user = await syncMembership(user, stripeClient(), User); }
     catch { return res.status(503).json({ message: "Unable to verify your latest membership with Stripe. Please refresh shortly; do not purchase another plan." }); }
   }
   const plans = await MembershipPlan.find().select("name price currency billingInterval benefits").sort({ price: 1 });
-  res.json({ plans, ...memberStatus(user) });
+  res.json({ plans, upgradeQuote: user.upgradeQuote, ...memberStatus(user) });
 });
 
 router.post("/renewal", requireAuth, async (req, res) => {
@@ -78,7 +78,7 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
       payment_method_types: ["card"],
       expires_at: Math.floor(Date.now() / 1000) + 1800,
       customer: customerId,
-      line_items: [{ price_data: { currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "month" }, product_data: { name: plan.name } }, quantity: 1 }],
+      line_items: [{ price_data: { currency: "usd", unit_amount: Math.round(plan.price * 100), recurring: { interval: "day", interval_count: 30 }, product_data: { name: plan.name } }, quantity: 1 }],
       success_url: `${frontendUrl()}/memberships?payment=success`,
       cancel_url: `${frontendUrl()}/dashboard?payment=cancelled`,
       client_reference_id: user._id.toString(),
@@ -119,34 +119,14 @@ router.post("/webhook", async (req, res) => {
 
   const object = event.data.object;
   const customerId = typeof object.customer === "string" ? object.customer : object.customer?.id;
-  const userId = object.metadata?.aevioraUserId || object.client_reference_id;
-  const update = {};
-  if (customerId) update.stripeCustomerId = customerId;
-
-  if (event.type === "checkout.session.completed") {
-    update.stripeSubscriptionId = typeof object.subscription === "string" ? object.subscription : object.subscription?.id;
-    update.subscriptionStatus = object.payment_status === "paid" || object.payment_status === "no_payment_required" ? "active" : "incomplete";
-  }
-  if (event.type === "customer.subscription.updated") {
-    Object.assign(update, stripePeriod(object));
-    update.stripeSubscriptionId = object.id;
-    update.subscriptionStatus = object.status;
-  }
-  if (event.type === "customer.subscription.deleted") {
-    update.stripeSubscriptionId = null;
-    update.subscriptionStatus = "canceled";
-    update.membershipPlanId = null;
-    update.membershipName = "";
-  }
-
-  if (["checkout.session.completed", "customer.subscription.updated"].includes(event.type) && /^[a-f\d]{24}$/i.test(object.metadata?.membershipPlanId || "")) {
-    update.membershipPlanId = object.metadata.membershipPlanId;
-    update.membershipName = object.metadata.membershipName || "Membership";
-  }
-
-  if (Object.keys(update).length > 0) {
-    const filter = userId ? { _id: userId } : { stripeCustomerId: customerId };
-    await User.updateOne(filter, { $set: update });
+  const subscriptionValue = object.parent?.subscription_details?.subscription || object.subscription;
+  const subscriptionId = event.type.startsWith("customer.subscription.") ? object.id : typeof subscriptionValue === "string" ? subscriptionValue : subscriptionValue?.id;
+  if (["checkout.session.completed", "invoice.paid", "invoice.payment_failed", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type) && customerId && subscriptionId) {
+    const user = await User.findOne({ stripeCustomerId: customerId });
+    if (user && (!user.stripeSubscriptionId || user.stripeSubscriptionId === subscriptionId)) {
+      user.stripeSubscriptionId = subscriptionId;
+      await syncMembership(user, stripeClient(), User);
+    }
   }
   return res.json({ received: true });
 });

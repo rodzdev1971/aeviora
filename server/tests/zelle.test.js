@@ -11,13 +11,13 @@ import Plan from "../models/membershipPlans.js";
 import billingRouter from "../routes/membershipBillingRoutes.js";
 
 test("Zelle periods handle month ends and cancellation returns to Free", () => {
-  assert.equal(nextBillingDate("2026-01-31T12:00:00Z").toISOString(), "2026-02-28T12:00:00.000Z");
-  assert.equal(nextBillingDate("2028-01-31T12:00:00Z").toISOString(), "2028-02-29T12:00:00.000Z");
+  assert.equal(nextBillingDate("2026-01-31T12:00:00Z").toISOString(), "2026-03-02T12:00:00.000Z");
+  assert.equal(nextBillingDate("2028-01-31T12:00:00Z").toISOString(), "2028-03-01T12:00:00.000Z");
   assert.equal(zelleRecipient.phone, "786-280-7650");
   assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).current.status, "Awaiting Zelle payment confirmation");
   assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).subscribed, false);
   assert.equal(memberStatus({ zelle: { status: "pending", name: "Gold" } }).pending, true);
-  assert.equal(memberStatus({ zelle: { status: "active", name: "Gold" } }).subscribed, true);
+  assert.equal(memberStatus({ zelle: { status: "active", name: "Gold" } }).subscribed, false);
   assert.equal(memberStatus({ zelle: { status: "canceled" } }).current.name, "Free membership");
 });
 
@@ -32,6 +32,7 @@ test("admin confirmation advances one period atomically; canceled and paid accou
   t.mock.method(User, "updateOne", async (filter, update) => {
     if (filter["zelle.dueAt"]?.getTime() !== user.zelle.dueAt.getTime()) return { modifiedCount: 0 };
     assert.equal(update.$push["zelle.payments"].confirmedBy, "admin-test");
+    user.zelle.payments = [...(user.zelle.payments || []), update.$push["zelle.payments"]];
     user.zelle.dueAt = update.$set["zelle.dueAt"]; user.zelle.status = "active"; writes++;
     return { modifiedCount: 1 };
   });

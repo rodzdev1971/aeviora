@@ -4,6 +4,7 @@ import { apiRequest } from "../util/api";
 import { CheckCircle2 } from "lucide-react";
 import { discountText } from "../../shared/discounts.js";
 import { zelleRecipient } from "../../shared/zelle.js";
+import MembershipUpgrade from "./MembershipUpgrade";
 
 export default function MembershipOptions() {
   const [data, setData] = useState(null);
@@ -47,7 +48,8 @@ export default function MembershipOptions() {
     {error && <button type="button" className="mt-2 underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>Retry membership check</button>}
     {!data ? <p role="status">Loading memberships…</p> : <>
       <p className="mt-3 text-lg font-semibold">{data.pending ? `${data.current.name} — Pending payment confirmation` : data.current.name}</p>
-      {data.pending && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">Your paid membership and its benefits are not active. They become available after an administrator verifies your Zelle payment.</p>}
+      {data.pending && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">Your paid membership and its benefits are not active. They become available after {data.current.paymentMethod === "zelle" ? "an administrator verifies your Zelle payment" : "your payment is confirmed"}.</p>}
+      {data.current.paidThrough && <p className="mt-3 font-semibold">Paid membership expires: {new Date(data.current.paidThrough).toLocaleString()}</p>}
       <p className="mt-1 text-sm">{data.current.status === "free" ? "Free account — $0.00. Choose a plan below for membership benefits." : `Subscription status: ${data.current.status}`}</p>
       {data.current.cancelAtPeriodEnd && <p role="status" className="mt-3">Renewal canceled. Your paid membership remains available until {new Date(data.current.paidThrough || data.current.periodEnd).toLocaleString()}. Reactivating before then resumes renewal for the next period; it does not pay for the next period in advance.</p>}
       {!data.current.cancelAtPeriodEnd && data.current.periodEnd && <p className="mt-3">Next billing date: {new Date(data.current.periodEnd).toLocaleString()}. Reactivation does not charge the current period again.</p>}
@@ -57,16 +59,16 @@ export default function MembershipOptions() {
       {data.current.paymentMethod === "zelle" && <div className="mt-4 rounded-xl border border-aeviora-border p-4">
         <h3 className="font-semibold">Pay with Zelle</h3>
         <p>{zelleRecipient.name} · {zelleRecipient.phone}</p>
-        <p>{money(data.current.price)} monthly · Next unpaid period starts {new Date(data.current.dueAt).toLocaleDateString()}</p>
+        <p>{money(data.current.price)} 30-day · Next unpaid period starts {new Date(data.current.dueAt).toLocaleDateString()}</p>
         <p className="mt-2 text-sm">Include your account email in the payment memo. An administrator verifies receipt; selecting Zelle does not send money.</p>
       </div>}
       <h3 className="mt-7 font-display text-xl">Membership options</h3>
-      <p className="mt-2 text-sm text-aeviora-slate">Pay by card through Stripe or choose Zelle. Membership begins after checkout confirmation or administrator verification of your Zelle payment. Benefit service prices are separate from the monthly membership fee.</p>
+      <p className="mt-2 text-sm text-aeviora-slate">Pay by card through Stripe or choose Zelle. Membership begins after checkout confirmation or administrator verification of your Zelle payment. Benefit service prices are separate from the 30-day membership fee.</p>
       <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{data.plans.map((plan) => <article key={plan._id} className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border-2 bg-white ${data.current.planId === plan._id ? "border-aeviora-primary" : "border-aeviora-border"}`}>
         <div className="border-b border-aeviora-border bg-aeviora-ivory p-5">
           <h4 className="break-words font-display text-2xl text-aeviora-primaryDark">{plan.name}</h4>
-          <p className="mt-3 text-3xl font-bold text-aeviora-primaryDark">{plan.price === 0 ? "Free" : money(plan.price)}{plan.price !== 0 && <span className="text-sm font-normal text-aeviora-slate"> / month</span>}</p>
-          <p className="mt-2 text-sm text-aeviora-slate">{plan.price === 0 ? "No monthly membership fee" : "Monthly membership fee"}</p>
+          <p className="mt-3 text-3xl font-bold text-aeviora-primaryDark">{plan.price === 0 ? "Free" : money(plan.price)}{plan.price !== 0 && <span className="text-sm font-normal text-aeviora-slate"> / 30 days</span>}</p>
+          <p className="mt-2 text-sm text-aeviora-slate">{plan.price === 0 ? "No 30-day membership fee" : "30-day membership fee"}</p>
         </div>
         <div className="flex flex-1 flex-col p-5">
         <h5 className="text-lg font-semibold text-aeviora-charcoal">Plan benefits</h5>
@@ -81,6 +83,7 @@ export default function MembershipOptions() {
         </li>)}</ul>
         {!plan.benefits.length && <p className="mb-5 text-sm text-aeviora-slate">No benefits listed yet. Contact us for plan details.</p>}
         {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">{data.pending ? "Pending — awaiting administrator payment confirmation" : "Current membership"}</p> : !data.subscribed && !data.pending && <Link to={`/memberships/${plan._id}/payment`} className="btn-primary text-center">Choose {plan.name}</Link>}
+        {data.subscribed && plan.price > data.current.price && <MembershipUpgrade plan={plan} initialQuote={String(data.upgradeQuote?.planId) === plan._id ? data.upgradeQuote : null} onComplete={(text) => { setMessage(text); setRevision((value) => value + 1); }} />}
         </div>
       </article>)}</div>
       {data.plans.length === 0 && <p className="mt-4">Membership options will appear here when available.</p>}

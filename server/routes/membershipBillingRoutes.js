@@ -46,7 +46,7 @@ router.post("/:id/zelle", async (req, res) => {
   if (res.statusCode === 200) await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ADMIN_ZELLE_MEMBERSHIP_SELECTED", targetType: "User", targetId: req.params.id });
 });
 router.get("/accounts", async (req, res) => {
-  const users = await User.find({}).select("firstName lastName email phone accountStatus zelle membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId").sort({ firstName: 1 });
+  const users = await User.find({}).select("firstName lastName email phone accountStatus zelle membershipName subscriptionStatus stripeSubscriptionId stripeCustomerId upgradeQuote").sort({ firstName: 1 });
   res.json({ users: users.map((user) => ({ ...user.toObject(), zellePaidThrough: zellePaidThrough(user.zelle), zelleBalance: zelleBalance(user.zelle) })) });
 });
 router.get("/:id/details", async (req, res) => {
@@ -106,8 +106,9 @@ router.post("/:id/confirm", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ message: "Provide the displayed billing period and bank payment reference." });
   const user = await User.findById(req.params.id);
   if (!user || user.accountStatus !== "active" || !["pending", "active"].includes(user.zelle?.status)) return res.status(409).json({ message: "Membership is not eligible for confirmation." });
-  const start = new Date(parsed.data.dueAt), end = nextBillingDate(start);
-  const result = await User.updateOne({ _id: user._id, accountStatus: "active", "zelle.status": { $in: ["pending", "active"] }, "zelle.dueAt": start, "zelle.payments.reference": { $ne: parsed.data.reference } }, { $set: { "zelle.status": "active", "zelle.dueAt": end }, $push: { "zelle.payments": { periodStart: start, periodEnd: end, amount: user.zelle.price, reference: parsed.data.reference, confirmedBy: req.user.id, confirmedAt: new Date() } } });
+  const due = new Date(parsed.data.dueAt);
+  const start = new Date(Math.max(due.getTime(), Date.now())), end = nextBillingDate(start);
+  const result = await User.updateOne({ _id: user._id, accountStatus: "active", "zelle.status": { $in: ["pending", "active"] }, "zelle.dueAt": due, "zelle.payments.reference": { $ne: parsed.data.reference } }, { $set: { "zelle.status": "active", "zelle.dueAt": end }, $push: { "zelle.payments": { periodStart: start, periodEnd: end, amount: user.zelle.price, reference: parsed.data.reference, confirmedBy: req.user.id, confirmedAt: new Date() } } });
   if (!result.modifiedCount) return res.status(409).json({ message: "Period already confirmed, reference reused, or membership changed. Refresh." });
   await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ZELLE_PAYMENT_CONFIRMED", targetType: "User", targetId: user._id });
   res.json({ message: "Monthly payment confirmed." });

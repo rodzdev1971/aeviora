@@ -26,6 +26,8 @@ Configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `FRONTEND_ORIGIN` in
 Test checkout, webhook delivery, cancellation, and reminder eligibility using Stripe test mode before release. Zelle has no automatic bank verification: an admin must check the actual receipt. No live payments or reminder emails were sent during implementation.
 # Administrator Zelle receipts and balances
 
+**Current billing behavior:** see [30-day memberships](thirty-day-memberships.md) for exact 30-day periods, paid-access expiration, upgrades, the five-day reminder cron, and legacy Stripe migration. This supersedes the calendar-month scheduling notes below. Unpaid Zelle renewals show the next period's cost; months without paid access do not accrue additional charges.
+
 ## Paid periods, cancellation, and reactivation
 
 Cancellation stops renewal; confirmed Zelle access remains available until the latest receipt's period end. Administrators can **Reactivate Zelle renewal**. Before that date, reactivation keeps the existing paid-through date and makes the next period due on that date. After expiry, reactivation is pending until a new payment is verified. Reactivation never creates a receipt or marks a future period paid. Users still contact an administrator for Zelle changes.

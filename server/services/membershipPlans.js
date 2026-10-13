@@ -26,7 +26,7 @@ export function resolveMembership(input, catalog) {
   const catalogById = new Map(catalog.map((benefit) => [String(benefit._id), benefit]));
   return {
     name: data.name, nameKey: data.name.toLowerCase(), price: data.price,
-    billingInterval: "month", currency: "USD",
+    billingInterval: "day", billingIntervalCount: 30, currency: "USD",
     benefits: data.benefits.map((selection) => {
       const benefit = catalogById.get(selection.benefitId);
       const discounts = (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => discountSchema.parse(service.discount));

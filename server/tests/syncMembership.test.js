@@ -4,7 +4,7 @@ import { syncMembership } from "../services/syncMembership.js";
 
 test("recovers a paid plan when its checkout webhook has not arrived", async () => {
   const user = { _id: "user-test", stripeCustomerId: "cus_test" };
-  const subscription = { id: "sub_test", customer: "cus_test", status: "active", metadata: { aevioraUserId: "user-test", membershipPlanId: "111111111111111111111111", membershipName: "Gold" } };
+  const subscription = { id: "sub_test", customer: "cus_test", status: "active", latest_invoice: { id: "in_paid", status: "paid" }, metadata: { aevioraUserId: "user-test", membershipPlanId: "111111111111111111111111", membershipName: "Gold" } };
   const result = await syncMembership(user, { subscriptions: { list: async () => ({ data: [subscription] }) } }, { findOneAndUpdate: async (filter, update) => {
     assert.equal(filter.stripeCustomerId, "cus_test"); return { ...user, ...update.$set };
   } });

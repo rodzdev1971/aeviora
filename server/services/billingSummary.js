@@ -1,12 +1,11 @@
-import { nextBillingDate } from "../../shared/zelle.js";
-
 export function zelleBalance(zelle, now = new Date()) {
   // Legacy cancellations do not store the cancellation date needed to calculate arrears.
   if (zelle?.status === "canceled" && zelle.dueAt) return { amount: null, periods: null };
   if (!["pending", "active"].includes(zelle?.status) || !zelle.dueAt) return { amount: 0, periods: 0 };
-  let date = new Date(zelle.dueAt), periods = 0;
+  const date = new Date(zelle.dueAt);
   if (!Number.isFinite(date.getTime()) || !Number.isFinite(zelle.price)) throw new Error("Invalid billing record");
-  while (date <= now) { periods++; date = nextBillingDate(date); }
+  // Manual renewal does not accrue charges for periods with no paid access.
+  const periods = date <= now ? 1 : 0;
   return { amount: Math.round(zelle.price * 100) * periods / 100, periods };
 }
 
