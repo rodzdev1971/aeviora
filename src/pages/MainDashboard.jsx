@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { ExternalLink, ShieldCheck, FlaskConical, Sparkles, UserRound, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -48,6 +50,7 @@ const laboratoryServices = [
 ];
 
 function ServiceCard({ service }) {
+  useLanguage();
   const Icon = service.icon;
   return (
     <a
@@ -69,7 +72,7 @@ function ServiceCard({ service }) {
           />
         </span>
         <span className="mt-2 block text-sm leading-6 text-aeviora-slate">
-          {service.description}
+          {t(service.description)}
         </span>
       </span>
     </a>
@@ -77,6 +80,7 @@ function ServiceCard({ service }) {
 }
 
 function ServiceSection({ title, services }) {
+  useLanguage();
   return (
     <section aria-labelledby={title.toLowerCase().replaceAll(" ", "-")}>
       <div className="mb-4 flex items-baseline justify-between border-b border-aeviora-border pb-3">
@@ -84,9 +88,9 @@ function ServiceSection({ title, services }) {
           id={title.toLowerCase().replaceAll(" ", "-")}
           className="font-display text-2xl text-aeviora-charcoal"
         >
-          {title}
+          {t(title)}
         </h2>
-        <span className="text-sm text-aeviora-slate">{services.length} services</span>
+        <span className="text-sm text-aeviora-slate">{t(services.length)}{t(" services")}</span>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {services.map((service) => (
@@ -117,6 +121,7 @@ const clinicalPortals = [
 ];
 
 export default function MainDashboard() {
+  useLanguage();
   const [showTherapyQuiz, setShowTherapyQuiz] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -171,21 +176,16 @@ export default function MainDashboard() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-          Aeviora account
-        </p>
-        <h1 className="mt-2 font-display text-4xl">Your account dashboard</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-          Manage your account, payments, and subscription here. Clinical
-          information is accessed through your authorized healthcare portals.
-        </p>
+        <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">{t("Aeviora account")}</p>
+        <h1 className="mt-2 font-display text-4xl">{t("Your account dashboard")}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">{t("Manage your account, payments, and subscription here. Clinical information is accessed through your authorized healthcare portals.")}</p>
       </div>
       {notification && (
         <div
           role="status"
           className="mb-6 rounded-xl border border-aeviora-primary/30 bg-aeviora-primary/10 p-4 text-sm text-aeviora-primary"
         >
-          {notification}
+          {t(notification)}
         </div>
       )}
 
@@ -198,90 +198,69 @@ export default function MainDashboard() {
             onClick={() => setShowTherapyQuiz(true)}
             className="inline-flex items-center gap-2 border border-aeviora-primary px-4 py-3 text-sm font-semibold text-aeviora-primary transition hover:bg-aeviora-primary hover:text-white"
           >
-            <Sparkles aria-hidden="true" size={18} />
-            Explore therapy topics
-          </button>
+            <Sparkles aria-hidden="true" size={18} />{t("Explore therapy topics")}</button>
         )}
       </section>
       <div className="mt-8 space-y-10">
-        <ServiceSection title="Telehealth" services={telehealthServices} />
-        <ServiceSection title="Laboratories" services={laboratoryServices} />
+        <ServiceSection title={t("Telehealth")} services={telehealthServices} />
+        <ServiceSection title={t("Laboratories")} services={laboratoryServices} />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="card">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-                Account profile
-              </p>
-              <h2 className="mt-2 font-display text-2xl">Your information</h2>
+              <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">{t("Account profile")}</p>
+              <h2 className="mt-2 font-display text-2xl">{t("Your information")}</h2>
             </div>
             <ShieldCheck className="text-aeviora-primary" aria-hidden="true" />
           </div>
           <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-gray-500">Name</dt>
-              <dd className="font-semibold">Your profile</dd>
+              <dt className="text-gray-500">{t("Name")}</dt>
+              <dd className="font-semibold">{t("Your profile")}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Contact</dt>
-              <dd className="font-semibold">Your saved details</dd>
+              <dt className="text-gray-500">{t("Contact")}</dt>
+              <dd className="font-semibold">{t("Your saved details")}</dd>
             </div>
           </dl>
-          <Link to="/profile" className="btn-outline mt-6 inline-flex">
-            Manage profile
-          </Link>
+          <Link to="/profile" className="btn-outline mt-6 inline-flex">{t("Manage profile")}</Link>
         </section>
 
         <section className="card">
-          <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-            Payments
-          </p>
-          <h2 className="mt-2 font-display text-2xl">Payment information</h2>
-          <p className="mt-4 text-sm leading-6 text-gray-600">
-            Payment methods and receipts will appear here when billing is
-            connected to your account.
-          </p>
+          <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">{t("Payments")}</p>
+          <h2 className="mt-2 font-display text-2xl">{t("Payment information")}</h2>
+          <p className="mt-4 text-sm leading-6 text-gray-600">{t("Payment methods and receipts will appear here when billing is connected to your account.")}</p>
           <button
             type="button"
             onClick={openBillingPortal}
             disabled={paymentLoading}
             className="btn-outline mt-6 disabled:opacity-60"
-          >
-            Manage payment method
-          </button>
+          >{t("Manage payment method")}</button>
         </section>
 
         <MembershipOptions />
 
         <section className="card lg:col-span-2">
-          <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">
-            External clinical portals
-          </p>
-          <h2 className="mt-2 font-display text-2xl">
-            Get your lab reports and medical records
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
-            Aeviora does not collect or display clinical records here. Sign in
-            directly to the portal used by your laboratory or healthcare
-            organization.
-          </p>
+          <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">{t("External clinical portals")}</p>
+          <h2 className="mt-2 font-display text-2xl">{t("Get your lab reports and medical records")}</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">{t("Aeviora does not collect or display clinical records here. Sign in directly to the portal used by your laboratory or healthcare organization.")}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {clinicalPortals.map((portal) => (
               <a
-                key={portal.name}
+                key={t(portal.name)}
                 href={portal.href}
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-2xl border border-aeviora-border p-5 transition hover:border-aeviora-primary hover:shadow-sm"
               >
                 <span className="flex items-center justify-between gap-3 font-semibold">
-                  {portal.name}
+                  {t(portal.name)}
                   <ExternalLink size={17} aria-hidden="true" />
                 </span>
                 <span className="mt-2 block text-sm leading-6 text-gray-600">
-                  {portal.description}
+                  {t(portal.description)}
                 </span>
               </a>
             ))}
@@ -289,7 +268,7 @@ export default function MainDashboard() {
         </section>
 
         {account && ["provider", "admin"].includes(account.role) && <PatientDirectory role={account.role} onEdit={selectPatient} refreshKey={directoryRevision} />}
-        {staffError && <p role="alert" className="text-red-700">{staffError}</p>}
+        {staffError && <p role="alert" className="text-red-700">{t(staffError)}</p>}
       </div>
 
       {paymentError && (
@@ -297,10 +276,10 @@ export default function MainDashboard() {
           role="alert"
           className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800"
         >
-          {paymentError}
+          {t(paymentError)}
         </p>
       )}
-      {selectedPatient && <div className="fixed inset-0 z-50 flex items-center justify-center bg-aeviora-black/60 p-6" role="presentation"><form onSubmit={updatePatient} role="dialog" aria-modal="true" aria-labelledby="patient-update-title" className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl"><h2 id="patient-update-title" className="font-display text-2xl">Update patient profile</h2><p className="mt-2 text-sm text-gray-600">{selectedPatient.firstName} {selectedPatient.lastName}</p><div className="mt-5 grid gap-4 sm:grid-cols-2">{Object.keys(patientUpdate).map((name) => <label key={name} className="label">{name.replace("Line", " line ").replace(/^[a-z]/, (letter) => letter.toUpperCase())}<input className="input mt-2" value={patientUpdate[name]} onChange={(event) => setPatientUpdate({ ...patientUpdate, [name]: event.target.value })} /></label>)}</div><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setSelectedPatient(null)} className="btn-secondary">Cancel</button><button type="submit" className="btn-primary">Save update</button></div></form></div>}
+      {selectedPatient && <div className="fixed inset-0 z-50 flex items-center justify-center bg-aeviora-black/60 p-6" role="presentation"><form onSubmit={updatePatient} role="dialog" aria-modal="true" aria-labelledby="patient-update-title" className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl"><h2 id="patient-update-title" className="font-display text-2xl">{t("Update patient profile")}</h2><p className="mt-2 text-sm text-gray-600">{selectedPatient.firstName} {selectedPatient.lastName}</p><div className="mt-5 grid gap-4 sm:grid-cols-2">{Object.keys(patientUpdate).map((name) => <label key={name} className="label">{t(name.replace("Line", " line ").replace(/^[a-z]/, (letter) => letter.toUpperCase()))}<input className="input mt-2" value={patientUpdate[name]} onChange={(event) => setPatientUpdate({ ...patientUpdate, [name]: event.target.value })} /></label>)}</div><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setSelectedPatient(null)} className="btn-secondary">{t("Cancel")}</button><button type="submit" className="btn-primary">{t("Save update")}</button></div></form></div>}
     </div>
   );
 }

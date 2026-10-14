@@ -1,12 +1,15 @@
+import { t, getLocale } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 import { CheckCircle2 } from "lucide-react";
-import { discountText } from "../../shared/discounts.js";
+import { discountText } from "../i18n/discountText.js";
 import { zelleRecipient } from "../../shared/zelle.js";
 import MembershipUpgrade from "./MembershipUpgrade";
 
 export default function MembershipOptions() {
+  useLanguage();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -30,9 +33,9 @@ export default function MembershipOptions() {
       window.location.assign(result.url);
     } catch (failure) { setError(failure.message); setBusy(false); }
   }
-  const money = (amount) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  const money = (amount) => new Intl.NumberFormat(getLocale(), { style: "currency", currency: "USD" }).format(amount);
   async function renewal(cancel) {
-    if (!window.confirm(cancel ? "Cancel renewal at the end of the current period? Paid access continues until then." : "Reactivate recurring billing on the next billing date? The current period will not be charged again.")) return;
+    if (!window.confirm(t(cancel ? "Cancel renewal at the end of the current period? Paid access continues until then." : "Reactivate recurring billing on the next billing date? The current period will not be charged again."))) return;
     setBusy(true); setError(""); setMessage("");
     try {
       const result = await apiRequest("/api/payments/renewal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cancel }) });
@@ -41,54 +44,54 @@ export default function MembershipOptions() {
     finally { setBusy(false); }
   }
   return <section className="card lg:col-span-2" aria-labelledby="membership-heading">
-    <h2 id="membership-heading" className="font-display text-2xl">Your membership</h2>
-    {returnedFromPayment && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">{data?.subscribed ? `Your membership is ${data.current.name}. Status: ${data.current.status}.` : "Checking your payment with Stripe. Your plan will appear once the subscription is confirmed."}</p>}
-    {error && <p role="alert" className="mt-3 text-red-700">{error}</p>}
-    {message && <p role="status" className="mt-3">{message}</p>}
-    {error && <button type="button" className="mt-2 underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>Retry membership check</button>}
-    {!data ? <p role="status">Loading memberships…</p> : <>
-      <p className="mt-3 text-lg font-semibold">{data.pending ? `${data.current.name} — Pending payment confirmation` : data.current.name}</p>
-      {data.pending && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">Your paid membership and its benefits are not active. They become available after {data.current.paymentMethod === "zelle" ? "an administrator verifies your Zelle payment" : "your payment is confirmed"}.</p>}
-      {data.current.paidThrough && <p className="mt-3 font-semibold">Paid membership expires: {new Date(data.current.paidThrough).toLocaleString()}</p>}
-      <p className="mt-1 text-sm">{data.current.status === "free" ? "Free account — $0.00. Choose a plan below for membership benefits." : `Subscription status: ${data.current.status}`}</p>
-      {data.nextPlanChangeAt && new Date(data.nextPlanChangeAt) > new Date() && <p className="mt-3">Your next upgrade or downgrade is available after {new Date(data.nextPlanChangeAt).toLocaleString()}. Plan changes are limited to once every 24 hours.</p>}
-      {data.current.cancelAtPeriodEnd && <p role="status" className="mt-3">Renewal canceled. Your paid membership remains available until {new Date(data.current.paidThrough || data.current.periodEnd).toLocaleString()}. Reactivating before then resumes renewal for the next period; it does not pay for the next period in advance.</p>}
-      {!data.current.cancelAtPeriodEnd && data.current.periodEnd && <p className="mt-3">Next billing date: {new Date(data.current.periodEnd).toLocaleString()}. Reactivation does not charge the current period again.</p>}
-      <button type="button" disabled={busy} className="mt-3 text-sm underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>Refresh membership status</button>
-      {data.subscribed && data.current.paymentMethod !== "zelle" && <button type="button" disabled={busy} onClick={() => choose(null)} className="btn-secondary mt-4 ml-3">Manage current membership</button>}
-      {data.subscribed && data.current.paymentMethod === "stripe" && <button type="button" disabled={busy} onClick={() => renewal(!data.current.cancelAtPeriodEnd)} className="btn-secondary mt-4 ml-3">{data.current.cancelAtPeriodEnd ? "Reactivate renewal" : "Cancel renewal"}</button>}
+    <h2 id="membership-heading" className="font-display text-2xl">{t("Your membership")}</h2>
+    {returnedFromPayment && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">{t(data?.subscribed ? `Your membership is ${data.current.name}. Status: ${t(data.current.status)}.` : "Checking your payment with Stripe. Your plan will appear once the subscription is confirmed.")}</p>}
+    {error && <p role="alert" className="mt-3 text-red-700">{t(error)}</p>}
+    {message && <p role="status" className="mt-3">{t(message)}</p>}
+    {error && <button type="button" className="mt-2 underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>{t("Retry membership check")}</button>}
+    {!data ? <p role="status">{t("Loading memberships…")}</p> : <>
+      <p className="mt-3 text-lg font-semibold">{t(data.pending ? `${data.current.name} — Pending payment confirmation` : data.current.status === "free" ? "Free" : data.current.name)}</p>
+      {data.pending && <p role="status" className="mt-3 rounded-lg bg-aeviora-ivory p-3">{t("Your paid membership and its benefits are not active. They become available after ")}{t(data.current.paymentMethod === "zelle" ? "an administrator verifies your Zelle payment" : "your payment is confirmed")}.</p>}
+      {data.current.paidThrough && <p className="mt-3 font-semibold">{t("Paid membership expires: ")}{t(new Date(data.current.paidThrough).toLocaleString(getLocale()))}</p>}
+      <p className="mt-1 text-sm">{t(data.current.status === "free" ? "Free account — $0.00. Choose a plan below for membership benefits." : `Subscription status: ${t(data.current.status)}`)}</p>
+      {data.nextPlanChangeAt && new Date(data.nextPlanChangeAt) > new Date() && <p className="mt-3">{t("Your next upgrade or downgrade is available after ")}{t(new Date(data.nextPlanChangeAt).toLocaleString(getLocale()))}{t(". Plan changes are limited to once every 24 hours.")}</p>}
+      {data.current.cancelAtPeriodEnd && <p role="status" className="mt-3">{t("Renewal canceled. Your paid membership remains available until ")}{t(new Date(data.current.paidThrough || data.current.periodEnd).toLocaleString(getLocale()))}{t(". Reactivating before then resumes renewal for the next period; it does not pay for the next period in advance.")}</p>}
+      {!data.current.cancelAtPeriodEnd && data.current.periodEnd && <p className="mt-3">{t("Next billing date: ")}{t(new Date(data.current.periodEnd).toLocaleString(getLocale()))}{t(". Reactivation does not charge the current period again.")}</p>}
+      <button type="button" disabled={busy} className="mt-3 text-sm underline" onClick={() => { setError(""); setRevision((value) => value + 1); }}>{t("Refresh membership status")}</button>
+      {data.subscribed && data.current.paymentMethod !== "zelle" && <button type="button" disabled={busy} onClick={() => choose(null)} className="btn-secondary mt-4 ml-3">{t("Manage current membership")}</button>}
+      {data.subscribed && data.current.paymentMethod === "stripe" && <button type="button" disabled={busy} onClick={() => renewal(!data.current.cancelAtPeriodEnd)} className="btn-secondary mt-4 ml-3">{t(data.current.cancelAtPeriodEnd ? "Reactivate renewal" : "Cancel renewal")}</button>}
       {data.current.paymentMethod === "zelle" && <div className="mt-4 rounded-xl border border-aeviora-border p-4">
-        <h3 className="font-semibold">Pay with Zelle</h3>
+        <h3 className="font-semibold">{t("Pay with Zelle")}</h3>
         <p>{zelleRecipient.name} · {zelleRecipient.phone}</p>
-        <p>{money(data.current.price)} 30-day · Next unpaid period starts {new Date(data.current.dueAt).toLocaleDateString()}</p>
-        <p className="mt-2 text-sm">Include your account email in the payment memo. An administrator verifies receipt; selecting Zelle does not send money.</p>
+        <p>{t(money(data.current.price))}{t(" 30-day · Next unpaid period starts ")}{t(new Date(data.current.dueAt).toLocaleDateString(getLocale()))}</p>
+        <p className="mt-2 text-sm">{t("Include your account email in the payment memo. An administrator verifies receipt; selecting Zelle does not send money.")}</p>
       </div>}
-      <h3 className="mt-7 font-display text-xl">Membership options</h3>
-      <p className="mt-2 text-sm text-aeviora-slate">Pay by card through Stripe or choose Zelle. Membership begins after checkout confirmation or administrator verification of your Zelle payment. Benefit service prices are separate from the 30-day membership fee.</p>
+      <h3 className="mt-7 font-display text-xl">{t("Membership options")}</h3>
+      <p className="mt-2 text-sm text-aeviora-slate">{t("Pay by card through Stripe or choose Zelle. Membership begins after checkout confirmation or administrator verification of your Zelle payment. Benefit service prices are separate from the 30-day membership fee.")}</p>
       <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{data.plans.map((plan) => <article key={plan._id} className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border-2 bg-white ${data.current.planId === plan._id ? "border-aeviora-primary" : "border-aeviora-border"}`}>
         <div className="border-b border-aeviora-border bg-aeviora-ivory p-5">
           <h4 className="break-words font-display text-2xl text-aeviora-primaryDark">{plan.name}</h4>
-          <p className="mt-3 text-3xl font-bold text-aeviora-primaryDark">{plan.price === 0 ? "Free" : money(plan.price)}{plan.price !== 0 && <span className="text-sm font-normal text-aeviora-slate"> / 30 days</span>}</p>
-          <p className="mt-2 text-sm text-aeviora-slate">{plan.price === 0 ? "No 30-day membership fee" : "30-day membership fee"}</p>
+          <p className="mt-3 text-3xl font-bold text-aeviora-primaryDark">{t(plan.price === 0 ? "Free" : money(plan.price))}{plan.price !== 0 && <span className="text-sm font-normal text-aeviora-slate">{t(" / 30 days")}</span>}</p>
+          <p className="mt-2 text-sm text-aeviora-slate">{t(plan.price === 0 ? "No 30-day membership fee" : "30-day membership fee")}</p>
         </div>
         <div className="flex flex-1 flex-col p-5">
-        <h5 className="text-lg font-semibold text-aeviora-charcoal">Plan benefits</h5>
+        <h5 className="text-lg font-semibold text-aeviora-charcoal">{t("Plan benefits")}</h5>
         <ul className="my-4 flex-1 space-y-4">{plan.benefits.map((benefit) => <li key={benefit.benefitId} className="flex items-start gap-3 rounded-xl bg-aeviora-cream p-3">
           <CheckCircle2 size={20} aria-hidden="true" className="mt-1 shrink-0 text-aeviora-primary" />
           <div className="min-w-0 flex-1">
             <p className="break-words font-semibold text-aeviora-charcoal">{benefit.name}</p>
-            <p className="mt-2 text-lg font-bold text-aeviora-primary">{benefit.pricingType === "discount" ? (benefit.discountPercent != null ? `${benefit.discountPercent}% off` : "Member discount") : benefit.price === 0 ? "Free" : money(benefit.price)}</p>
-            <p className="mt-1 text-xs leading-5 text-aeviora-slate">{benefit.pricingType === "discount" ? "On eligible services; exclusions apply." : benefit.price === 0 ? "Included with this membership at no additional charge." : "Member price for this benefit; separate from the membership fee."}</p>
-            {(benefit.discounts || []).map((discount, index) => <p key={index} className="mt-2 text-sm font-medium text-aeviora-primary">{discountText(discount)}</p>)}
+            <p className="mt-2 text-lg font-bold text-aeviora-primary">{t(benefit.pricingType === "discount" ? (benefit.discountPercent != null ? `${benefit.discountPercent}% off` : "Member discount") : benefit.price === 0 ? "Free" : money(benefit.price))}</p>
+            <p className="mt-1 text-xs leading-5 text-aeviora-slate">{t(benefit.pricingType === "discount" ? "On eligible services; exclusions apply." : benefit.price === 0 ? "Included with this membership at no additional charge." : "Member price for this benefit; separate from the membership fee.")}</p>
+            {(benefit.discounts || []).map((discount, index) => <p key={index} className="mt-2 text-sm font-medium text-aeviora-primary">{t(discountText(discount))}</p>)}
           </div>
         </li>)}</ul>
-        {!plan.benefits.length && <p className="mb-5 text-sm text-aeviora-slate">No benefits listed yet. Contact us for plan details.</p>}
-        {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">{data.pending ? "Pending — awaiting administrator payment confirmation" : "Current membership"}</p> : !data.subscribed && !data.pending && <Link to={`/memberships/${plan._id}/payment`} className="btn-primary text-center">Choose {plan.name}</Link>}
+        {!plan.benefits.length && <p className="mb-5 text-sm text-aeviora-slate">{t("No benefits listed yet. Contact us for plan details.")}</p>}
+        {data.current.planId === plan._id ? <p className="font-semibold text-aeviora-primary">{t(data.pending ? "Pending — awaiting administrator payment confirmation" : "Current membership")}</p> : !data.subscribed && !data.pending && <Link to={`/memberships/${plan._id}/payment`} className="btn-primary text-center">{t("Choose ")}{plan.name}</Link>}
         {data.subscribed && plan.price > data.current.price && <MembershipUpgrade plan={plan} initialQuote={String(data.upgradeQuote?.planId) === plan._id ? data.upgradeQuote : null} onComplete={(text) => { setMessage(text); setRevision((value) => value + 1); }} />}
         </div>
       </article>)}</div>
-      {data.plans.length === 0 && <p className="mt-4">Membership options will appear here when available.</p>}
-      {(data.subscribed || data.pending) && <p className="mt-4 text-sm">{data.current.paymentMethod === "zelle" ? "Contact our team for help with your Zelle membership." : "For a plan change, use billing management or contact our team. Canceling takes effect according to your billing terms."}</p>}
+      {data.plans.length === 0 && <p className="mt-4">{t("Membership options will appear here when available.")}</p>}
+      {(data.subscribed || data.pending) && <p className="mt-4 text-sm">{t(data.current.paymentMethod === "zelle" ? "Contact our team for help with your Zelle membership." : "For a plan change, use billing management or contact our team. Canceling takes effect according to your billing terms.")}</p>}
     </>}
   </section>;
 }

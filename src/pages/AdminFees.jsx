@@ -1,15 +1,19 @@
+import { t, getLocale } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 import DiscountEditor from "../components/DiscountEditor.jsx";
-import { emptyDiscount, discountText } from "../../shared/discounts.js";
+import { emptyDiscount } from "../../shared/discounts.js";
+import { discountText } from "../i18n/discountText.js";
 import { feeCatalogs } from "../../shared/feeCatalog.js";
 
 const emptyForm = () => ({ name: "", billcode: "", description: "", retailPrice: "", prices: [{ provider: "", amount: "" }], pricingType: "price", discount: emptyDiscount() });
-const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+const money = (value) => new Intl.NumberFormat(getLocale(), { style: "currency", currency: "USD" }).format(value);
 const numericValue = (value) => value?.$numberDecimal ?? value ?? "";
 
 function FeeEditor({ source }) {
+  useLanguage();
   const config = feeCatalogs[source];
   const [fees, setFees] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -49,7 +53,7 @@ function FeeEditor({ source }) {
     setForm({ ...form, prices: form.prices.map((row, position) => position === index ? { ...row, [field]: value } : row) });
   }
   async function removeFee(fee) {
-    if (busy || !window.confirm(`Delete "${fee.name || fee.description || fee.order}" and all its provider prices? This cannot be undone. Existing benefits and discount rules are not changed automatically; review any that use this fee.`)) return;
+    if (busy || !window.confirm(t(`Delete "${fee.name || fee.description || fee.order}" and all its provider prices? This cannot be undone. Existing benefits and discount rules are not changed automatically; review any that use this fee.`))) return;
     setBusy(true); setError(""); setMessage("");
     try {
       const result = await apiRequest(`/api/admin/fees/${source}/${fee._id}`, { method: "DELETE" });
@@ -78,52 +82,52 @@ function FeeEditor({ source }) {
   }
 
   return <div className="space-y-6">
-    {error && <p role="alert" className="border-l-4 border-red-600 bg-red-50 p-4 text-red-800">{error}</p>}
-    {message && <p role="status" className="border-l-4 border-green-700 bg-green-50 p-4 text-green-900">{message}</p>}
+    {error && <p role="alert" className="border-l-4 border-red-600 bg-red-50 p-4 text-red-800">{t(error)}</p>}
+    {message && <p role="status" className="border-l-4 border-green-700 bg-green-50 p-4 text-green-900">{t(message)}</p>}
     <form onSubmit={save} className="card">
       <fieldset disabled={busy} className="min-w-0 space-y-5 disabled:opacity-60">
-        <legend className="mb-4 font-display text-2xl">{editingId ? "Edit fee" : "New fee"} · {config.label}</legend>
+        <legend className="mb-4 font-display text-2xl">{t(editingId ? "Edit fee" : "New fee")} · {t(config.label)}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div><label className="label" htmlFor="fee-name">Name</label><input id="fee-name" className="input" required maxLength={300} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div>
-          <div><label className="label" htmlFor="fee-code">Billing code (optional)</label><input id="fee-code" className="input" maxLength={100} value={form.billcode} onChange={(event) => setForm({ ...form, billcode: event.target.value })} /></div>
+          <div><label className="label" htmlFor="fee-name">{t("Name")}</label><input id="fee-name" className="input" required maxLength={300} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div>
+          <div><label className="label" htmlFor="fee-code">{t("Billing code (optional)")}</label><input id="fee-code" className="input" maxLength={100} value={form.billcode} onChange={(event) => setForm({ ...form, billcode: event.target.value })} /></div>
         </div>
-        <div><label className="label" htmlFor="fee-description">Description</label><textarea id="fee-description" className="input" required maxLength={4000} rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
-        {source === "serviceFees" && <div><label className="label" htmlFor="pricing-type">Service fee type</label><select id="pricing-type" className="input" value={form.pricingType} onChange={(event) => setForm({ ...form, pricingType: event.target.value })}><option value="price">Fixed provider prices</option><option value="discount">Percentage discount</option></select></div>}
+        <div><label className="label" htmlFor="fee-description">{t("Description")}</label><textarea id="fee-description" className="input" required maxLength={4000} rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
+        {source === "serviceFees" && <div><label className="label" htmlFor="pricing-type">{t("Service fee type")}</label><select id="pricing-type" className="input" value={form.pricingType} onChange={(event) => setForm({ ...form, pricingType: event.target.value })}><option value="price">{t("Fixed provider prices")}</option><option value="discount">{t("Percentage discount")}</option></select></div>}
         {isDiscount ? <DiscountEditor value={form.discount} onChange={(discount) => setForm({ ...form, discount })} /> : <>
-        <div><label className="label" htmlFor="retail-price">Retail price ($)</label><input id="retail-price" type="number" className="input" required min="0" max="100000000" step="0.01" value={form.retailPrice} onChange={(event) => setForm({ ...form, retailPrice: event.target.value })} /></div>
+        <div><label className="label" htmlFor="retail-price">{t("Retail price ($)")}</label><input id="retail-price" type="number" className="input" required min="0" max="100000000" step="0.01" value={form.retailPrice} onChange={(event) => setForm({ ...form, retailPrice: event.target.value })} /></div>
         <div className="space-y-4 border-t border-aeviora-border pt-5">
-          <h2 className="font-semibold">Provider prices ({form.prices.length}/200)</h2>
-          <p className="text-sm text-aeviora-slate">Add one row for each provider and their cost. Retail price is separate from provider costs. All amounts are in USD.</p>
+          <h2 className="font-semibold">{t("Provider prices (")}{t(form.prices.length)}/200)</h2>
+          <p className="text-sm text-aeviora-slate">{t("Add one row for each provider and their cost. Retail price is separate from provider costs. All amounts are in USD.")}</p>
           {form.prices.map((row, index) => <div key={index} className="grid gap-3 rounded-xl border border-aeviora-border p-4 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
-            <div><label className="label" htmlFor={`provider-${index}`}>{config.providerLabel} {index + 1}</label><input id={`provider-${index}`} className="input" required maxLength={300} value={row.provider} onChange={(event) => updatePrice(index, "provider", event.target.value)} /></div>
-            <div><label className="label" htmlFor={`amount-${index}`}>Amount {index + 1} ($)</label><input id={`amount-${index}`} className="input" required type="number" min="0" max="100000000" step="0.01" value={row.amount} onChange={(event) => updatePrice(index, "amount", event.target.value)} /></div>
-            <button type="button" className="py-3 text-sm font-semibold text-red-700 underline disabled:opacity-50" disabled={form.prices.length <= 1} aria-label={`Remove provider ${index + 1}`} onClick={() => setForm({ ...form, prices: form.prices.filter((_, position) => position !== index) })}>Remove</button>
+            <div><label className="label" htmlFor={`provider-${index}`}>{t(config.providerLabel)} {t(index + 1)}</label><input id={`provider-${index}`} className="input" required maxLength={300} value={row.provider} onChange={(event) => updatePrice(index, "provider", event.target.value)} /></div>
+            <div><label className="label" htmlFor={`amount-${index}`}>{t("Amount ")}{t(index + 1)} ($)</label><input id={`amount-${index}`} className="input" required type="number" min="0" max="100000000" step="0.01" value={row.amount} onChange={(event) => updatePrice(index, "amount", event.target.value)} /></div>
+            <button type="button" className="py-3 text-sm font-semibold text-red-700 underline disabled:opacity-50" disabled={form.prices.length <= 1} aria-label={t(`Remove provider ${index + 1}`)} onClick={() => setForm({ ...form, prices: form.prices.filter((_, position) => position !== index) })}>{t("Remove")}</button>
           </div>)}
-          <button type="button" className="btn-secondary disabled:opacity-50" disabled={form.prices.length >= 200} onClick={() => setForm({ ...form, prices: [...form.prices, { provider: "", amount: "" }] })}>Add provider price</button>
+          <button type="button" className="btn-secondary disabled:opacity-50" disabled={form.prices.length >= 200} onClick={() => setForm({ ...form, prices: [...form.prices, { provider: "", amount: "" }] })}>{t("Add provider price")}</button>
         </div>
         </>}
-        <div className="flex flex-wrap gap-3"><button type="submit" className="btn-primary">{busy ? "Saving…" : editingId ? "Save fee" : "Create fee"}</button>
-          {editingId && <button type="button" className="btn-secondary" onClick={reset}>Cancel editing</button>}</div>
+        <div className="flex flex-wrap gap-3"><button type="submit" className="btn-primary">{t(busy ? "Saving…" : editingId ? "Save fee" : "Create fee")}</button>
+          {editingId && <button type="button" className="btn-secondary" onClick={reset}>{t("Cancel editing")}</button>}</div>
       </fieldset>
     </form>
     <section className="space-y-4" aria-labelledby="saved-fees">
-      <h2 id="saved-fees" className="font-display text-2xl">Saved {config.label.toLowerCase()}</h2>
-      <div className="flex flex-wrap items-end gap-3"><div className="min-w-0 flex-1"><label className="label" htmlFor="fee-search">Search name, code, or provider</label><input id="fee-search" className="input" type="search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
-        <button type="button" className="btn-secondary disabled:opacity-50" disabled={loading || busy} onClick={() => { setLoading(true); setError(""); setReload((value) => value + 1); }}>Refresh fees</button></div>
-      {loading ? <p role="status">Loading fees…</p> : <>
-        <p className="text-sm text-aeviora-slate">{filtered.length} matching fees</p>
+      <h2 id="saved-fees" className="font-display text-2xl">{t("Saved ")}{t(config.label.toLowerCase())}</h2>
+      <div className="flex flex-wrap items-end gap-3"><div className="min-w-0 flex-1"><label className="label" htmlFor="fee-search">{t("Search name, code, or provider")}</label><input id="fee-search" className="input" type="search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div>
+        <button type="button" className="btn-secondary disabled:opacity-50" disabled={loading || busy} onClick={() => { setLoading(true); setError(""); setReload((value) => value + 1); }}>{t("Refresh fees")}</button></div>
+      {loading ? <p role="status">{t("Loading fees…")}</p> : <>
+        <p className="text-sm text-aeviora-slate">{t(filtered.length)}{t(" matching fees")}</p>
         {filtered.slice((currentPage - 1) * 20, currentPage * 20).map((fee) => <article key={fee._id} className="card min-w-0 space-y-3">
           <h3 className="break-words text-lg font-semibold">{fee.name || fee.description || fee.order}</h3>
           <p className="break-words text-sm text-aeviora-slate">{fee.description}</p>
-          <p className="text-sm">Code: {fee[config.billcode] || "—"} · {fee.pricingType === "discount" ? discountText(fee.discount) : `Retail: ${money(numericValue(fee.retailPrice))}`}</p>
-          <ul className="space-y-1 text-sm">{(fee[config.prices] || []).map((row, index) => <li key={index} className="break-words">{row?.[config.provider]}: {money(numericValue(row?.amount))}</li>)}</ul>
-          <button type="button" className="btn-secondary disabled:opacity-50" disabled={busy} onClick={() => edit(fee)}>Edit / add provider prices</button>
-          <button type="button" className="ml-3 px-3 py-2 font-semibold text-red-700 underline disabled:opacity-50" disabled={busy} onClick={() => removeFee(fee)} aria-label={`Delete ${fee.name || fee.description || fee.order}`}>Delete fee</button>
+          <p className="text-sm">{t("Code: ")}{t(fee[config.billcode] || "—")} · {t(fee.pricingType === "discount" ? discountText(fee.discount) : `Retail: ${money(numericValue(fee.retailPrice))}`)}</p>
+          <ul className="space-y-1 text-sm">{(fee[config.prices] || []).map((row, index) => <li key={index} className="break-words">{t(row?.[config.provider])}: {t(money(numericValue(row?.amount)))}</li>)}</ul>
+          <button type="button" className="btn-secondary disabled:opacity-50" disabled={busy} onClick={() => edit(fee)}>{t("Edit / add provider prices")}</button>
+          <button type="button" className="ml-3 px-3 py-2 font-semibold text-red-700 underline disabled:opacity-50" disabled={busy} onClick={() => removeFee(fee)} aria-label={t(`Delete ${fee.name || fee.description || fee.order}`)}>{t("Delete fee")}</button>
         </article>)}
-        {!filtered.length && <p>No matching fees. Add an entry above or change your search.</p>}
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Page {currentPage} of {pages}</span><div className="flex gap-2">
-          <button type="button" className="btn-secondary disabled:opacity-50" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>Previous</button>
-          <button type="button" className="btn-secondary disabled:opacity-50" disabled={currentPage >= pages} onClick={() => setPage(currentPage + 1)}>Next</button>
+        {!filtered.length && <p>{t("No matching fees. Add an entry above or change your search.")}</p>}
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>{t("Page ")}{t(currentPage)}{t(" of ")}{t(pages)}</span><div className="flex gap-2">
+          <button type="button" className="btn-secondary disabled:opacity-50" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>{t("Previous")}</button>
+          <button type="button" className="btn-secondary disabled:opacity-50" disabled={currentPage >= pages} onClick={() => setPage(currentPage + 1)}>{t("Next")}</button>
         </div></div>
       </>}
     </section>
@@ -131,17 +135,18 @@ function FeeEditor({ source }) {
 }
 
 export default function AdminFees() {
+  useLanguage();
   const [source, setSource] = useState("laboratoryFees");
   return <section className="mx-auto max-w-6xl space-y-6">
     <header className="border-b border-aeviora-border pb-5">
-      <Link to="/admin" className="text-sm text-aeviora-primary underline">Account overview</Link>
-      <h1 className="mt-4 font-display text-3xl">Fee catalogs</h1>
-      <p className="mt-2 text-sm text-aeviora-slate">Manage laboratory, diagnostic, and service fees with separate prices for every provider.</p>
-      <Link to="/admin/benefits" className="mt-3 inline-block text-sm text-aeviora-primary underline">Build benefits from these fees</Link>
+      <Link to="/admin" className="text-sm text-aeviora-primary underline">{t("Account overview")}</Link>
+      <h1 className="mt-4 font-display text-3xl">{t("Fee catalogs")}</h1>
+      <p className="mt-2 text-sm text-aeviora-slate">{t("Manage laboratory, diagnostic, and service fees with separate prices for every provider.")}</p>
+      <Link to="/admin/benefits" className="mt-3 inline-block text-sm text-aeviora-primary underline">{t("Build benefits from these fees")}</Link>
     </header>
-    <div><label className="label" htmlFor="catalog">Fee catalog</label><select id="catalog" className="input" value={source} onChange={(event) => {
-      if (window.confirm("Switch fee catalogs? Unsaved form changes will be discarded.")) setSource(event.target.value);
-    }}>{Object.entries(feeCatalogs).map(([key, config]) => <option key={key} value={key}>{config.label}</option>)}</select></div>
+    <div><label className="label" htmlFor="catalog">{t("Fee catalog")}</label><select id="catalog" className="input" value={source} onChange={(event) => {
+      if (window.confirm(t("Switch fee catalogs? Unsaved form changes will be discarded."))) setSource(event.target.value);
+    }}>{Object.entries(feeCatalogs).map(([key, config]) => <option key={key} value={key}>{t(config.label)}</option>)}</select></div>
     <FeeEditor key={source} source={source} />
   </section>;
 }

@@ -1,8 +1,11 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 
 export default function PasswordRecovery({ reset = false }) {
+  useLanguage();
   const [token] = useState(() => window.location.hash.slice(1));
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -20,12 +23,12 @@ export default function PasswordRecovery({ reset = false }) {
     } catch (failure) { setError(failure.message); } finally { setBusy(false); }
   }
   return <main className="min-h-screen bg-aeviora-cream px-6 py-14"><section className="card mx-auto max-w-md space-y-5">
-    <h1 className="font-display text-3xl">{reset ? "Reset password" : "Recover your account"}</h1>
-    {message && <p role="status">{message}</p>}{error && <p role="alert" className="text-red-700">{error}</p>}
+    <h1 className="font-display text-3xl">{t(reset ? "Reset password" : "Recover your account")}</h1>
+    {message && <p role="status">{t(message)}</p>}{error && <p role="alert" className="text-red-700">{t(error)}</p>}
     {!done && <form onSubmit={submit} className="space-y-4"><fieldset disabled={busy} className="space-y-4">
-      {reset ? <><p>Use at least 12 characters. Reset links expire after 30 minutes.</p><label className="block">New password<input required minLength={12} type="password" autoComplete="new-password" name="password" className="input" /></label><label className="block">Confirm new password<input required minLength={12} type="password" autoComplete="new-password" name="confirm" className="input" /></label></> : <label className="block">Account email<input required type="email" autoComplete="email" name="email" className="input" /></label>}
-      <button className="btn-primary" type="submit">{busy ? "Please wait…" : reset ? "Set new password" : "Email reset link"}</button>
+      {reset ? <><p>{t("Use at least 12 characters. Reset links expire after 30 minutes.")}</p><label className="block">{t("New password")}<input required minLength={12} type="password" autoComplete="new-password" name="password" className="input" /></label><label className="block">{t("Confirm new password")}<input required minLength={12} type="password" autoComplete="new-password" name="confirm" className="input" /></label></> : <label className="block">{t("Account email")}<input required type="email" autoComplete="email" name="email" className="input" /></label>}
+      <button className="btn-primary" type="submit">{t(busy ? "Please wait…" : reset ? "Set new password" : "Email reset link")}</button>
     </fieldset></form>}
-    <div className="flex flex-wrap gap-4 text-sm underline"><Link to="/login">Back to sign in</Link>{reset && <Link to="/forgot-password">Request another reset link</Link>}</div>
+    <div className="flex flex-wrap gap-4 text-sm underline"><Link to="/login">{t("Back to sign in")}</Link>{reset && <Link to="/forgot-password">{t("Request another reset link")}</Link>}</div>
   </section></main>;
 }

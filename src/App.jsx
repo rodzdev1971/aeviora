@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import LanguageSelector from "./i18n/LanguageSelector.jsx";
 
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -26,7 +27,7 @@ export default function App() {
 
   return (
 
-    <Routes>
+    <><LanguageSelector /><Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
@@ -54,6 +55,6 @@ export default function App() {
             </Route>
         </Route>
       </Route>
-    </Routes>
+    </Routes></>
   );
 }

@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { apiRequest } from "../util/api";
 import { Link, useNavigate, Outlet, useOutletContext } from "react-router-dom";
 import {
@@ -11,6 +13,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardLayout() {
+  useLanguage();
   const navigate = useNavigate();
   const { user } = useOutletContext();
 
@@ -18,7 +21,7 @@ export default function DashboardLayout() {
     try {
       await apiRequest("/api/auth/logout", { method: "POST" });
       navigate("/login");
-    } catch { alert("Unable to sign out. Please try again."); }
+    } catch { alert(t("Unable to sign out. Please try again.")); }
   }
 
   // async function logout() {
@@ -57,14 +60,10 @@ export default function DashboardLayout() {
       <aside className="bg-aeviora-black text-white md:min-h-screen">
         <div className="sticky top-0 p-4">
         <Link to="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">
-            A
-          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-aeviora-gold text-xl font-bold text-aeviora-gold">{t("A")}</div>
           <div>
-            <p className="font-display text-xl">Aeviora</p>
-            <p className="text-xs uppercase tracking-[0.2em] text-aeviora-gold">
-              Wellness Portal
-            </p>
+            <p className="font-display text-xl">{t("Aeviora")}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-aeviora-gold">{t("Wellness Portal")}</p>
           </div>
         </Link>
 
@@ -75,26 +74,22 @@ export default function DashboardLayout() {
               to={link.href}
               className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm text-gray-200 hover:bg-white/10 hover:text-aeviora-gold"
             >
-              {link.icon}
-              {link.label}
+              {t(link.icon)}
+              {t(link.label)}
             </Link>
           ))}
           </nav>
           <div className="mt-4 md:mt-auto">
             <div className="mb-4 rounded-2xl border border-aeviora-gold/30 p-4">
               <ShieldCheck className="mb-2 text-aeviora-gold" size={20} />
-              <p className="text-xs text-gray-300">
-                Clinical information stays with your authorized healthcare portals.
-              </p>
+              <p className="text-xs text-gray-300">{t("Clinical information stays with your authorized healthcare portals.")}</p>
             </div>
 
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm hover:bg-white/20"
             >
-              <LogOut size={18} />
-              Logout
-            </button>
+              <LogOut size={18} />{t("Logout")}</button>
           </div>
         </div>
       </aside>

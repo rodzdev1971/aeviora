@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
 import { emailTemplates, fillEmailTemplate } from "../util/emailTemplates";
@@ -5,6 +7,7 @@ import { Link } from "react-router-dom";
 import { renderEmailTemplate } from "../../shared/emailTemplates";
 
 export default function AdminEmailForm({ recipient, onClose }) {
+  useLanguage();
   const [subject, setSubject] = useState("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,7 +35,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
     finally { setChecking(false); }
   }
   function applyTemplate() {
-    if ((subject || text) && !window.confirm("Replace the current subject and message with this template?")) return;
+    if ((subject || text) && !window.confirm(t("Replace the current subject and message with this template?"))) return;
     const template = emailTemplates.find((item) => item.id === templateId);
     const saved = savedTemplates.find((item) => item._id === templateId);
     const draft = saved ? renderEmailTemplate(saved, recipient) : template ? fillEmailTemplate(template, recipient) : { subject: "", text: "" };
@@ -60,44 +63,41 @@ export default function AdminEmailForm({ recipient, onClose }) {
   }
   return (
     <form onSubmit={submit} className="mt-6 space-y-4 border border-aeviora-border bg-white p-5" aria-labelledby="email-heading">
-      <h2 id="email-heading" className="font-display text-2xl">Email user</h2>
+      <h2 id="email-heading" className="font-display text-2xl">{t("Email user")}</h2>
       <div className="space-y-3 rounded-lg border border-aeviora-border p-4">
-        <h3 className="font-semibold">Email setup and testing</h3>
-        <p role="status" className="text-sm">{configured === null ? "Configuration has not been confirmed." : configured ? "Required settings are valid. Test the connection to check SMTP authentication." : "Configuration needs attention. Review the settings listed below."}</p>
+        <h3 className="font-semibold">{t("Email setup and testing")}</h3>
+        <p role="status" className="text-sm">{t(configured === null ? "Configuration has not been confirmed." : configured ? "Required settings are valid. Test the connection to check SMTP authentication." : "Configuration needs attention. Review the settings listed below.")}</p>
         <div className="flex flex-wrap gap-3">
-          <button type="button" disabled={busy || checking} className="btn-secondary" onClick={() => { setConfigured(null); setError(""); setConnectionMessage(""); setCheckRevision((value) => value + 1); }}>Recheck configuration</button>
-          <button type="button" disabled={busy || checking || configured !== true} className="btn-secondary disabled:opacity-50" onClick={verifyConnection}>{checking ? "Testing connection…" : "Test SMTP connection"}</button>
+          <button type="button" disabled={busy || checking} className="btn-secondary" onClick={() => { setConfigured(null); setError(""); setConnectionMessage(""); setCheckRevision((value) => value + 1); }}>{t("Recheck configuration")}</button>
+          <button type="button" disabled={busy || checking || configured !== true} className="btn-secondary disabled:opacity-50" onClick={verifyConnection}>{t(checking ? "Testing connection…" : "Test SMTP connection")}</button>
         </div>
-        {connectionMessage && <p role="status" className="text-sm text-green-800">{connectionMessage}</p>}
-        <p className="text-xs text-aeviora-slate">Connection testing sends no email. To test delivery, select your own account and send a message. After changing Vercel settings, redeploy; local settings require restarting Node.js.</p>
+        {connectionMessage && <p role="status" className="text-sm text-green-800">{t(connectionMessage)}</p>}
+        <p className="text-xs text-aeviora-slate">{t("Connection testing sends no email. To test delivery, select your own account and send a message. After changing Vercel settings, redeploy; local settings require restarting Node.js.")}</p>
       </div>
-      <p className="break-words">To: {recipient.firstName} {recipient.lastName} ({recipient.email})</p>
-      <p className="text-sm text-aeviora-slate">Send account support messages. Do not include medical records or use this form for marketing campaigns.</p>
-      {configured === false && <p role="alert">Email is not configured. Add SMTP settings on the server before sending.</p>}
-      {configured === false && <ul className="list-disc pl-5 text-sm text-red-700">{configurationIssues.map((issue) => <li key={issue.variable}>{issue.variable}: {issue.reason}. {issue.hint}</li>)}</ul>}
-      {error && <p role="alert" className="text-red-700">{error}</p>}
-      {message && <p role="status" className="text-green-800">{message}</p>}
+      <p className="break-words">{t("To: ")}{recipient.firstName} {recipient.lastName} ({recipient.email})</p>
+      <p className="text-sm text-aeviora-slate">{t("Send account support messages. Do not include medical records or use this form for marketing campaigns.")}</p>
+      {configured === false && <p role="alert">{t("Email is not configured. Add SMTP settings on the server before sending.")}</p>}
+      {configured === false && <ul className="list-disc pl-5 text-sm text-red-700">{configurationIssues.map((issue) => <li key={issue.variable}>{t(issue.variable)}: {t(issue.reason)}. {t(issue.hint)}</li>)}</ul>}
+      {error && <p role="alert" className="text-red-700">{t(error)}</p>}
+      {message && <p role="status" className="text-green-800">{t(message)}</p>}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <label className="block flex-1">Email template
-          <select value={templateId} disabled={busy} onChange={(event) => setTemplateId(event.target.value)} className="input mt-1 w-full">
-            <option value="">Blank email</option>
-            {savedTemplates.map((template) => <option key={template._id} value={template._id}>{template.name} (saved)</option>)}
-            {emailTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
+        <label className="block flex-1">{t("Email template")}<select value={templateId} disabled={busy} onChange={(event) => setTemplateId(event.target.value)} className="input mt-1 w-full">
+            <option value="">{t("Blank email")}</option>
+            {savedTemplates.map((template) => <option key={template._id} value={template._id}>{template.name}{t(" (saved)")}</option>)}
+            {emailTemplates.map((template) => <option key={template.id} value={template.id}>{t(template.name)}</option>)}
           </select>
         </label>
-        <button type="button" disabled={busy} onClick={applyTemplate} className="btn-secondary">Use template</button>
+        <button type="button" disabled={busy} onClick={applyTemplate} className="btn-secondary">{t("Use template")}</button>
       </div>
-      <p className="text-sm text-aeviora-slate">Templates fill in the recipient's first name. Edit the subject and message before sending.</p>
-      <div className="flex gap-4 text-sm"><Link to="/admin/email-templates" className="underline">Create or edit saved templates</Link><button type="button" disabled={busy} className="underline" onClick={() => setTemplateRevision((value) => value + 1)}>Refresh templates</button></div>
-      <label className="block">Subject
-        <input autoFocus required maxLength={160} value={subject} disabled={busy} onChange={(event) => setSubject(event.target.value)} className="input mt-1 w-full" />
+      <p className="text-sm text-aeviora-slate">{t("Templates fill in the recipient's first name. Edit the subject and message before sending.")}</p>
+      <div className="flex gap-4 text-sm"><Link to="/admin/email-templates" className="underline">{t("Create or edit saved templates")}</Link><button type="button" disabled={busy} className="underline" onClick={() => setTemplateRevision((value) => value + 1)}>{t("Refresh templates")}</button></div>
+      <label className="block">{t("Subject")}<input autoFocus required maxLength={160} value={subject} disabled={busy} onChange={(event) => setSubject(event.target.value)} className="input mt-1 w-full" />
       </label>
-      <label className="block">Message
-        <textarea required maxLength={10000} rows={7} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} className="input mt-1 w-full" />
+      <label className="block">{t("Message")}<textarea required maxLength={10000} rows={7} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} className="input mt-1 w-full" />
       </label>
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim()} className="btn-primary disabled:opacity-50">{busy ? "Sending…" : "Send email"}</button>
-        <button type="button" disabled={busy} onClick={onClose} className="btn-secondary">Close</button>
+        <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim()} className="btn-primary disabled:opacity-50">{t(busy ? "Sending…" : "Send email")}</button>
+        <button type="button" disabled={busy} onClick={onClose} className="btn-secondary">{t("Close")}</button>
       </div>
     </form>
   );

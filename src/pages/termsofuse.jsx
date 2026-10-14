@@ -1,7 +1,10 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { Link } from "react-router-dom";
 import { ArrowLeft, AlertTriangle, CheckCircle2, FileText, HeartPulse, Scale, ShieldCheck } from "lucide-react";
 
 export default function TermsOfUse() {
+  useLanguage();
   const lastUpdated = "August 5, 2026";
 
   return (
@@ -16,28 +19,17 @@ export default function TermsOfUse() {
             to="/"
             className="inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary hover:text-aeviora-primaryDark"
           >
-            <ArrowLeft size={17} />
-            Back to Home
-          </Link>
+            <ArrowLeft size={17} />{t("Back to Home")}</Link>
 
           <div className="mt-10 max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-aeviora-primary/20 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-aeviora-primary shadow-sm">
-              <FileText size={15} />
-              Legal Information
-            </div>
+              <FileText size={15} />{t("Legal Information")}</div>
 
-            <h1 className="font-display text-5xl leading-tight md:text-6xl">
-              Terms of Use
-            </h1>
+            <h1 className="font-display text-5xl leading-tight md:text-6xl">{t("Terms of Use")}</h1>
 
-            <p className="mt-5 text-lg leading-8 text-aeviora-slate">
-              Please review these Terms of Use carefully before using the
-              Aeviora Wellness website, patient portal, digital forms, or related
-              online services.
-            </p>
+            <p className="mt-5 text-lg leading-8 text-aeviora-slate">{t("Please review these Terms of Use carefully before using the Aeviora Wellness website, patient portal, digital forms, or related online services.")}</p>
 
-            <p className="mt-5 text-sm text-aeviora-slate">
-              Last Updated: {lastUpdated}
+            <p className="mt-5 text-sm text-aeviora-slate">{t("Last Updated: ")}{t(lastUpdated)}
             </p>
           </div>
         </div>
@@ -52,14 +44,9 @@ export default function TermsOfUse() {
               <ShieldCheck size={22} />
             </div>
 
-            <h2 className="mt-5 font-display text-2xl">
-              Patient Website Terms
-            </h2>
+            <h2 className="mt-5 font-display text-2xl">{t("Patient Website Terms")}</h2>
 
-            <p className="mt-3 text-sm leading-6 text-aeviora-slate">
-              These terms explain how patients and visitors may use the Aeviora
-              Wellness website and online services.
-            </p>
+            <p className="mt-3 text-sm leading-6 text-aeviora-slate">{t("These terms explain how patients and visitors may use the Aeviora Wellness website and online services.")}</p>
 
             <div className="mt-6 space-y-3">
               <SummaryItem text="No emergency use" />
@@ -74,311 +61,146 @@ export default function TermsOfUse() {
           <article className="rounded-[2rem] border border-aeviora-border bg-white p-6 shadow-sm md:p-10">
             <ImportantNotice />
 
-            <TermsSection number="1" title="Acceptance of Terms">
-              <p>
-                By accessing or using the Aeviora Wellness website, patient
-                portal, digital forms, online scheduling tools, educational
-                materials, or related digital services, you agree to these Terms
-                of Use. If you do not agree with these Terms, you should not use
-                this website or online services.
-              </p>
+            <TermsSection number="1" title={t("Acceptance of Terms")}>
+              <p>{t("By accessing or using the Aeviora Wellness website, patient portal, digital forms, online scheduling tools, educational materials, or related digital services, you agree to these Terms of Use. If you do not agree with these Terms, you should not use this website or online services.")}</p>
 
-              <p>
-                These Terms apply to all visitors, patients, prospective
-                patients, users, and others who access Aeviora Wellness digital
-                services.
-              </p>
+              <p>{t("These Terms apply to all visitors, patients, prospective patients, users, and others who access Aeviora Wellness digital services.")}</p>
             </TermsSection>
 
-            <TermsSection number="2" title="About Aeviora Wellness">
-              <p>
-                Aeviora Wellness provides wellness, longevity, preventive health,
-                hormone optimization, medical weight management, peptide therapy,
-                functional medicine, IV therapy, and related health services,
-                where clinically appropriate and permitted by law.
-              </p>
+            <TermsSection number="2" title={t("About Aeviora Wellness")}>
+              <p>{t("Aeviora Wellness provides wellness, longevity, preventive health, hormone optimization, medical weight management, peptide therapy, functional medicine, IV therapy, and related health services, where clinically appropriate and permitted by law.")}</p>
 
-              <p>
-                Services may require medical review, provider evaluation,
-                laboratory testing, eligibility screening, informed consent, and
-                ongoing monitoring. Availability of services may vary based on
-                patient eligibility, provider judgment, state law, clinical
-                appropriateness, and safety considerations.
-              </p>
+              <p>{t("Services may require medical review, provider evaluation, laboratory testing, eligibility screening, informed consent, and ongoing monitoring. Availability of services may vary based on patient eligibility, provider judgment, state law, clinical appropriateness, and safety considerations.")}</p>
             </TermsSection>
 
-            <TermsSection number="3" title="Not for Medical Emergencies">
+            <TermsSection number="3" title={t("Not for Medical Emergencies")}>
               <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
                 <div className="flex gap-3">
                   <AlertTriangle className="mt-1 shrink-0 text-red-600" />
                   <div>
-                    <h3 className="font-semibold text-red-800">
-                      Do not use this website or patient portal for emergencies.
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-red-700">
-                      If you are experiencing a medical emergency, call 911 or go
-                      to the nearest emergency department immediately. Do not
-                      rely on this website, online forms, portal messages, email,
-                      or text messages for urgent or emergency medical needs.
-                    </p>
+                    <h3 className="font-semibold text-red-800">{t("Do not use this website or patient portal for emergencies.")}</h3>
+                    <p className="mt-2 text-sm leading-6 text-red-700">{t("If you are experiencing a medical emergency, call 911 or go to the nearest emergency department immediately. Do not rely on this website, online forms, portal messages, email, or text messages for urgent or emergency medical needs.")}</p>
                   </div>
                 </div>
               </div>
             </TermsSection>
 
-            <TermsSection number="4" title="Medical Disclaimer">
-              <p>
-                Information provided on this website is for general educational
-                and informational purposes only. It is not intended to be a
-                substitute for professional medical advice, diagnosis, or
-                treatment.
-              </p>
+            <TermsSection number="4" title={t("Medical Disclaimer")}>
+              <p>{t("Information provided on this website is for general educational and informational purposes only. It is not intended to be a substitute for professional medical advice, diagnosis, or treatment.")}</p>
 
-              <p>
-                Viewing website content, submitting an online form, selecting a
-                wellness protocol, or using the patient portal does not by itself
-                create a provider-patient relationship. A provider-patient
-                relationship is established only after Aeviora Wellness accepts
-                you as a patient and a qualified provider evaluates you according
-                to applicable clinical and legal requirements.
-              </p>
+              <p>{t("Viewing website content, submitting an online form, selecting a wellness protocol, or using the patient portal does not by itself create a provider-patient relationship. A provider-patient relationship is established only after Aeviora Wellness accepts you as a patient and a qualified provider evaluates you according to applicable clinical and legal requirements.")}</p>
 
-              <p>
-                Always seek the advice of a licensed healthcare professional
-                regarding any medical condition, symptoms, medication,
-                supplement, therapy, treatment plan, or health-related decision.
-              </p>
+              <p>{t("Always seek the advice of a licensed healthcare professional regarding any medical condition, symptoms, medication, supplement, therapy, treatment plan, or health-related decision.")}</p>
             </TermsSection>
 
-            <TermsSection number="5" title="No Guarantee of Results">
-              <p>
-                Aeviora Wellness may provide wellness, longevity, weight
-                management, hormone, peptide, functional medicine, IV therapy, or
-                related services. Individual results vary.
-              </p>
+            <TermsSection number="5" title={t("No Guarantee of Results")}>
+              <p>{t("Aeviora Wellness may provide wellness, longevity, weight management, hormone, peptide, functional medicine, IV therapy, or related services. Individual results vary.")}</p>
 
-              <p>
-                Aeviora Wellness does not guarantee weight loss, symptom
-                improvement, hormone optimization, anti-aging outcomes, longevity
-                benefits, metabolic improvement, aesthetic results, or any
-                specific clinical outcome. Treatment decisions depend on
-                individual medical history, laboratory findings, clinical
-                evaluation, adherence, safety, and provider judgment.
-              </p>
+              <p>{t("Aeviora Wellness does not guarantee weight loss, symptom improvement, hormone optimization, anti-aging outcomes, longevity benefits, metabolic improvement, aesthetic results, or any specific clinical outcome. Treatment decisions depend on individual medical history, laboratory findings, clinical evaluation, adherence, safety, and provider judgment.")}</p>
             </TermsSection>
 
-            <TermsSection number="6" title="Patient Portal Use">
-              <p>
-                The patient portal may allow patients to register, complete
-                intake forms, review approved records, update profile
-                information, communicate with the care team, access forms, or
-                manage certain aspects of their wellness care.
-              </p>
+            <TermsSection number="6" title={t("Patient Portal Use")}>
+              <p>{t("The patient portal may allow patients to register, complete intake forms, review approved records, update profile information, communicate with the care team, access forms, or manage certain aspects of their wellness care.")}</p>
 
-              <p>You agree to:</p>
+              <p>{t("You agree to:")}</p>
 
               <ul>
-                <li>Provide accurate and complete information.</li>
-                <li>Keep your login credentials confidential.</li>
-                <li>Notify Aeviora Wellness if you suspect unauthorized access.</li>
-                <li>Use the portal only for your own care or authorized access.</li>
-                <li>Avoid uploading false, harmful, abusive, or unlawful content.</li>
-                <li>Use secure portal messaging for sensitive health information.</li>
+                <li>{t("Provide accurate and complete information.")}</li>
+                <li>{t("Keep your login credentials confidential.")}</li>
+                <li>{t("Notify Aeviora Wellness if you suspect unauthorized access.")}</li>
+                <li>{t("Use the portal only for your own care or authorized access.")}</li>
+                <li>{t("Avoid uploading false, harmful, abusive, or unlawful content.")}</li>
+                <li>{t("Use secure portal messaging for sensitive health information.")}</li>
               </ul>
 
-              <p>
-                You are responsible for maintaining the confidentiality of your
-                account credentials and for activity that occurs under your
-                account.
-              </p>
+              <p>{t("You are responsible for maintaining the confidentiality of your account credentials and for activity that occurs under your account.")}</p>
             </TermsSection>
 
-            <TermsSection number="7" title="Privacy and Health Information">
-              <p>
-                Aeviora Wellness respects patient privacy. Use and disclosure of
-                protected health information may be governed by the Aeviora
-                Wellness Notice of Privacy Practices, HIPAA, applicable state law,
-                and other privacy requirements.
-              </p>
+            <TermsSection number="7" title={t("Privacy and Health Information")}>
+              <p>{t("Aeviora Wellness respects patient privacy. Use and disclosure of protected health information may be governed by the Aeviora Wellness Notice of Privacy Practices, HIPAA, applicable state law, and other privacy requirements.")}</p>
 
-              <p>
-                Sensitive medical information should be submitted only through
-                approved secure systems. Standard email, text messaging, website
-                contact forms, and non-secure communication tools may not be
-                appropriate for detailed medical information.
-              </p>
+              <p>{t("Sensitive medical information should be submitted only through approved secure systems. Standard email, text messaging, website contact forms, and non-secure communication tools may not be appropriate for detailed medical information.")}</p>
 
-              <p>
-                For more information, please review the Aeviora Wellness Privacy
-                Policy and Notice of Privacy Practices.
-              </p>
+              <p>{t("For more information, please review the Aeviora Wellness Privacy Policy and Notice of Privacy Practices.")}</p>
             </TermsSection>
 
-            <TermsSection number="8" title="Telehealth and Digital Services">
-              <p>
-                Some Aeviora Wellness services may be provided using telehealth
-                or digital communication tools when clinically appropriate and
-                legally permitted.
-              </p>
+            <TermsSection number="8" title={t("Telehealth and Digital Services")}>
+              <p>{t("Some Aeviora Wellness services may be provided using telehealth or digital communication tools when clinically appropriate and legally permitted.")}</p>
 
-              <p>
-                Telehealth may not be appropriate for all patients, symptoms,
-                conditions, medications, or treatments. Aeviora Wellness may
-                require an in-person visit, laboratory testing, physical
-                examination, identity verification, pharmacy review, or referral
-                to another healthcare provider before or during care.
-              </p>
+              <p>{t("Telehealth may not be appropriate for all patients, symptoms, conditions, medications, or treatments. Aeviora Wellness may require an in-person visit, laboratory testing, physical examination, identity verification, pharmacy review, or referral to another healthcare provider before or during care.")}</p>
 
-              <p>
-                You understand that telehealth services may involve technology
-                limitations, including internet disruptions, device issues,
-                incomplete information, or communication delays.
-              </p>
+              <p>{t("You understand that telehealth services may involve technology limitations, including internet disruptions, device issues, incomplete information, or communication delays.")}</p>
             </TermsSection>
 
-            <TermsSection number="9" title="Eligibility for Services">
-              <p>
-                Submission of an intake form, online questionnaire, protocol
-                interest form, or patient registration does not guarantee that
-                you are eligible for any service, medication, supplement,
-                procedure, therapy, prescription, or treatment plan.
-              </p>
+            <TermsSection number="9" title={t("Eligibility for Services")}>
+              <p>{t("Submission of an intake form, online questionnaire, protocol interest form, or patient registration does not guarantee that you are eligible for any service, medication, supplement, procedure, therapy, prescription, or treatment plan.")}</p>
 
-              <p>
-                Aeviora Wellness may decline, postpone, modify, or discontinue
-                services when determined appropriate for safety, legal,
-                regulatory, clinical, operational, or ethical reasons.
-              </p>
+              <p>{t("Aeviora Wellness may decline, postpone, modify, or discontinue services when determined appropriate for safety, legal, regulatory, clinical, operational, or ethical reasons.")}</p>
             </TermsSection>
 
-            <TermsSection number="10" title="Medications, Supplements, and Therapies">
-              <p>
-                Any medication, supplement, injection, IV therapy, peptide,
-                hormone therapy, GLP-1 therapy, or other wellness service must be
-                reviewed by a qualified healthcare provider. Risks, benefits,
-                alternatives, contraindications, monitoring requirements, and
-                informed consent may apply.
-              </p>
+            <TermsSection number="10" title={t("Medications, Supplements, and Therapies")}>
+              <p>{t("Any medication, supplement, injection, IV therapy, peptide, hormone therapy, GLP-1 therapy, or other wellness service must be reviewed by a qualified healthcare provider. Risks, benefits, alternatives, contraindications, monitoring requirements, and informed consent may apply.")}</p>
 
-              <p>
-                You agree to inform Aeviora Wellness of your complete medical
-                history, current medications, allergies, pregnancy status when
-                applicable, prior reactions, health changes, and any relevant
-                information that may affect your care.
-              </p>
+              <p>{t("You agree to inform Aeviora Wellness of your complete medical history, current medications, allergies, pregnancy status when applicable, prior reactions, health changes, and any relevant information that may affect your care.")}</p>
             </TermsSection>
 
-            <TermsSection number="11" title="User Responsibilities">
-              <p>You agree not to misuse the website or patient portal. You may not:</p>
+            <TermsSection number="11" title={t("User Responsibilities")}>
+              <p>{t("You agree not to misuse the website or patient portal. You may not:")}</p>
 
               <ul>
-                <li>Attempt to access another patient’s information.</li>
-                <li>Share your account with another person.</li>
-                <li>Upload malicious code, viruses, or harmful files.</li>
-                <li>Interfere with website or portal security.</li>
-                <li>Use the website for fraudulent, unlawful, or abusive purposes.</li>
-                <li>Copy, scrape, or misuse website content without permission.</li>
-                <li>Impersonate another person or submit false information.</li>
+                <li>{t("Attempt to access another patient’s information.")}</li>
+                <li>{t("Share your account with another person.")}</li>
+                <li>{t("Upload malicious code, viruses, or harmful files.")}</li>
+                <li>{t("Interfere with website or portal security.")}</li>
+                <li>{t("Use the website for fraudulent, unlawful, or abusive purposes.")}</li>
+                <li>{t("Copy, scrape, or misuse website content without permission.")}</li>
+                <li>{t("Impersonate another person or submit false information.")}</li>
               </ul>
             </TermsSection>
 
-            <TermsSection number="12" title="Website Content and Intellectual Property">
-              <p>
-                Website content, branding, logos, design elements, text,
-                graphics, forms, educational materials, workflows, and other
-                materials are owned by or licensed to Aeviora Wellness unless
-                otherwise stated.
-              </p>
+            <TermsSection number="12" title={t("Website Content and Intellectual Property")}>
+              <p>{t("Website content, branding, logos, design elements, text, graphics, forms, educational materials, workflows, and other materials are owned by or licensed to Aeviora Wellness unless otherwise stated.")}</p>
 
-              <p>
-                You may use the website for personal, non-commercial purposes
-                related to learning about Aeviora Wellness services or managing
-                your own patient account. You may not copy, reproduce,
-                distribute, modify, sell, or exploit website materials without
-                written permission.
-              </p>
+              <p>{t("You may use the website for personal, non-commercial purposes related to learning about Aeviora Wellness services or managing your own patient account. You may not copy, reproduce, distribute, modify, sell, or exploit website materials without written permission.")}</p>
             </TermsSection>
 
-            <TermsSection number="13" title="Third-Party Links and Vendors">
-              <p>
-                The website may contain links to third-party websites, payment
-                platforms, scheduling tools, telehealth tools, pharmacies,
-                laboratories, educational resources, or other external services.
-              </p>
+            <TermsSection number="13" title={t("Third-Party Links and Vendors")}>
+              <p>{t("The website may contain links to third-party websites, payment platforms, scheduling tools, telehealth tools, pharmacies, laboratories, educational resources, or other external services.")}</p>
 
-              <p>
-                Aeviora Wellness is not responsible for third-party websites,
-                their content, security, privacy practices, availability, or
-                accuracy. Your use of third-party services may be governed by
-                their own terms and privacy policies.
-              </p>
+              <p>{t("Aeviora Wellness is not responsible for third-party websites, their content, security, privacy practices, availability, or accuracy. Your use of third-party services may be governed by their own terms and privacy policies.")}</p>
             </TermsSection>
 
-            <TermsSection number="14" title="Payments, Fees, and Cancellations">
-              <p>
-                Certain services may require payment, deposits, membership fees,
-                consultation fees, package fees, laboratory fees, medication
-                costs, or other charges. Pricing, availability, and payment
-                terms may change.
-              </p>
+            <TermsSection number="14" title={t("Payments, Fees, and Cancellations")}>
+              <p>{t("Certain services may require payment, deposits, membership fees, consultation fees, package fees, laboratory fees, medication costs, or other charges. Pricing, availability, and payment terms may change.")}</p>
 
-              <p>
-                Any cancellation, refund, membership, package, or payment policy
-                should be provided separately by Aeviora Wellness and may vary by
-                service. You are responsible for reviewing applicable payment
-                terms before purchasing or receiving services.
-              </p>
+              <p>{t("Any cancellation, refund, membership, package, or payment policy should be provided separately by Aeviora Wellness and may vary by service. You are responsible for reviewing applicable payment terms before purchasing or receiving services.")}</p>
             </TermsSection>
 
-            <TermsSection number="15" title="Limitation of Liability">
-              <p>
-                To the fullest extent permitted by law, Aeviora Wellness is not
-                liable for indirect, incidental, consequential, special,
-                exemplary, or punitive damages arising from your use of the
-                website, digital services, educational materials, or online
-                tools.
-              </p>
+            <TermsSection number="15" title={t("Limitation of Liability")}>
+              <p>{t("To the fullest extent permitted by law, Aeviora Wellness is not liable for indirect, incidental, consequential, special, exemplary, or punitive damages arising from your use of the website, digital services, educational materials, or online tools.")}</p>
 
-              <p>
-                Aeviora Wellness does not warrant that the website or portal will
-                be uninterrupted, error-free, secure from every possible risk, or
-                available at all times.
-              </p>
+              <p>{t("Aeviora Wellness does not warrant that the website or portal will be uninterrupted, error-free, secure from every possible risk, or available at all times.")}</p>
             </TermsSection>
 
-            <TermsSection number="16" title="Disclaimer of Warranties">
-              <p>
-                The website and online services are provided on an “as available”
-                and “as is” basis. Aeviora Wellness makes no warranties regarding
-                website availability, accuracy, completeness, performance,
-                security, suitability, or fitness for a particular purpose,
-                except where required by law.
-              </p>
+            <TermsSection number="16" title={t("Disclaimer of Warranties")}>
+              <p>{t("The website and online services are provided on an “as available” and “as is” basis. Aeviora Wellness makes no warranties regarding website availability, accuracy, completeness, performance, security, suitability, or fitness for a particular purpose, except where required by law.")}</p>
             </TermsSection>
 
-            <TermsSection number="17" title="Changes to These Terms">
-              <p>
-                Aeviora Wellness may update these Terms of Use from time to time.
-                Updates will be posted on this page with a revised “Last Updated”
-                date. Continued use of the website or online services after
-                changes are posted means you accept the updated Terms.
-              </p>
+            <TermsSection number="17" title={t("Changes to These Terms")}>
+              <p>{t("Aeviora Wellness may update these Terms of Use from time to time. Updates will be posted on this page with a revised “Last Updated” date. Continued use of the website or online services after changes are posted means you accept the updated Terms.")}</p>
             </TermsSection>
 
-            <TermsSection number="18" title="Contact Information">
-              <p>
-                If you have questions about these Terms of Use, please contact
-                Aeviora Wellness.
-              </p>
+            <TermsSection number="18" title={t("Contact Information")}>
+              <p>{t("If you have questions about these Terms of Use, please contact Aeviora Wellness.")}</p>
 
               <div className="mt-5 rounded-2xl bg-aeviora-ivory p-5 text-sm leading-7">
                 <p>
-                  <strong>Aeviora Wellness</strong>
+                  <strong>{t("Aeviora Wellness")}</strong>
                 </p>
-                <p>Address: ______________________________</p>
-                <p>Phone: ______________________________</p>
-                <p>Email: ______________________________</p>
-                <p>Patient Portal: ______________________________</p>
+                <p>{t("Address: ______________________________")}</p>
+                <p>{t("Phone: ______________________________")}</p>
+                <p>{t("Email: ______________________________")}</p>
+                <p>{t("Patient Portal: ______________________________")}</p>
               </div>
             </TermsSection>
 
@@ -386,16 +208,8 @@ export default function TermsOfUse() {
               <div className="flex gap-3">
                 <Scale className="mt-1 shrink-0 text-aeviora-primary" />
                 <div>
-                  <h3 className="font-display text-2xl">
-                    Legal Review Recommended
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-aeviora-slate">
-                    This Terms of Use page is a strong website-ready starting
-                    template, but it should be reviewed by a healthcare attorney
-                    before publication, especially for Florida-specific rules,
-                    telehealth operations, refund policies, privacy language,
-                    and medical advertising requirements.
-                  </p>
+                  <h3 className="font-display text-2xl">{t("Legal Review Recommended")}</h3>
+                  <p className="mt-2 text-sm leading-6 text-aeviora-slate">{t("This Terms of Use page is a strong website-ready starting template, but it should be reviewed by a healthcare attorney before publication, especially for Florida-specific rules, telehealth operations, refund policies, privacy language, and medical advertising requirements.")}</p>
                 </div>
               </div>
             </div>
@@ -407,6 +221,7 @@ export default function TermsOfUse() {
 }
 
 function ImportantNotice() {
+  useLanguage();
   return (
     <div className="mb-10 rounded-3xl border border-aeviora-gold/30 bg-aeviora-softGold/40 p-6">
       <div className="flex flex-col gap-4 md:flex-row">
@@ -415,14 +230,8 @@ function ImportantNotice() {
         </div>
 
         <div>
-          <h2 className="font-display text-2xl text-aeviora-charcoal">
-            Important Healthcare Notice
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-aeviora-slate">
-            This website does not provide emergency medical care. Online content
-            is educational and does not replace medical advice, diagnosis, or
-            treatment from a licensed healthcare professional.
-          </p>
+          <h2 className="font-display text-2xl text-aeviora-charcoal">{t("Important Healthcare Notice")}</h2>
+          <p className="mt-2 text-sm leading-6 text-aeviora-slate">{t("This website does not provide emergency medical care. Online content is educational and does not replace medical advice, diagnosis, or treatment from a licensed healthcare professional.")}</p>
         </div>
       </div>
     </div>
@@ -430,30 +239,32 @@ function ImportantNotice() {
 }
 
 function TermsSection({ number, title, children }) {
+  useLanguage();
   return (
     <section className="border-b border-aeviora-border py-8 last:border-b-0">
       <div className="mb-4 flex items-start gap-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-aeviora-primary text-sm font-bold text-white">
-          {number}
+          {t(number)}
         </div>
 
         <h2 className="font-display text-2xl text-aeviora-charcoal md:text-3xl">
-          {title}
+          {t(title)}
         </h2>
       </div>
 
       <div className="prose prose-sm max-w-none text-aeviora-slate prose-p:leading-7 prose-li:leading-7 prose-ul:my-4 prose-li:marker:text-aeviora-primary">
-        {children}
+        {t(children)}
       </div>
     </section>
   );
 }
 
 function SummaryItem({ text }) {
+  useLanguage();
   return (
     <div className="flex items-center gap-2 text-sm text-aeviora-slate">
       <CheckCircle2 size={16} className="shrink-0 text-aeviora-primary" />
-      <span>{text}</span>
+      <span>{t(text)}</span>
     </div>
   );
 }

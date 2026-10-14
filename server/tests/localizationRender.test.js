@@ -1,0 +1,50 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createServer } from "vite";
+import react from "@vitejs/plugin-react";
+
+test("public and admin screens render translated text with stable routes and fields", async () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { search: "", hash: "" }, history: { replaceState() {} } };
+  const vite = await createServer({ configFile: false, envDir: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { renderScreen, apiRequest } = await vite.ssrLoadModule("/server/tests/fixtures/localizationRender.jsx");
+    const cases = {
+      Home: ["Make wellness part of your everyday life.", "Haz del bienestar parte de tu vida diaria."],
+      Login: ["Account Login", "Acceso a la cuenta"],
+      Register: ["Create your free account", "Crea tu cuenta gratuita"],
+      PasswordRecovery: ["Recover your account", "Recupera tu cuenta"],
+      AccountTerms: ["Account Terms of Use", "Términos de uso de la cuenta"],
+      AccountPrivacy: ["Account Privacy Policy", "Política de privacidad de la cuenta"],
+      AdminFees: ["Fee catalogs", "Catálogos de tarifas"],
+      AdminBenefits: ["Aeviora benefits", "Beneficios de Aeviora"],
+      AdminMemberships: ["Membership plans", "Planes de membresía"],
+      AdminEmailTemplates: ["Email templates", "Plantillas de correo"],
+      Directory: ["Patient &amp; User Directory", "Directorio de pacientes y usuarios"],
+      DashboardLayout: ["Membership plans", "Planes de membresía"],
+    };
+    for (const [name, [english, spanish]] of Object.entries(cases)) {
+      const en = renderScreen(name, "en"), es = renderScreen(name, "es");
+      assert.ok(en.includes(english), `${name}: English heading`);
+      assert.ok(es.includes(spanish), `${name}: Spanish heading`);
+      assert.ok(!es.includes(english), `${name}: heading switches`);
+      const attributes = (html) => [...html.matchAll(/(?:href|name|id|htmlFor|for)="([^"]*)"/g)].map((match) => match[0]);
+      assert.deepEqual(attributes(es), attributes(en), `${name}: routes and field identifiers are unchanged`);
+      assert.equal(renderScreen(name, "en"), en, `${name}: switching back restores English`);
+    }
+    const previousFetch = globalThis.fetch;
+    try {
+      globalThis.fetch = async (url, options) => {
+        assert.equal(url, "/api/payments/checkout-session");
+        assert.equal(options.headers.get("Accept-Language"), "es");
+        assert.equal(options.headers.get("Content-Type"), "application/json");
+        assert.equal(options.credentials, "include");
+        assert.equal(options.body, '{"planId":"synthetic"}');
+        return { ok: true, json: async () => ({ message: "synthetic" }) };
+      };
+      renderScreen("Home", "es");
+      await apiRequest("/api/payments/checkout-session", { method: "POST", headers: { "Content-Type": "application/json" }, body: '{"planId":"synthetic"}' });
+    } finally { globalThis.fetch = previousFetch; }
+  } finally { globalThis.window = previousWindow; await vite.close(); }
+});
+

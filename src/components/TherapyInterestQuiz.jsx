@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -12,6 +14,7 @@ const informationTopics = [
 const formats = ["Brief summary", "More detailed explanation"];
 
 export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) {
+  useLanguage();
   const [step, setStep] = useState(0);
   const [therapy, setTherapy] = useState(null);
   const [information, setInformation] = useState("");
@@ -57,18 +60,16 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
     >
       <header className="flex items-start justify-between gap-4 border-b border-aeviora-border pb-4">
         <div>
-          <p className="text-xs font-semibold uppercase text-aeviora-gold">
-            Therapy topic explorer
-          </p>
+          <p className="text-xs font-semibold uppercase text-aeviora-gold">{t("Therapy topic explorer")}</p>
           <h2 id="therapy-quiz-title" className="mt-2 font-display text-2xl text-aeviora-charcoal">
-            {step < questions.length ? "Choose what to explore" : "Your next step toward wellness"}
+            {t(step < questions.length ? "Choose what to explore" : "Your next step toward wellness")}
           </h2>
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close therapy topic explorer"
+            aria-label={t("Close therapy topic explorer")}
             className="p-2 text-aeviora-slate hover:bg-aeviora-ivory hover:text-aeviora-charcoal"
           >
             <X size={20} />
@@ -79,13 +80,13 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
       {step < questions.length ? (
         <>
           <div className="mt-5 flex items-center justify-between text-xs text-aeviora-slate">
-            <span>Question {step + 1} of {questions.length}</span>
-            <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
+            <span>{t("Question ")}{t(step + 1)}{t(" of ")}{t(questions.length)}</span>
+            <span>{t(Math.round(((step + 1) / questions.length) * 100))}%</span>
           </div>
           <div
             className="mt-2 h-1.5 bg-aeviora-softSage"
             role="progressbar"
-            aria-label="Quiz progress"
+            aria-label={t("Quiz progress")}
             aria-valuemin={0}
             aria-valuemax={questions.length}
             aria-valuenow={step + 1}
@@ -98,10 +99,10 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
 
           <div className="mt-6">
             <h3 className="font-display text-xl text-aeviora-charcoal">
-              {currentQuestion.title}
+              {t(currentQuestion.title)}
             </h3>
             <p className="mt-1 text-sm text-aeviora-slate">
-              {currentQuestion.subtitle}
+              {t(currentQuestion.subtitle)}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {currentQuestion.options.map((option) => {
@@ -118,7 +119,7 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
                         : "border-aeviora-border hover:border-aeviora-primary"
                     }`}
                   >
-                    <span>{option}</span>
+                    <span>{t(option)}</span>
                     {selected && <CheckCircle2 aria-hidden="true" size={18} />}
                   </button>
                 );
@@ -133,100 +134,68 @@ export default function TherapyInterestQuiz({ onClose, showSignupCta = false }) 
               onClick={() => setStep((current) => current - 1)}
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-aeviora-slate hover:text-aeviora-charcoal disabled:opacity-40"
             >
-              <ArrowLeft size={16} /> Back
-            </button>
+              <ArrowLeft size={16} />{t(" Back")}</button>
             <button
               type="button"
               disabled={!currentQuestion.value}
               onClick={() => setStep((current) => current + 1)}
               className="inline-flex items-center gap-2 bg-aeviora-primary px-4 py-2 text-sm font-semibold text-white hover:bg-aeviora-primaryDark disabled:opacity-40"
             >
-              {step === questions.length - 1 ? "Explore my next steps" : "Next"}
+              {t(step === questions.length - 1 ? "Explore my next steps" : "Next")}
               <ArrowRight size={16} />
             </button>
           </footer>
         </>
       ) : (
         <div className="mt-6">
-          <p className="text-xs font-semibold uppercase text-aeviora-gold">
-            Your selections
-          </p>
+          <p className="text-xs font-semibold uppercase text-aeviora-gold">{t("Your selections")}</p>
           <h3 className="mt-2 font-display text-2xl text-aeviora-charcoal">
-            {selectedProtocol?.name}
+            {t(selectedProtocol?.name)}
           </h3>
           <p className="mt-2 text-sm leading-6 text-aeviora-slate">
-            {selectedProtocol?.description}
+            {t(selectedProtocol?.description)}
           </p>
           <div className="mt-6 border border-aeviora-primary bg-aeviora-ivory p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase text-aeviora-primary">Keep your wellness journey moving</p>
-            <h4 className="mt-2 font-display text-2xl text-aeviora-charcoal">
-              Curious about {selectedProtocol?.name}? Take the next step with Aeviora.
-            </h4>
-            <p className="mt-3 text-sm leading-6 text-aeviora-slate">
-              Explore how an Aeviora membership can help you access discounted
-              prices on eligible wellness, laboratory, and diagnostic services.
-              Our team can answer questions about membership benefits and
-              participating providers.
-            </p>
+            <p className="text-xs font-semibold uppercase text-aeviora-primary">{t("Keep your wellness journey moving")}</p>
+            <h4 className="mt-2 font-display text-2xl text-aeviora-charcoal">{t("Curious about ")}{t(selectedProtocol?.name)}{t("? Take the next step with Aeviora.")}</h4>
+            <p className="mt-3 text-sm leading-6 text-aeviora-slate">{t("Explore how an Aeviora membership can help you access discounted prices on eligible wellness, laboratory, and diagnostic services. Our team can answer questions about membership benefits and participating providers.")}</p>
             {showSignupCta && (
-              <p className="mt-3 text-sm leading-6 text-aeviora-slate">
-                Start by creating your free account. After activation, sign in to
-                access provider links and take your next step. Creating an account
-                is free and does not enroll you in a paid membership.
-              </p>
+              <p className="mt-3 text-sm leading-6 text-aeviora-slate">{t("Start by creating your free account. After activation, sign in to access provider links and take your next step. Creating an account is free and does not enroll you in a paid membership.")}</p>
             )}
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {showSignupCta && (
                 <Link
                   to="/register"
                   className="inline-flex items-center justify-center gap-2 bg-aeviora-primary px-5 py-3 text-sm font-semibold text-white hover:bg-aeviora-primaryDark"
-                >
-                  Sign up for free <ArrowRight aria-hidden="true" size={16} />
+                >{t("Sign up for free ")}<ArrowRight aria-hidden="true" size={16} />
                 </Link>
               )}
               <a
-                href={`mailto:${company.email}?subject=${encodeURIComponent("Information about Aeviora wellness memberships")}`}
+                href={`mailto:${company.email}?subject=${encodeURIComponent(t("Information about Aeviora wellness memberships"))}`}
                 className="inline-flex items-center justify-center border border-aeviora-primary px-5 py-3 text-sm font-semibold text-aeviora-primary hover:bg-aeviora-softSage"
-              >
-                I’d like more information
-              </a>
+              >{t("I’d like more information")}</a>
             </div>
-            <p className="mt-3 text-xs leading-5 text-aeviora-slate">
-              The information link opens your email app. Prefer to talk?{' '}
-              <a className="font-semibold underline underline-offset-4" href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`}>
-                Call {company.telephone}
+            <p className="mt-3 text-xs leading-5 text-aeviora-slate">{t("The information link opens your email app. Prefer to talk?")}{t(' ')}
+              <a className="font-semibold underline underline-offset-4" href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`}>{t("Call ")}{t(company.telephone)}
               </a>.
-              {' '}Discounts depend on your plan and provider; your selected therapy may not be included.
-            </p>
+              {t(' ')}{t("Discounts depend on your plan and provider; your selected therapy may not be included.")}</p>
           </div>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2">
             <div className="border border-aeviora-border p-4">
-              <dt className="text-xs font-semibold uppercase text-aeviora-slate">Information topic</dt>
-              <dd className="mt-1 text-sm text-aeviora-charcoal">{information}</dd>
+              <dt className="text-xs font-semibold uppercase text-aeviora-slate">{t("Information topic")}</dt>
+              <dd className="mt-1 text-sm text-aeviora-charcoal">{t(information)}</dd>
             </div>
             <div className="border border-aeviora-border p-4">
-              <dt className="text-xs font-semibold uppercase text-aeviora-slate">Format</dt>
-              <dd className="mt-1 text-sm text-aeviora-charcoal">{format}</dd>
+              <dt className="text-xs font-semibold uppercase text-aeviora-slate">{t("Format")}</dt>
+              <dd className="mt-1 text-sm text-aeviora-charcoal">{t(format)}</dd>
             </div>
           </dl>
-          <p className="mt-5 border-l-2 border-aeviora-gold pl-4 text-sm leading-6 text-aeviora-slate">
-            This is an educational topic guide, not a screening, diagnosis, or
-            treatment recommendation. Discuss care decisions with a licensed
-            healthcare professional.
-          </p>
-          <p className="mt-3 text-xs leading-5 text-aeviora-slate">
-            Your selections stay in this page's temporary memory. They are not
-            sent to Aeviora or saved to your account, and disappear when you
-            leave or refresh this page.
-          </p>
+          <p className="mt-5 border-l-2 border-aeviora-gold pl-4 text-sm leading-6 text-aeviora-slate">{t("This is an educational topic guide, not a screening, diagnosis, or treatment recommendation. Discuss care decisions with a licensed healthcare professional.")}</p>
+          <p className="mt-3 text-xs leading-5 text-aeviora-slate">{t("Your selections stay in this page's temporary memory. They are not sent to Aeviora or saved to your account, and disappear when you leave or refresh this page.")}</p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <button type="button" onClick={resetQuiz} className="px-3 py-2 text-sm text-aeviora-slate underline underline-offset-4 hover:text-aeviora-primary">
-              Explore another therapy
-            </button>
+            <button type="button" onClick={resetQuiz} className="px-3 py-2 text-sm text-aeviora-slate underline underline-offset-4 hover:text-aeviora-primary">{t("Explore another therapy")}</button>
             {onClose && (
-              <button type="button" onClick={onClose} className="btn-primary">
-                Close guide
-              </button>
+              <button type="button" onClick={onClose} className="btn-primary">{t("Close guide")}</button>
             )}
           </div>
         </div>

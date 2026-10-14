@@ -1,4 +1,7 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 export default function ButtonPassword({showTogglePassword, showPassword, error}){
+  useLanguage();
 
     let buttonClass = "absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600";
     
@@ -13,7 +16,7 @@ export default function ButtonPassword({showTogglePassword, showPassword, error}
                 type="button" 
                 onClick={showTogglePassword}
                 className={buttonClass}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={t(showPassword ? "Hide password" : "Show password")}
             >
                 {/* <!-- Eye Open Icon (Visible by default) --> */}
                 {!showPassword ? (

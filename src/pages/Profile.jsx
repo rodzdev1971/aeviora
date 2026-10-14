@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +23,7 @@ const emptyProfile = {
 };
 
 export default function Profile() {
+  useLanguage();
   const [profile, setProfile] = useState(emptyProfile);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -96,32 +99,28 @@ export default function Profile() {
     setVisiblePasswords((current) => ({ ...current, [name]: !current[name] }));
   }
 
-  if (loading) return <p role="status">Loading your profile...</p>;
+  if (loading) return <p role="status">{t("Loading your profile...")}</p>;
 
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-          Account profile
-        </p>
-        <h1 className="mt-2 font-display text-4xl">Manage Your Information</h1>
+        <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">{t("Account profile")}</p>
+        <h1 className="mt-2 font-display text-4xl">{t("Manage Your Information")}</h1>
         {message && (
           <p role="status" className="mt-3 text-aeviora-primary">
-            {message}
+            {t(message)}
           </p>
         )}
         {error && (
           <p role="alert" className="mt-3 text-red-700">
-            {error}
+            {t(error)}
           </p>
         )}
       </div>
 
       <form onSubmit={updateProfile} className="card grid gap-5">
         <div>
-          <label className="label" htmlFor="accountId">
-            Account identifier
-          </label>
+          <label className="label" htmlFor="accountId">{t("Account identifier")}</label>
           <div className="relative">
             <input
               id="accountId"
@@ -135,20 +134,16 @@ export default function Profile() {
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-aeviora-primary"
               onClick={() => setAccountIdVisible((visible) => !visible)}
-              aria-label={accountIdVisible ? "Hide account identifier" : "Show account identifier"}
+              aria-label={t(accountIdVisible ? "Hide account identifier" : "Show account identifier")}
             >
               {accountIdVisible ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
             </button>
           </div>
-          <p id="accountIdHelp" className="mt-1 text-xs text-gray-500">
-            Unique identifier for your account.
-          </p>
+          <p id="accountIdHelp" className="mt-1 text-xs text-gray-500">{t("Unique identifier for your account.")}</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="label" htmlFor="firstName">
-              First Name
-            </label>
+            <label className="label" htmlFor="firstName">{t("First Name")}</label>
             <input
               id="firstName"
               className="input bg-gray-100"
@@ -157,9 +152,7 @@ export default function Profile() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="lastName">
-              Last Name
-            </label>
+            <label className="label" htmlFor="lastName">{t("Last Name")}</label>
             <input
               id="lastName"
               className="input bg-gray-100"
@@ -169,9 +162,7 @@ export default function Profile() {
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="email">
-            Email Address
-          </label>
+          <label className="label" htmlFor="email">{t("Email Address")}</label>
           <input
             id="email"
             className="input bg-gray-100"
@@ -181,9 +172,7 @@ export default function Profile() {
           />
         </div>
         <div>
-          <label className="label" htmlFor="phone">
-            Phone Number
-          </label>
+          <label className="label" htmlFor="phone">{t("Phone Number")}</label>
           <input
             id="phone"
             className="input bg-gray-100"
@@ -197,9 +186,7 @@ export default function Profile() {
             (name) => (
               <div key={name}>
                 <label className="label" htmlFor={name}>
-                  {name
-                    .replace("Line", " line ")
-                    .replace(/^[a-z]/, (letter) => letter.toUpperCase())}
+                  {t(({ addressLine1: "Address line 1", addressLine2: "Address line 2", city: "City", state: "State", zipCode: "ZIP code" })[name])}
                 </label>
                 <input
                   id={name}
@@ -211,24 +198,20 @@ export default function Profile() {
             ),
           )}
           <div>
-            <label className="label" htmlFor="preferredLanguage">
-              Preferred Language
-            </label>
+            <label className="label" htmlFor="preferredLanguage">{t("Preferred Language")}</label>
             <select
               id="preferredLanguage"
               name="preferredLanguage"
               className="input"
               defaultValue={profile.preferredLanguage}
             >
-              <option value="">No preference</option>
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
+              <option value="">{t("No preference")}</option>
+              <option value="en">{t("English")}</option>
+              <option value="es">{t("Spanish")}</option>
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="timeZone">
-              Time Zone
-            </label>
+            <label className="label" htmlFor="timeZone">{t("Time Zone")}</label>
             <input
               id="timeZone"
               name="timeZone"
@@ -237,26 +220,22 @@ export default function Profile() {
             />
           </div>
         </div>
-        <button type="submit" className="btn-primary">
-          Save Profile
-        </button>
+        <button type="submit" className="btn-primary">{t("Save Profile")}</button>
       </form>
 
       <form onSubmit={changePassword} className="card mt-6 grid gap-5">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">
-            Security
-          </p>
-          <h2 className="mt-2 font-display text-2xl">Change password</h2>
+          <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">{t("Security")}</p>
+          <h2 className="mt-2 font-display text-2xl">{t("Change password")}</h2>
         </div>
         {["currentPassword", "newPassword", "confirmPassword"].map((name) => (
           <div key={name}>
             <label className="label" htmlFor={name}>
-              {name === "currentPassword"
+              {t(name === "currentPassword"
                 ? "Current password"
                 : name === "newPassword"
                   ? "New password"
-                  : "Confirm new password"}
+                  : "Confirm new password")}
             </label>
             <div className="relative">
               <input
@@ -281,7 +260,7 @@ export default function Profile() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-aeviora-primary"
                 onClick={() => togglePasswordVisibility(name)}
                 aria-label={
-                  visiblePasswords[name] ? `Hide ${name}` : `Show ${name}`
+                  t(visiblePasswords[name] ? `Hide ${name}` : `Show ${name}`)
                 }
               >
                 {visiblePasswords[name] ? (
@@ -293,9 +272,7 @@ export default function Profile() {
             </div>
           </div>
         ))}
-        <button type="submit" className="btn-primary">
-          Change password
-        </button>
+        <button type="submit" className="btn-primary">{t("Change password")}</button>
       </form>
     </div>
   );

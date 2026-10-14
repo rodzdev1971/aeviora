@@ -73,6 +73,7 @@ router.post("/checkout-session", requireAuth, async (req, res) => {
       return res.status(409).json({ message: "A checkout for another plan is already open. Complete it or wait for it to expire before choosing another plan." });
     }
     const session = await stripe.checkout.sessions.create({
+      locale: req.acceptsLanguages("es", "en") || "en",
       mode: "subscription",
       payment_method_types: ["card"],
       expires_at: Math.floor(Date.now() / 1000) + 1800,
@@ -99,7 +100,7 @@ router.post("/billing-portal", requireAuth, async (req, res) => {
     if (!user) return res.status(404).json({ message: "Account not found." });
     const customerId = await getOrCreateCustomer(stripe, user);
     const configuration = await membershipPortalConfig(stripe);
-    const session = await stripe.billingPortal.sessions.create({ customer: customerId, configuration, return_url: `${paymentReturnOrigin(req)}/memberships` });
+    const session = await stripe.billingPortal.sessions.create({ customer: customerId, configuration, locale: req.acceptsLanguages("es", "en") || "en", return_url: `${paymentReturnOrigin(req)}/memberships` });
     return res.json({ url: session.url });
   } catch (error) {
     console.error("Stripe billing portal error:", error.message);

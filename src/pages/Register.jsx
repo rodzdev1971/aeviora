@@ -1,3 +1,5 @@
+import { t } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
@@ -21,6 +23,7 @@ const addressFields = [
 ];
 
 export default function Register() {
+  const language = useLanguage();
   const [config, setConfig] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [errors, setErrors] = useState({});
@@ -113,8 +116,8 @@ export default function Register() {
     return (
       <div key={name}>
         <label htmlFor={name} className="label">
-          {label}
-          {needed ? " *" : " (optional)"}
+          {t(label)}
+          {t(needed ? " *" : " (optional)")}
         </label>
         <input
           id={name}
@@ -130,7 +133,7 @@ export default function Register() {
         />
         {errors[name] && (
           <p id={name + "-error"} className="mt-1 text-sm text-red-700">
-            {errors[name]}
+            {t(errors[name])}
           </p>
         )}
       </div>
@@ -141,56 +144,40 @@ export default function Register() {
     <main className="min-h-screen bg-aeviora-primaryDark px-4 py-8 sm:px-6">
       <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl lg:grid-cols-[1fr_2fr]">
         <section className="bg-aeviora-primary p-8 text-white lg:p-10">
-          <Link to="/" className="font-display text-2xl">
-            Aeviora Wellness
-          </Link>
+          <Link to="/" className="font-display text-2xl">{t("Aeviora Wellness")}</Link>
           <ShieldCheck className="mb-5 mt-10 h-12 w-12 text-aeviora-softGold" />
-          <h1 className="font-display text-4xl">Create your free account</h1>
-          <p className="mt-5 leading-7">
-            Take the first step toward Aeviora membership and discounted prices
-            on eligible wellness and preventive care services. Start with your
-            contact details and communication preferences.
-          </p>
-          <p className="mt-4 text-sm leading-6">
-            Your ZIP code helps us check service availability. An account does
-            not confirm eligibility for a service or enroll you in a paid membership.
-            Account signup is free; membership plans and services are priced separately.
-          </p>
+          <h1 className="font-display text-4xl">{t("Create your free account")}</h1>
+          <p className="mt-5 leading-7">{t("Take the first step toward Aeviora membership and discounted prices on eligible wellness and preventive care services. Start with your contact details and communication preferences.")}</p>
+          <p className="mt-4 text-sm leading-6">{t("Your ZIP code helps us check service availability. An account does not confirm eligibility for a service or enroll you in a paid membership. Account signup is free; membership plans and services are priced separately.")}</p>
         </section>
         <section className="p-6 sm:p-10">
           {success ? (
             <div role="status">
-              <h2 className="font-display text-3xl">Account created</h2>
-              <p className="my-5">{success.message}</p>
+              <h2 className="font-display text-3xl">{t("Account created")}</h2>
+              <p className="my-5">{t(success.message)}</p>
               <Link
                 to={success.accountStatus === "active" ? "/login" : "/"}
                 className="btn-primary inline-block"
               >
-                {success.accountStatus === "active" ? "Sign in" : "Return home"}
+                {t(success.accountStatus === "active" ? "Sign in" : "Return home")}
               </Link>
             </div>
           ) : (
             <>
-              <h2 className="font-display text-3xl">Account registration</h2>
-              <p className="mt-2 text-sm text-aeviora-slate">
-                Fields marked * are required.
-              </p>
+              <h2 className="font-display text-3xl">{t("Account registration")}</h2>
+              <p className="mt-2 text-sm text-aeviora-slate">{t("Fields marked * are required.")}</p>
               {loadError && (
                 <p role="alert" className="mt-5 text-red-700">
-                  {loadError}{" "}
+                  {t(loadError)}{t(" ")}
                   <button
                     type="button"
                     className="underline"
                     onClick={() => window.location.reload()}
-                  >
-                    Try again
-                  </button>
+                  >{t("Try again")}</button>
                 </p>
               )}
               {!config && !loadError && (
-                <p role="status" className="mt-5">
-                  Loading registration…
-                </p>
+                <p role="status" className="mt-5">{t("Loading registration…")}</p>
               )}
               {config && (
                 <form
@@ -205,12 +192,10 @@ export default function Register() {
                       role="alert"
                       className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800"
                     >
-                      <p className="font-semibold">
-                        Please review these details:
-                      </p>
+                      <p className="font-semibold">{t("Please review these details:")}</p>
                       <ul className="mt-2 list-disc pl-5">
                         {Object.entries(errors).map(([name, message]) => (
-                          <li key={name}>{message}</li>
+                          <li key={name}>{t(message)}</li>
                         ))}
                       </ul>
                     </div>
@@ -219,11 +204,9 @@ export default function Register() {
                     disabled={submitting}
                     className="space-y-6 disabled:opacity-60"
                   >
-                    <legend className="mb-4 font-semibold">
-                      Contact details
-                    </legend>
+                    <legend className="mb-4 font-semibold">{t("Contact details")}</legend>
                     <div className="grid gap-5 sm:grid-cols-2">
-                      {fields.map(renderField)}
+                      {t(fields.map(renderField))}
                     </div>
                     <details
                       open={
@@ -232,37 +215,33 @@ export default function Register() {
                       }
                     >
                       <summary className="cursor-pointer font-semibold">
-                        {config.requiredAddressFields.length
+                        {t(config.requiredAddressFields.length
                           ? "Address details"
-                          : "Add an address (optional)"}
+                          : "Add an address (optional)")}
                       </summary>
                       <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                        {addressFields.map(renderField)}
+                        {t(addressFields.map(renderField))}
                       </div>
                     </details>
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="preferredLanguage" className="label">
-                          Preferred language (optional)
-                        </label>
+                        <label htmlFor="preferredLanguage" className="label">{t("Preferred language (optional)")}</label>
                         <select
                           id="preferredLanguage"
                           name="preferredLanguage"
                           className="input"
-                          defaultValue=""
+                          defaultValue={language}
                         >
-                          <option value="">No preference</option>
-                          <option value="en">English</option>
-                          <option value="es">Spanish</option>
+                          <option value="">{t("No preference")}</option>
+                          <option value="en">{t("English")}</option>
+                          <option value="es">{t("Spanish")}</option>
                         </select>
                       </div>
                       <div>
                         <label
                           htmlFor="communicationPreference"
                           className="label"
-                        >
-                          Communication preference (optional)
-                        </label>
+                        >{t("Communication preference (optional)")}</label>
                         <select
                           id="communicationPreference"
                           name="communicationPreference"
@@ -272,17 +251,15 @@ export default function Register() {
                             setPreference(event.target.value)
                           }
                         >
-                          <option value="">No preference</option>
-                          <option value="email">Email</option>
-                          <option value="sms">SMS</option>
-                          <option value="both">Email and SMS</option>
+                          <option value="">{t("No preference")}</option>
+                          <option value="email">{t("Email")}</option>
+                          <option value="sms">{t("SMS")}</option>
+                          <option value="both">{t("Email and SMS")}</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="timeZone" className="label">
-                        Time zone (optional)
-                      </label>
+                      <label htmlFor="timeZone" className="label">{t("Time zone (optional)")}</label>
                       <input
                         id="timeZone"
                         name="timeZone"
@@ -292,17 +269,17 @@ export default function Register() {
                         defaultValue={
                           Intl.DateTimeFormat().resolvedOptions().timeZone || ""
                         }
-                        placeholder="America/New_York"
+                        placeholder={t("America/New_York")}
                       />
                       {errors.timeZone && (
                         <p id="timeZone-error" className="mt-1 text-sm text-red-700">
-                          {errors.timeZone}
+                          {t(errors.timeZone)}
                         </p>
                       )}
                     </div>
                     <div className="grid gap-5 sm:grid-cols-2">
                       <PasswordInput
-                        placeholder="At least 12 characters"
+                        placeholder={t("At least 12 characters")}
                         error={errors.password}
                       />
                       <PasswordInput
@@ -313,10 +290,7 @@ export default function Register() {
                     </div>
                     <div className="space-y-4 border-t border-aeviora-border pt-5 text-sm leading-6">
                       {config.isDraft && (
-                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900">
-                          Development registration: policy documents are drafts.
-                          Acceptance is recorded for testing.
-                        </p>
+                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900">{t("Development registration: policy documents are drafts. Acceptance is recorded for testing.")}</p>
                       )}
                       <label className="flex items-start gap-3">
                         <input
@@ -327,13 +301,11 @@ export default function Register() {
                           aria-invalid={Boolean(errors.is18OrOlder)}
                           aria-describedby={errors.is18OrOlder ? "is18OrOlder-error" : undefined}
                         />
-                        <span>
-                          I confirm that I am 18 years of age or older. *
-                        </span>
+                        <span>{t("I confirm that I am 18 years of age or older. *")}</span>
                       </label>
                       {errors.is18OrOlder && (
                         <p id="is18OrOlder-error" className="ml-7 text-sm text-red-700">
-                          {errors.is18OrOlder}
+                          {t(errors.is18OrOlder)}
                         </p>
                       )}
                       <label className="flex items-start gap-3">
@@ -345,22 +317,19 @@ export default function Register() {
                           aria-invalid={Boolean(errors.termsAccepted)}
                           aria-describedby={errors.termsAccepted ? "termsAccepted-error" : undefined}
                         />
-                        <span>
-                          I accept the{" "}
+                        <span>{t("I accept the")}{t(" ")}
                           <a
                             href={config.termsUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="underline"
-                          >
-                            Terms
-                          </a>{" "}
-                          ({config.termsVersion}). *
+                          >{t("Terms")}</a>{t(" ")}
+                          ({t(config.termsVersion)}). *
                         </span>
                       </label>
                       {errors.termsAccepted && (
                         <p id="termsAccepted-error" className="ml-7 text-sm text-red-700">
-                          {errors.termsAccepted}
+                          {t(errors.termsAccepted)}
                         </p>
                       )}
                       <label className="flex items-start gap-3">
@@ -372,22 +341,19 @@ export default function Register() {
                           aria-invalid={Boolean(errors.privacyAccepted)}
                           aria-describedby={errors.privacyAccepted ? "privacyAccepted-error" : undefined}
                         />
-                        <span>
-                          I accept the{" "}
+                        <span>{t("I accept the")}{t(" ")}
                           <a
                             href={config.privacyUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="underline"
-                          >
-                            Privacy Policy
-                          </a>{" "}
-                          ({config.privacyVersion}). *
+                          >{t("Privacy Policy")}</a>{t(" ")}
+                          ({t(config.privacyVersion)}). *
                         </span>
                       </label>
                       {errors.privacyAccepted && (
                         <p id="privacyAccepted-error" className="ml-7 text-sm text-red-700">
-                          {errors.privacyAccepted}
+                          {t(errors.privacyAccepted)}
                         </p>
                       )}
                       <label className="flex items-start gap-3">
@@ -399,15 +365,11 @@ export default function Register() {
                           aria-invalid={Boolean(errors.smsConsent)}
                           aria-describedby={errors.smsConsent ? "smsConsent-error" : undefined}
                         />
-                        <span>
-                          I consent to SMS messages for account verification and
-                          general account notifications. Required if SMS is
-                          selected. This does not include marketing messages.
-                        </span>
+                        <span>{t("I consent to SMS messages for account verification and general account notifications. Required if SMS is selected. This does not include marketing messages.")}</span>
                       </label>
                       {errors.smsConsent && (
                         <p id="smsConsent-error" className="ml-7 text-sm text-red-700">
-                          {errors.smsConsent}
+                          {t(errors.smsConsent)}
                         </p>
                       )}
                       <label className="flex items-start gap-3">
@@ -416,10 +378,7 @@ export default function Register() {
                           type="checkbox"
                           className="mt-1"
                         />
-                        <span>
-                          I would like to receive marketing messages (optional).
-                          Creating an account does not require this consent.
-                        </span>
+                        <span>{t("I would like to receive marketing messages (optional). Creating an account does not require this consent.")}</span>
                       </label>
                     </div>
                     <button
@@ -427,19 +386,16 @@ export default function Register() {
                       disabled={submitting}
                       className="btn-primary w-full disabled:opacity-60"
                     >
-                      {submitting ? "Creating account…" : "Sign up for free"}
+                      {t(submitting ? "Creating account…" : "Sign up for free")}
                     </button>
                   </fieldset>
                 </form>
               )}
-              <p className="mt-6 text-center text-sm">
-                Already registered?{" "}
+              <p className="mt-6 text-center text-sm">{t("Already registered?")}{t(" ")}
                 <Link
                   to="/login"
                   className="font-semibold text-aeviora-primary underline"
-                >
-                  Sign in
-                </Link>
+                >{t("Sign in")}</Link>
               </p>
             </>
           )}

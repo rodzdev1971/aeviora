@@ -1,15 +1,18 @@
+import { t, getLocale } from "../i18n/language.js";
+import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../util/api";
 
-import { discountText } from "../../shared/discounts.js";
+import { discountText } from "../i18n/discountText.js";
 
 const discountsFor = (benefit) => benefit.discounts || (benefit.services || []).filter((service) => service.pricingType === "discount").map((service) => service.discount);
 const benefitLabel = (benefit) => benefit.discountPercent != null ? `${benefit.discountPercent}% off selected services` : benefit.pricingType === "discount" ? discountsFor(benefit).map(discountText).join("; ") : money(benefit.price);
-const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+const money = (value) => new Intl.NumberFormat(getLocale(), { style: "currency", currency: "USD" }).format(value);
 const emptyForm = () => ({ name: "", price: "", selectedBenefits: [], overrides: {} });
 
 export default function AdminMemberships() {
+  useLanguage();
   const [memberships, setMemberships] = useState([]);
   const [benefits, setBenefits] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -61,7 +64,7 @@ export default function AdminMemberships() {
     finally { setBusy(false); }
   }
   async function remove(plan) {
-    if (!window.confirm(`Delete the ${plan.name} membership plan? This cannot be undone.`)) return;
+    if (!window.confirm(t(`Delete the ${plan.name} membership plan? This cannot be undone.`))) return;
     setBusy(true); setError(""); setMessage("");
     try {
       await apiRequest(`/api/admin/memberships/${plan._id}`, { method: "DELETE" });
@@ -75,67 +78,67 @@ export default function AdminMemberships() {
   return (
     <section className="mx-auto max-w-6xl space-y-6">
       <header className="border-b border-aeviora-border pb-5">
-        <Link to="/admin" className="text-sm text-aeviora-primary underline">Account overview</Link>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-aeviora-gold">Administration</p>
-        <h1 className="mt-2 font-display text-3xl">Membership plans</h1>
-        <p className="mt-2 text-sm text-aeviora-slate">Set monthly membership fees and benefit prices for each plan. All prices are in USD.</p>
+        <Link to="/admin" className="text-sm text-aeviora-primary underline">{t("Account overview")}</Link>
+        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-aeviora-gold">{t("Administration")}</p>
+        <h1 className="mt-2 font-display text-3xl">{t("Membership plans")}</h1>
+        <p className="mt-2 text-sm text-aeviora-slate">{t("Set monthly membership fees and benefit prices for each plan. All prices are in USD.")}</p>
       </header>
-      {error && <p role="alert" className="border-l-4 border-red-600 bg-red-50 p-4 text-red-800">{error}</p>}
-      {message && <p role="status" className="border-l-4 border-green-700 bg-green-50 p-4 text-green-900">{message}</p>}
+      {error && <p role="alert" className="border-l-4 border-red-600 bg-red-50 p-4 text-red-800">{t(error)}</p>}
+      {message && <p role="status" className="border-l-4 border-green-700 bg-green-50 p-4 text-green-900">{t(message)}</p>}
       <div className="flex flex-wrap gap-3">
         <button type="button" disabled={busy || loading} className="btn-secondary disabled:opacity-50" onClick={() => {
           setLoading(true); setLoaded(false); setError(""); setReload((value) => value + 1);
-        }}>Refresh plans and benefits</button>
-        <Link to="/admin/benefits" className="btn-outline">Manage benefit catalog</Link>
+        }}>{t("Refresh plans and benefits")}</button>
+        <Link to="/admin/benefits" className="btn-outline">{t("Manage benefit catalog")}</Link>
       </div>
-      {loading && <p role="status">Loading membership plans…</p>}
+      {loading && <p role="status">{t("Loading membership plans…")}</p>}
       <div className="grid gap-4 md:grid-cols-3">
         {memberships.map((plan) => <article className="card min-w-0 space-y-4" key={plan._id}>
           <h2 className="break-words font-display text-2xl">{plan.name}</h2>
-          <p><strong className="text-2xl">{money(plan.price)}</strong><span className="text-sm text-aeviora-slate"> / month</span></p>
-          <p className="text-sm text-aeviora-slate">{plan.benefits.length} saved benefits</p>
-          <details><summary className="cursor-pointer text-sm font-semibold">View benefit prices</summary>
+          <p><strong className="text-2xl">{t(money(plan.price))}</strong><span className="text-sm text-aeviora-slate">{t(" / month")}</span></p>
+          <p className="text-sm text-aeviora-slate">{t(plan.benefits.length)}{t(" saved benefits")}</p>
+          <details><summary className="cursor-pointer text-sm font-semibold">{t("View benefit prices")}</summary>
             <ul className="mt-3 space-y-2 text-sm">{plan.benefits.map((benefit) => <li className="break-words" key={benefit.benefitId}>
-              {benefit.name}: {benefitLabel(benefit)}{benefit.pricingType !== "discount" && (benefit.customPrice ? " (adjusted)" : " (standard)")}
-              {benefit.pricingType !== "discount" && discountsFor(benefit).map((discount, index) => <span key={index} className="block">{discountText(discount)}</span>)}
+              {benefit.name}: {t(benefitLabel(benefit))}{t(benefit.pricingType !== "discount" && (benefit.customPrice ? " (adjusted)" : " (standard)"))}
+              {benefit.pricingType !== "discount" && discountsFor(benefit).map((discount, index) => <span key={index} className="block">{t(discountText(discount))}</span>)}
             </li>)}</ul>
           </details>
           <div className="flex flex-wrap gap-3">
-            <button type="button" disabled={busy || loading || !loaded} className="btn-secondary disabled:opacity-50" onClick={() => edit(plan)}>Edit {plan.name}</button>
-            <button type="button" disabled={busy || loading} className="text-sm font-semibold text-red-700 underline disabled:opacity-50" onClick={() => remove(plan)}>Delete</button>
+            <button type="button" disabled={busy || loading || !loaded} className="btn-secondary disabled:opacity-50" onClick={() => edit(plan)}>{t("Edit ")}{plan.name}</button>
+            <button type="button" disabled={busy || loading} className="text-sm font-semibold text-red-700 underline disabled:opacity-50" onClick={() => remove(plan)}>{t("Delete")}</button>
           </div>
         </article>)}
       </div>
-      {!loading && loaded && !memberships.length && <p>No membership plans yet. Add one below.</p>}
+      {!loading && loaded && !memberships.length && <p>{t("No membership plans yet. Add one below.")}</p>}
       <form onSubmit={save} className="card">
         <fieldset disabled={busy || loading || !loaded} className="min-w-0 space-y-5 disabled:opacity-60">
-          <legend className="mb-4 font-display text-2xl">{editingId ? `Edit ${form.name || "membership"}` : "New membership"}</legend>
+          <legend className="mb-4 font-display text-2xl">{t(editingId ? `Edit ${form.name || "membership"}` : "New membership")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div><label htmlFor="membership-name" className="label">Membership name</label>
+            <div><label htmlFor="membership-name" className="label">{t("Membership name")}</label>
               <input id="membership-name" required maxLength={100} className="input" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div>
-            <div><label htmlFor="membership-price" className="label">Monthly membership price ($)</label>
+            <div><label htmlFor="membership-price" className="label">{t("Monthly membership price ($)")}</label>
               <input id="membership-price" required type="number" min="0" max="100000000" step="0.01" className="input" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} /></div>
           </div>
           <div className="space-y-4 border-t border-aeviora-border pt-5">
-            <h2 className="font-semibold">Benefit prices for this membership</h2>
-            <p className="text-sm text-aeviora-slate">Choose benefits one at a time and add them to this membership. Use the standard price or set an adjusted price. Enter $0 for no additional charge. These prices do not change the monthly membership fee.</p>
+            <h2 className="font-semibold">{t("Benefit prices for this membership")}</h2>
+            <p className="text-sm text-aeviora-slate">{t("Choose benefits one at a time and add them to this membership. Use the standard price or set an adjusted price. Enter $0 for no additional charge. These prices do not change the monthly membership fee.")}</p>
             <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-0 flex-1"><label htmlFor="membership-benefit" className="label">Benefit to add</label>
+              <div className="min-w-0 flex-1"><label htmlFor="membership-benefit" className="label">{t("Benefit to add")}</label>
                 <select id="membership-benefit" className="input" value={benefitToAdd} onChange={(event) => setBenefitToAdd(event.target.value)}>
-                  <option value="">Select a benefit</option>
-                  {availableBenefits.map((benefit) => <option key={benefit._id} value={benefit._id}>{benefit.name} — {benefitLabel(benefit)}</option>)}
+                  <option value="">{t("Select a benefit")}</option>
+                  {availableBenefits.map((benefit) => <option key={benefit._id} value={benefit._id}>{benefit.name} — {t(benefitLabel(benefit))}</option>)}
                 </select>
               </div>
               <button type="button" className="btn-secondary disabled:opacity-50" disabled={!availableBenefits.some((benefit) => benefit._id === benefitToAdd)} onClick={() => {
                 const benefit = availableBenefits.find((item) => item._id === benefitToAdd);
                 if (benefit) setForm({ ...form, selectedBenefits: [...form.selectedBenefits, benefit] });
                 setBenefitToAdd("");
-              }}>Add benefit</button>
+              }}>{t("Add benefit")}</button>
             </div>
-            <h3 className="font-semibold">Selected benefits ({form.selectedBenefits.length})</h3>
-            {!form.selectedBenefits.length && <p className="text-sm text-aeviora-slate">No benefits selected. Choose a benefit above and click Add benefit.</p>}
-            {benefits.length > 0 && !availableBenefits.length && <p className="text-sm text-aeviora-slate">All available benefits have been selected.</p>}
-            {!benefits.length && <p className="rounded-xl bg-aeviora-cream p-4 text-sm">No benefits yet. You can save the plan now, add benefits in the Benefits manager, then edit this plan to set their prices.</p>}
+            <h3 className="font-semibold">{t("Selected benefits (")}{t(form.selectedBenefits.length)})</h3>
+            {!form.selectedBenefits.length && <p className="text-sm text-aeviora-slate">{t("No benefits selected. Choose a benefit above and click Add benefit.")}</p>}
+            {benefits.length > 0 && !availableBenefits.length && <p className="text-sm text-aeviora-slate">{t("All available benefits have been selected.")}</p>}
+            {!benefits.length && <p className="rounded-xl bg-aeviora-cream p-4 text-sm">{t("No benefits yet. You can save the plan now, add benefits in the Benefits manager, then edit this plan to set their prices.")}</p>}
             {form.selectedBenefits.map((selected) => {
               const currentBenefit = benefits.find((item) => item._id === selected._id);
               const benefit = currentBenefit || selected;
@@ -143,32 +146,32 @@ export default function AdminMemberships() {
               return <div key={benefit._id} className="grid min-w-0 gap-4 rounded-xl border border-aeviora-border p-4 sm:grid-cols-2">
                 <div className="min-w-0"><h3 className="break-words font-semibold">{benefit.name}</h3>
                   <p className="mt-1 break-words text-sm text-aeviora-slate">{benefit.description}</p>
-                  <p className="mt-2 text-sm">{benefit.pricingType === "discount" ? benefitLabel(benefit) : `Standard price: ${money(benefit.price)}`}</p>
-                  {discountsFor(benefit).map((discount, index) => <p key={index} className="mt-2 text-sm">{discountText(discount)}</p>)}
-                  {!currentBenefit && <p className="mt-2 text-sm text-red-700">This benefit is no longer available. Remove it before saving.</p>}
-                  <button type="button" className="mt-3 text-sm font-semibold text-red-700 underline" aria-label={`Remove ${benefit.name} from membership`} onClick={() => {
+                  <p className="mt-2 text-sm">{t(benefit.pricingType === "discount" ? benefitLabel(benefit) : `Standard price: ${money(benefit.price)}`)}</p>
+                  {discountsFor(benefit).map((discount, index) => <p key={index} className="mt-2 text-sm">{t(discountText(discount))}</p>)}
+                  {!currentBenefit && <p className="mt-2 text-sm text-red-700">{t("This benefit is no longer available. Remove it before saving.")}</p>}
+                  <button type="button" className="mt-3 text-sm font-semibold text-red-700 underline" aria-label={t(`Remove ${benefit.name} from membership`)} onClick={() => {
                     const overrides = { ...form.overrides };
                     delete overrides[benefit._id];
                     setForm({ ...form, overrides, selectedBenefits: form.selectedBenefits.filter((item) => item._id !== benefit._id) });
-                  }}>Remove benefit</button></div>
+                  }}>{t("Remove benefit")}</button></div>
                 {benefit.pricingType !== "discount" && <div className="space-y-3">
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={custom} onChange={(event) => {
                     const overrides = { ...form.overrides };
                     if (event.target.checked) overrides[benefit._id] = String(benefit.price);
                     else delete overrides[benefit._id];
                     setForm({ ...form, overrides });
-                  }} />Adjust price for {benefit.name}</label>
-                  <label htmlFor={`benefit-${benefit._id}`} className="label">Member price for {benefit.name} ($)</label>
+                  }} />{t("Adjust price for ")}{benefit.name}</label>
+                  <label htmlFor={`benefit-${benefit._id}`} className="label">{t("Member price for ")}{benefit.name} ($)</label>
                   <input id={`benefit-${benefit._id}`} className="input" type="number" min="0" max="100000000" step="0.01" required readOnly={!custom}
                     value={custom ? form.overrides[benefit._id] : benefit.price} onChange={(event) => setForm({ ...form, overrides: { ...form.overrides, [benefit._id]: event.target.value } })} />
                 </div>}
               </div>;
             })}
           </div>
-          <p className="text-sm text-aeviora-slate">Only selected benefits are saved. Adjusted prices remain specific to this plan.</p>
+          <p className="text-sm text-aeviora-slate">{t("Only selected benefits are saved. Adjusted prices remain specific to this plan.")}</p>
           <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={hasUnavailableBenefit} className="btn-primary disabled:opacity-50">{busy ? "Saving…" : editingId ? "Save membership" : "Create membership"}</button>
-            {editingId && <button type="button" className="btn-secondary" onClick={reset}>Cancel editing</button>}
+            <button type="submit" disabled={hasUnavailableBenefit} className="btn-primary disabled:opacity-50">{t(busy ? "Saving…" : editingId ? "Save membership" : "Create membership")}</button>
+            {editingId && <button type="button" className="btn-secondary" onClick={reset}>{t("Cancel editing")}</button>}
           </div>
         </fieldset>
       </form>
