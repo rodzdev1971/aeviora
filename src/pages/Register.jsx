@@ -153,14 +153,16 @@ export default function Register() {
         <section className="p-6 sm:p-10">
           {success ? (
             <div role="status">
-              <h2 className="font-display text-3xl">{t("Account created")}</h2>
+              <h2 className="font-display text-3xl">{t(success.verificationEmail === "accepted" ? "Check your email" : "Account created")}</h2>
               <p className="my-5">{t(success.message)}</p>
               <Link
-                to={success.accountStatus === "active" ? "/login" : "/"}
+                to="/verify-email"
                 className="btn-primary inline-block"
               >
-                {t(success.accountStatus === "active" ? "Sign in" : "Return home")}
+                {t("Request a new verification link")}
               </Link>
+              <p className="mt-5 text-sm">{t("After 24 hours without verification, your registration is marked Not verified. You can request a new link anytime.")}</p>
+              <Link to="/login" className="mt-5 inline-block text-sm underline">{t("Back to sign in")}</Link>
             </div>
           ) : (
             <>

@@ -45,10 +45,49 @@ only the new user ID, status, and confirmation message.
 
 Accounts default to `pending`. Set `DEV_ACTIVATE_ACCOUNTS=true` in a nonproduction
 environment to create **new** development accounts as `active`. This does not
-activate earlier accounts and is ignored in production. Pending, suspended, and
-deleted accounts cannot log in or access authenticated APIs. Only active accounts
-can use cookie authentication. There is no automated activation or verification
-sender yet.
+activate earlier accounts and is ignored in production. This flag does not bypass
+email verification for new registrations. Pending, suspended, and deleted accounts
+cannot log in or access authenticated APIs. Only active accounts can use cookie
+authentication.
+
+## Email verification
+
+Registration sends a single-use verification link using the SMTP settings and
+trusted `FRONTEND_ORIGIN` (HTTPS in production). The confirmation screen reports
+that the link was sent only after SMTP acceptance. Delivery failures keep the
+account and show instructions to request another link. Existing accounts without
+the new verification requirement keep their current access; they are labeled
+Existing account, not falsely marked Verified.
+
+New accounts are Awaiting verification for 24 hours, then Not verified. This status
+is computed from the persisted `emailVerificationExpiresAt` and `emailVerifiedAt`
+on each read, not stored as a separate potentially stale flag. No cron job is
+required: the server rejects tokens at the exact deadline even when it has been
+idle. The account remains pending and is not deleted. Resending starts a new
+24-hour window and invalidates the previous link.
+
+The link opens `/verify-email`; the user presses **Verify my email** to activate
+the account, then signs in normally. A GET or email link preview cannot activate
+it. Tokens use 32 random bytes, are stored only as SHA-256 hashes, and are consumed
+atomically. URL fragments keep tokens out of server URL logs. Do not log request
+bodies or email contents. Resends have an atomic per-account one-minute cooldown
+and a per-IP limit. As with password recovery, per-IP limits use instance-local
+memory; use shared rate-limit storage for multiple production instances.
+
+**Administration → Account overview → Verify manually** allows an authenticated
+administrator to verify and activate a pending/active account after confirming
+ownership. Suspended/deleted accounts cannot be activated this way. The account
+records the admin ID, verification time and method; the audit log records
+`ACCOUNT_MANUALLY_VERIFIED`. Manual verification invalidates outstanding links.
+
+- `POST /api/auth/verify-email`: consumes `{ token }`.
+- `POST /api/auth/resend-verification`: accepts `{ email }`; returns the same
+  message for unknown, verified, ineligible, throttled, and delivery-failed accounts.
+- `POST /api/admin/users/:id/verify`: admin-only manual verification.
+
+Run `node --test server/tests/emailVerification.test.js server/tests/registration.test.js`
+with synthetic data. Test real inbox delivery after configuring the deployed SMTP
+provider; SMTP acceptance alone does not guarantee inbox delivery.
 
 Set `ACCOUNT_REQUIRED_ADDRESS_FIELDS=addressLine1,city,state` when all three
 fields are needed, or list only the needed fields. Address line 2 remains optional.

@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import PasswordRecovery from "./pages/PasswordRecovery.jsx";
+import EmailVerification from "./pages/EmailVerification.jsx";
 import MainDashboard from "./pages/MainDashboard";
 import Profile from "./pages/Profile";
 import Directory from "./pages/Directory.jsx";
@@ -31,6 +32,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<PasswordRecovery key="forgot" />} />
       <Route path="/reset-password" element={<PasswordRecovery key="reset" reset />} />
       <Route path="/termsofuse" element={<TermsOfUse />} />

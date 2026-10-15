@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import User from "../models/users.js";
 import EmailTemplate from "../models/emailTemplates.js";
 import AuditLog from "../models/AuditLog.js";
@@ -54,6 +55,8 @@ test("registration stores a UUID, normalized contact data, password hash and ser
   assert.equal(user.phone, "+12025550123");
   assert.equal(user.country, "US");
   assert.equal(user.accountStatus, "pending");
+  assert.equal(user.emailVerificationRequired, true);
+  assert.equal(user.emailVerificationExpiresAt - now, 24 * 60 * 60 * 1000);
   assert.equal(user.role, "patient");
   assert.equal(await bcrypt.compare(input().password, user.passwordHash), true);
   assert.equal(
@@ -91,6 +94,9 @@ test("medical fields and client-assigned identifiers, status, roles and timestam
     "accountStatus",
     "termsAcceptance",
     "createdAt",
+    "emailVerifiedAt",
+    "emailVerificationRequired",
+    "emailVerificationTokenHash",
   ]) {
     assert.equal(
       schema.safeParse({ ...input(), [field]: "injected" }).success,
@@ -185,7 +191,19 @@ test("stale policy versions, duplicate emails and duplicate races fail without c
 });
 
 test("HTTP registration, pending/active login, cookie auth, account isolation and logout", async (t) => {
+  const emails = [];
+  t.mock.method(nodemailer, "createTransport", () => ({
+    sendMail: async (mail) => { emails.push(mail); return { accepted: ["example@example.com"] }; }, close: () => {},
+  }));
   t.mock.method(EmailTemplate, "findById", () => ({ lean: async () => null }));
+  t.mock.method(User, "findOneAndUpdate", async (filter, update) => {
+    const account = accounts.find((item) => (filter.email ? item.email === filter.email : item._id === filter._id)
+      && !item.emailVerifiedAt && filter.accountStatus.$in.includes(item.accountStatus));
+    if (!account) return null;
+    Object.assign(account, update.$set);
+    for (const key of Object.keys(update.$unset || {})) account.set ? account.set(key, undefined) : delete account[key];
+    return account;
+  });
   // Isolated synthetic storage: these tests never connect to MongoDB or read .env.
   t.mock.method(User, "findOne", ({ email }) => {
     const user = accounts.find((item) => item.email === email) || null;
@@ -262,6 +280,7 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   const accounts = [];
   const savedEnv = { ...process.env };
   process.env.NODE_ENV = "test";
+  Object.assign(process.env, { FRONTEND_ORIGIN: "https://example.com", SMTP_HOST: "smtp.example.com", SMTP_PORT: "587", SMTP_USER: "synthetic", SMTP_PASS: "synthetic", SMTP_FROM: "sender@example.com" });
   process.env.JWT_ACCESS_SECRET = "synthetic-test-secret-only";
   delete process.env.DEV_ACTIVATE_ACCOUNTS;
   const server = createApp().listen(0, "127.0.0.1");
@@ -298,6 +317,11 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   assert.equal(response.status, 201);
   const result = await response.json();
   assert.equal(result.accountStatus, "pending");
+  assert.equal(result.verificationEmail, "accepted");
+  assert.match(result.message, /verification link has been sent/);
+  assert.equal(emails.length, 1);
+  assert.match(emails[0].text, /https:\/\/example.com\/verify-email#[a-f0-9]{64}/);
+  assert.equal(result.emailVerificationTokenHash, undefined);
   assert.equal(accounts.length, 1);
   assert.equal(result.passwordHash, undefined);
   assert.equal((await post("/api/auth/register", payload)).status, 409);
@@ -312,6 +336,9 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   );
   assert.equal((await fetch(base + "/api/users/me")).status, 401);
   accounts[0].accountStatus = "active";
+  // Setting an account active alone must not bypass email verification.
+  assert.equal((await post("/api/auth/login", { email: "example@example.com", password: input().password })).status, 403);
+  accounts[0].emailVerifiedAt = new Date();
   response = await post("/api/auth/login", {
     email: "EXAMPLE@EXAMPLE.COM",
     password: input().password,
@@ -326,6 +353,8 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   const profile = await response.json();
   assert.equal(profile.user._id, result.userId);
   assert.equal(profile.user.passwordHash, undefined);
+  assert.equal((await post(`/api/admin/users/${accounts[0]._id}/verify`, {}, cookie)).status, 403);
+  assert.equal((await post(`/api/admin/users/${accounts[0]._id}/verify`, {})).status, 401);
   assert.equal(
     (
       await fetch(base + "/api/admin/users", {
@@ -344,6 +373,13 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   assert.equal(adminUsers.totalPages, 1);
   assert.equal(adminUsers.users[0].role, "admin");
   assert.equal(adminUsers.users[0].addressLine1, undefined);
+  accounts.push({ _id: "manual-target", email: "manual@example.com", accountStatus: "pending", emailVerificationRequired: true });
+  assert.equal((await post("/api/admin/users/manual-target/verify", {}, cookie)).status, 200);
+  assert.equal(accounts.at(-1).emailVerificationMethod, "admin");
+  assert.equal(accounts.at(-1).emailVerifiedBy, accounts[0]._id);
+  assert.equal(accounts.at(-1).accountStatus, "active");
+  assert.equal((await post("/api/admin/users/manual-target/verify", {}, cookie)).status, 409);
+  accounts.pop();
   assert.equal(
     (
       await fetch(base + "/api/admin/users?page=0", {

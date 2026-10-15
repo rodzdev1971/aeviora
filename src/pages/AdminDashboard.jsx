@@ -56,6 +56,17 @@ export default function AdminDashboard() {
     }
   }
 
+  async function verifyAccount(account) {
+    if (!window.confirm(t(`Manually verify and activate the account for ${account.email}? Only continue after confirming the account owner's identity.`))) return;
+    setBusyUserId(account._id); setActionError(""); setActionMessage("");
+    try {
+      const response = await apiRequest(`/api/admin/users/${encodeURIComponent(account._id)}/verify`, { method: "POST" });
+      setActionMessage(response.message);
+      setReloadKey((key) => key + 1);
+    } catch (requestError) { setActionError(requestError.message); }
+    finally { setBusyUserId(""); }
+  }
+
   return (
     <section className="mx-auto max-w-6xl">
       <header className="border-b border-aeviora-border pb-5">
@@ -106,6 +117,7 @@ export default function AdminDashboard() {
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Email")}</th>
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Phone")}</th>
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Status")}</th>
+                  <th scope="col" className="px-3 py-3 font-semibold">{t("Email verification")}</th>
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Role")}</th>
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Created")}</th>
                   <th scope="col" className="px-3 py-3 font-semibold">{t("Admin access")}</th>
@@ -123,6 +135,11 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-3 py-4">{account.phone}</td>
                     <td className="px-3 py-4 capitalize">{t(account.accountStatus)}</td>
+                    <td className="px-3 py-4">
+                      <span>{t(({ verified: "Verified", pending: "Awaiting verification", not_verified: "Not verified", legacy: "Existing account" })[account.verificationStatus] || "Not verified")}</span>
+                      {account.emailVerificationMethod === "admin" && <span className="block text-xs text-aeviora-slate">{t("Verified by admin")}</span>}
+                      {account.verificationStatus !== "verified" && ["pending", "active"].includes(account.accountStatus) && <button type="button" disabled={Boolean(busyUserId)} onClick={() => verifyAccount(account)} className="mt-2 block font-semibold text-aeviora-primary underline disabled:opacity-50">{t(busyUserId === account._id ? "Please wait…" : "Verify manually")}</button>}
+                    </td>
                     <td className="px-3 py-4 capitalize">{t(account.role)}</td>
                     <td className="px-3 py-4">
                       {t(new Intl.DateTimeFormat(undefined, {
@@ -151,7 +168,7 @@ export default function AdminDashboard() {
                 ))}
                 {result.users.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="px-3 py-8 text-center text-aeviora-slate">{t("No accounts found.")}</td>
+                    <td colSpan="8" className="px-3 py-8 text-center text-aeviora-slate">{t("No accounts found.")}</td>
                   </tr>
                 )}
               </tbody>

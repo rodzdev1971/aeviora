@@ -69,9 +69,9 @@ Select **Registration welcome (automatic registration)** to edit the signup resp
 
 Supported placeholders are `{{firstName}}`, `{{lastName}}`, and `{{accountStatus}}`. Other text is literal. Custom templates can be updated or deleted in the manager. Editing a template in the email composer only changes the current message; use the manager to save a reusable change. Ordinary templates remain account-support messages, not automated marketing campaigns.
 
-After an account is created, the registration route awaits a welcome email attempt. Pending accounts receive pending-activation wording; active accounts receive sign-in wording. The message does not activate the account or enroll it in a paid membership.
+After an account is created, the registration route awaits a verification email attempt. The server adds a mandatory verification link and 24-hour expiry instructions before the saved welcome message. The verification subject is fixed so recipients can recognize the action; the saved welcome body remains editable. Completing verification activates the account but does not enroll it in a paid membership. See [account verification](account-registration.md#email-verification).
 
-An SMTP failure does not undo the account or report registration as failed. Only a safe failure category is logged. There is no durable email queue or automatic retry; administrators can send a follow-up using the composer after checking delivery logs. The serverless function duration must allow database work plus the SMTP deadline. Larger sending volumes need a durable queue and shared rate-limit storage.
+An SMTP failure does not undo the account or report registration as failed. The signup screen explains that the verification email could not be sent and offers a new-link request. Only a safe failure category is logged. There is no durable email queue or automatic retry; users can request another verification link from signup or sign-in, and administrators can verify accounts manually after confirming ownership. The serverless function duration must allow database work plus the SMTP deadline. Larger sending volumes need a durable queue and shared rate-limit storage.
 
 ## Endpoints and verification
 

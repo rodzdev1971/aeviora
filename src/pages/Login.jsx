@@ -55,6 +55,7 @@ export default function Login() {
           <Link to="/register" className="text-aeviora-gold">{t("Sign up for free")}</Link>
           <Link to="/forgot-password" className="text-gray-500">{t("Forgot password?")}</Link>
         </div>
+        <Link to="/verify-email" className="mt-5 block text-sm text-aeviora-primary underline">{t("Need a verification email?")}</Link>
       </div>
     </main>
   );

@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/users.js";
+import { VERIFICATION_LIFETIME } from "./emailVerification.js";
 import { createRegistrationSchema } from "../../shared/registration.js";
 import {
   registrationConfig,
@@ -76,6 +77,8 @@ export async function registerAccount(
       passwordHash: await hashPassword(password),
       role: "patient",
       accountStatus: status,
+      emailVerificationRequired: true,
+      emailVerificationExpiresAt: new Date(timestamp.getTime() + VERIFICATION_LIFETIME),
       termsAcceptance: {
         version: config.termsVersion,
         documentUrl: config.termsUrl,

@@ -14,6 +14,7 @@ test("public and admin screens render translated text with stable routes and fie
       Login: ["Account Login", "Acceso a la cuenta"],
       Register: ["Create your free account", "Crea tu cuenta gratuita"],
       PasswordRecovery: ["Recover your account", "Recupera tu cuenta"],
+      EmailVerification: ["Request a verification link", "Solicitar un enlace de verificación"],
       AccountTerms: ["Account Terms of Use", "Términos de uso de la cuenta"],
       AccountPrivacy: ["Account Privacy Policy", "Política de privacidad de la cuenta"],
       AdminFees: ["Fee catalogs", "Catálogos de tarifas"],
@@ -32,6 +33,10 @@ test("public and admin screens render translated text with stable routes and fie
       assert.deepEqual(attributes(es), attributes(en), `${name}: routes and field identifiers are unchanged`);
       assert.equal(renderScreen(name, "en"), en, `${name}: switching back restores English`);
     }
+    globalThis.window.location.hash = "#" + "a".repeat(64);
+    assert.match(renderScreen("EmailVerification", "en"), /Verify my email/);
+    assert.match(renderScreen("EmailVerification", "es"), /Verificar mi correo/);
+    globalThis.window.location.hash = "";
     const previousFetch = globalThis.fetch;
     try {
       globalThis.fetch = async (url, options) => {

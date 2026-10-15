@@ -2,10 +2,11 @@ import express from "express";
 import User from "../models/users.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
+import { manuallyVerifyAccount, verificationStatus } from "../services/emailVerification.js";
 
 const router = express.Router();
 const adminUserFields =
-  "_id firstName lastName email phone accountStatus role createdAt";
+  "_id firstName lastName email phone accountStatus role createdAt emailVerificationRequired emailVerificationExpiresAt emailVerifiedAt emailVerificationMethod";
 
 router.get("/users", requireAuth, requireRole("admin"), async (req, res) => {
   const page = Number(req.query.page ?? 1);
@@ -36,7 +37,14 @@ router.get("/users", requireAuth, requireRole("admin"), async (req, res) => {
     targetType: "AdminUserList",
     metadata: { page, limit },
   });
-  return res.json({ users, page, limit, total, totalPages: Math.ceil(total / limit) });
+  return res.json({ users: users.map((user) => ({ ...(user.toObject ? user.toObject() : user), verificationStatus: verificationStatus(user) })), page, limit, total, totalPages: Math.ceil(total / limit) });
+});
+
+router.post("/users/:id/verify", requireAuth, requireRole("admin"), async (req, res) => {
+  const user = await manuallyVerifyAccount(req.params.id, req.user.id);
+  if (!user) return res.status(409).json({ message: "This account is already verified or is unavailable for verification." });
+  await logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action: "ACCOUNT_MANUALLY_VERIFIED", targetType: "User", targetId: user._id });
+  return res.json({ message: "Account manually verified and activated." });
 });
 
 router.delete(

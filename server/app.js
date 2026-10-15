@@ -7,6 +7,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import authRoutes from "./routes/authRoutes.js";
 import passwordResetRoutes from "./routes/passwordResetRoutes.js";
+import emailVerificationRoutes from "./routes/emailVerificationRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import auditRoutes from "./routes/auditRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
@@ -88,6 +89,7 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", passwordResetRoutes);
+app.use("/api/auth", emailVerificationRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);

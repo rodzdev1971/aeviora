@@ -1,5 +1,5 @@
-import EmailTemplate from "../models/emailTemplates.js";
 import express from "express";
+import EmailTemplate from "../models/emailTemplates.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
@@ -8,7 +8,7 @@ import { registrationConfig } from "../config/registration.js";
 import { requireAuth } from "../middleware/auth.js";
 import { z } from "zod";
 import { logAudit } from "../utils/auditLogger.js";
-import { sendRegistrationEmail } from "../services/email.js";
+import { requestEmailVerification, verificationStatus } from "../services/emailVerification.js";
 
 const router = express.Router();
 
@@ -43,13 +43,16 @@ router.get("/registration-config", (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const user = await registerAccount(req.body);
-    let welcomeTemplate;
-    try { welcomeTemplate = await EmailTemplate.findById("registration").lean(); }
+    let template;
+    try { template = await EmailTemplate.findById("registration").lean(); }
     catch { console.warn("Registration template unavailable; using default."); }
-    await sendRegistrationEmail(user, welcomeTemplate ? { template: welcomeTemplate } : undefined);
+    const verificationEmail = await requestEmailVerification(user.email, { template });
     await logAudit({ req, actorId: user._id, actorRole: user.role, action: "USER_CREATED", targetType: "User", targetId: user._id });
     return res.status(201).json({
-      message: user.accountStatus === "pending" ? "Account created. Activation is pending." : "Account created. You can now sign in.",
+      message: verificationEmail === "accepted"
+        ? "Account created. A verification link has been sent to your email. Check your inbox and spam folder, and verify within 24 hours to activate your account."
+        : "Account created, but we could not send your verification email. Request a new link below or contact Aeviora Wellness for help.",
+      verificationEmail,
       userId: user._id, accountStatus: user.accountStatus,
     });
   } catch (error) {
@@ -102,6 +105,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
+    if (user.emailVerificationRequired && !user.emailVerifiedAt && ["pending", "active"].includes(user.accountStatus)) {
+      return res.status(403).json({ message: verificationStatus(user) === "not_verified"
+        ? "Your registration is not verified. The 24-hour verification period has ended. Request a new verification link or contact Aeviora Wellness."
+        : "Please verify your email before signing in. Check your inbox or request a new verification link." });
+    }
     if (user.accountStatus !== "active") {
       return res.status(403).json({ message: user.accountStatus === "pending" ? "Account activation is pending." : "This account is unavailable." });
     }
