@@ -70,6 +70,43 @@ test("calendar weeks follow local dates across DST and reject missing midnight b
   assert.throws(() => scheduleRange("2018-11-04", "America/Sao_Paulo"), /daylight saving/);
 });
 
+test("weekly patterns select inclusive weekdays and preserve office hours across DST", () => {
+  const slots = availabilitySlots(windowInput({ start: "2026-10-30T09:00", end: "2026-10-30T10:00", recurrence: { until: "2026-11-06", weekdays: [1, 3, 5] } }), "America/New_York", now);
+  assert.equal(slots.length, 8);
+  assert.deepEqual(slots.filter((_, index) => index % 2 === 0).map((slot) => slot.startsAt.toISOString()), [
+    "2026-10-30T13:00:00.000Z", "2026-11-02T14:00:00.000Z", "2026-11-04T14:00:00.000Z", "2026-11-06T14:00:00.000Z",
+  ]);
+  assert.equal(availabilitySlots(windowInput({ recurrence: { until: "2026-11-10", weekdays: [2] } }), "Asia/Kolkata", now).length, 2);
+});
+
+test("weekly patterns reject invalid dates, missing weekdays, DST gaps and excessive batches", () => {
+  for (const recurrence of [
+    { until: "2026-11-20", weekdays: [] }, { until: "2026-11-20", weekdays: [1, 1] },
+    { until: "2026-11-20", weekdays: [7] }, { until: "2027-02-30", weekdays: [1] },
+    { until: "2026-11-20", weekdays: [1], role: "admin" },
+  ]) assert.equal(availabilityInput.safeParse(windowInput({ recurrence })).success, false);
+  assert.throws(() => availabilitySlots(windowInput({ recurrence: { until: "2026-11-09", weekdays: [2] } }), "UTC", now), /end date/);
+  assert.throws(() => availabilitySlots(windowInput({ recurrence: { until: "2026-11-10", weekdays: [1] } }), "UTC", now), /No selected weekdays/);
+  assert.throws(() => availabilitySlots(windowInput({ end: "2026-11-11T10:00", recurrence: { until: "2026-11-20", weekdays: [2] } }), "UTC", now), /same date/);
+  assert.throws(() => availabilitySlots(windowInput({ start: "2027-02-30T09:00", end: "2027-02-30T10:00", recurrence: { until: "2027-03-05", weekdays: [1] } }), "UTC", now), /calendar date/);
+  assert.throws(() => availabilitySlots(windowInput({ start: "2027-03-07T02:00", end: "2027-03-07T03:00", recurrence: { until: "2027-03-14", weekdays: [0] } }), "America/New_York", now), /2027-03-14.*daylight saving/);
+  assert.throws(() => availabilitySlots(windowInput({ start: "2026-11-01T00:00", end: "2026-11-01T12:00", duration: 15, recurrence: { until: "2027-01-01", weekdays: [0, 1, 2, 3, 4, 5, 6] } }), "UTC", now), /2,000 slots/);
+});
+
+test("a later conflict or capacity failure leaves the entire recurring batch unsaved", async () => {
+  const s = store();
+  await changeSchedule(s.id, (p) => addAvailability(p, windowInput({ start: "2026-11-12T09:00", end: "2026-11-12T10:00" }), now), s.repository);
+  const before = structuredClone(s.records.get(s.id));
+  const pattern = windowInput({ recurrence: { until: "2026-11-12", weekdays: [2, 4] } });
+  await assert.rejects(changeSchedule(s.id, (p) => addAvailability(p, pattern, now), s.repository), { status: 409 });
+  assert.deepEqual(s.records.get(s.id), before);
+  const full = s.records.get(s.id);
+  full.slots = Array.from({ length: scheduleCapacity - 1 }, (_, index) => ({ ...before.slots[0], _id: String(index), status: "cancelled" }));
+  const atCapacity = structuredClone(full);
+  await assert.rejects(changeSchedule(s.id, (p) => addAvailability(p, pattern, now), s.repository), /capacity/);
+  assert.deepEqual(s.records.get(s.id), atCapacity);
+});
+
 test("overlapping availability and competing bookings commit once across concurrent requests", async () => {
   const s = store();
   const additions = await Promise.allSettled([1, 2].map(() => changeSchedule(s.id, (p) => addAvailability(p, windowInput(), now), s.repository)));
@@ -180,6 +217,11 @@ test("HTTP endpoints enforce roles, booking ownership, strict payloads, private 
   const reloadedSlots = await (await request(allSlotsUrl, "GET", undefined, "admin")).json();
   assert.equal(reloadedSlots.slots.length, 4, "all dates retain both windows after an overlap error");
   assert.equal(reloadedSlots.slots.at(-1).startsAt, "2026-12-15T14:30:00.000Z");
+  const repeating = windowInput({ start: "2026-12-21T09:00", end: "2026-12-21T10:00", recurrence: { until: "2026-12-30", weekdays: [1, 3] } });
+  assert.equal((await request(`/providers/${s.id}/availability`, "POST", repeating)).status, 403);
+  assert.equal((await request(`/providers/${s.id}/availability`, "POST", { ...repeating, recurrence: { until: "2026-12-30", weekdays: [] } }, "admin")).status, 400);
+  assert.equal((await request(`/providers/${s.id}/availability`, "POST", repeating, "admin")).status, 201);
+  assert.equal((await (await request(allSlotsUrl, "GET", undefined, "admin")).json()).slots.length, 12);
   for (const query of ["?from=invalid", "?status=available", "?from=2026-11-10T00:00:00Z&to=2027-01-01T00:00:00Z"]) {
     assert.equal((await request(allSlotsUrl + query, "GET", undefined, "admin")).status, 400);
   }
