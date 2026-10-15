@@ -7,8 +7,8 @@ import { company, protocols } from "../util/constants.jsx";
 import { therapyMedications, regulatorySources, researchReviewedAt } from "../util/therapyResearch.js";
 import MedicationIllustration from "../components/MedicationIllustration.jsx";
 
-function SourceLink({ source }) {
-  return <a href={source.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary underline underline-offset-4">{source.title}<ExternalLink size={14} aria-hidden="true" /></a>;
+function SourceLink({ source, compact = false }) {
+  return <a href={source.url} target="_blank" rel="noopener noreferrer" className={`mt-3 inline-flex items-center gap-2 ${compact ? "text-xs" : "text-sm"} font-semibold text-aeviora-primary underline underline-offset-4`}>{source.title}<ExternalLink size={14} aria-hidden="true" /></a>;
 }
 
 export default function TherapyExplorer({ embedded = false, onClose }) {
@@ -43,18 +43,21 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
         <div className="space-y-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-aeviora-primary">{read(medication.category)}</p>
           <p className="text-lg leading-8 text-aeviora-charcoal">{read(medication.intro)}</p>
-          <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5" aria-labelledby="regulatory-heading">
-            <h2 id="regulatory-heading" className="font-semibold text-amber-950">{medication.regulatoryType === "offLabel" ? (spanish ? "Longevidad: uso fuera de indicación (off-label)" : "Longevity: off-label use") : (spanish ? "Longevidad: no aprobado por la FDA" : "Longevity: not FDA-approved")}</h2>
-            <p className="mt-2 text-sm leading-6 text-amber-950">{read(medication.regulatory)}</p>
-            <SourceLink source={regulatorySources[medication.regulatoryType]} />
-          </section>
-          <p className="text-sm leading-6 text-aeviora-slate">{spanish ? "Contenido educativo, no una recomendación ni una oferta de medicamento. La elegibilidad, disponibilidad y cualquier prescripción requieren evaluación individual por un profesional autorizado." : "Educational information, not a recommendation or an offer of medication. Eligibility, availability and any prescription require an individual evaluation by a licensed clinician."}</p>
+          <a href="#research-studies" className="btn-primary inline-flex items-center gap-2">{spanish ? "Descubrir los estudios" : "Discover the studies"}<ArrowRight size={17} aria-hidden="true" /></a>
+          <p className="text-sm text-aeviora-slate">{spanish ? "De los mecanismos biológicos a los resultados en personas." : "From biological mechanisms to findings in people."}</p>
         </div>
       </div>
 
+      {medication.featuredStudy && <section className="rounded-3xl border border-aeviora-border bg-aeviora-softSage/40 p-6 sm:p-8" aria-labelledby="featured-study-heading">
+        <p className="text-xs font-semibold uppercase tracking-widest text-aeviora-primary">{spanish ? "Investigación destacada · estudio animal" : "Research spotlight · animal study"}</p>
+        <h2 id="featured-study-heading" className="mt-3 font-display text-3xl">{read(medication.featuredStudy.title)}</h2>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">{medication.featuredStudy.facts.map((fact) => <p key={fact.en} className="rounded-2xl bg-white p-5 font-display text-xl text-aeviora-primary">{read(fact)}</p>)}</div>
+        <p className="mt-5 max-w-4xl text-lg leading-8">{read(medication.featuredStudy.finding)}</p>
+        <div className="mt-2 flex flex-wrap gap-x-6"><SourceLink source={{ title: spanish ? "Estudio original · Cell 2024" : "Original study · Cell 2024", url: medication.featuredStudy.url }} /><SourceLink source={medication.featuredStudy.coverage} /></div>
+      </section>}
       <section className="rounded-3xl bg-aeviora-primaryDark p-6 text-white sm:p-8" aria-labelledby="research-conclusion">
         <div className="flex items-center gap-3"><BookOpen aria-hidden="true" size={22} /><h2 id="research-conclusion" className="font-display text-2xl">{spanish ? "Qué podemos concluir" : "What we can conclude"}</h2></div>
-        <p className="mt-4 max-w-4xl leading-7">{read(medication.conclusion)}</p>
+        <p className="mt-4 max-w-4xl text-lg leading-8">{read(medication.conclusion)}</p>
       </section>
       <section aria-labelledby="research-studies">
         <h2 id="research-studies" className="font-display text-2xl">{spanish ? "Una mirada a la investigación" : "A closer look at the research"}</h2>
@@ -63,17 +66,24 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
           {medication.studies.map((study) => <article key={study.url} className="card">
             <p className="text-xs font-semibold uppercase tracking-wide text-aeviora-primary">{read(study.design)}</p>
             <h3 className="mt-2 font-display text-xl">{study.title}</h3>
-            <p className="mt-3 text-sm leading-7">{read(study.finding)}</p>
+            <p className="mt-3 text-base leading-7">{read(study.finding)}</p>
             <p className="mt-4 border-l-2 border-aeviora-gold pl-4 text-sm leading-7 text-aeviora-slate"><strong>{spanish ? "Límites: " : "Limitations: "}</strong>{read(study.limitation)}</p>
             <SourceLink source={{ title: spanish ? "Leer la fuente del estudio" : "Read the study source", url: study.url }} />
           </article>)}
         </div>
       </section>
-      <section className="card" aria-labelledby="safety-heading">
-        <h2 id="safety-heading" className="font-display text-2xl">{spanish ? "Seguridad y conversación clínica" : "Safety and your clinical conversation"}</h2>
-        <p className="mt-3 text-sm leading-7">{read(medication.safety)}</p>
-        <SourceLink source={medication.safetySource} />
-        <p className="mt-5 text-sm leading-7 text-aeviora-slate">{spanish ? "Pregunta qué evidencia se aplica a ti, qué riesgos e interacciones existen y cómo se vigilarían los resultados. No empieces ni suspendas medicamentos basándote en esta guía." : "Ask what evidence applies to you, what risks and interactions matter, and how outcomes would be monitored. Do not start or stop medication based on this guide."}</p>
+      <section className="space-y-5 border-t border-aeviora-border pt-6 text-sm leading-6 text-aeviora-slate" aria-labelledby="regulatory-heading">
+        <div>
+          <h2 id="regulatory-heading" className="font-semibold text-aeviora-charcoal">{medication.regulatoryType === "offLabel" ? (spanish ? "FDA y uso fuera de indicación (off-label)" : "FDA status and off-label use") : (spanish ? "Situación ante la FDA: producto no aprobado" : "FDA status: unapproved product")}</h2>
+          <p className="mt-2">{read(medication.regulatory)}</p>
+          <SourceLink compact source={regulatorySources[medication.regulatoryType]} />
+        </div>
+        <div>
+          <h2 id="safety-heading" className="font-semibold text-aeviora-charcoal">{spanish ? "Seguridad y conversación clínica" : "Safety and your clinical conversation"}</h2>
+          <p className="mt-2">{read(medication.safety)}</p>
+          <SourceLink compact source={medication.safetySource} />
+        </div>
+        <p className="text-xs leading-5">{spanish ? "Información educativa. Cualquier tratamiento requiere evaluación individual por un profesional autorizado." : "Educational information. Any treatment requires an individual evaluation by a licensed clinician."}</p>
       </section>
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-aeviora-border pt-5 text-sm">
         <p className="text-aeviora-slate">{spanish ? "Fuentes revisadas: " : "Sources reviewed: "}{researchReviewedAt}</p>

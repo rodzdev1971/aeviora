@@ -21,7 +21,6 @@ export default function MedicationIllustration({ medication, language }) {
         <rect x={vial ? 47 : 33} y="125" width={vial ? 116 : 144} height="91" fill="#faf8f0" />
         <path d={vial ? "M47 125h116" : "M33 125h144"} stroke="#536e58" strokeWidth="5" />
         <text x="105" y="159" textAnchor="middle" fill="#304b3b" fontSize={medication.name.length > 10 ? 13 : 16} fontFamily="Georgia, serif">{medication.name}</text>
-        <text x="105" y="180" textAnchor="middle" fill="#59645d" fontSize="9" letterSpacing="1.5">{spanish ? "ILUSTRACIÓN" : "ILLUSTRATION"}</text>
         <path d="M80 195h50" stroke="#c3ae76" />
       </svg>
       <div className="max-w-36 text-center">
@@ -30,6 +29,5 @@ export default function MedicationIllustration({ medication, language }) {
         <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-aeviora-primary">Wellness</p>
       </div>
     </div>
-    <figcaption className="px-5 py-4 text-xs leading-5 text-aeviora-slate">{spanish ? "Ilustración de un frasco; no representa un producto dispensado, dosis ni formulación. El logotipo identifica esta guía educativa, no al fabricante." : "Sample bottle illustration; not a dispensed product, dose or formulation. The logo identifies this educational guide, not the manufacturer."}</figcaption>
   </figure>;
 }

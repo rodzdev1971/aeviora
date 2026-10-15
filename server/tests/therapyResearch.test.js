@@ -19,6 +19,13 @@ test("therapy navigation renders medication lists, sourced detail pages, and una
         assert.ok(html.includes(medication.name));
         assert.ok(html.includes(medication.conclusion[language]));
         assert.ok(html.includes(medication.regulatory[language]));
+        assert.ok(html.indexOf('id="research-studies"') < html.indexOf('id="regulatory-heading"'), "research precedes regulatory details");
+        assert.ok(!html.includes("<figcaption"));
+        assert.ok(!html.includes(">ILLUSTRATION<") && !html.includes(">ILUSTRACIÓN<"));
+        if (medication.featuredStudy) {
+          assert.ok(html.includes(medication.featuredStudy.coverage.url));
+          assert.ok(html.includes(medication.featuredStudy.finding[language]));
+        }
         assert.ok(html.includes(medication.safetySource.url.replaceAll("&", "&amp;")));
         for (const study of medication.studies) assert.ok(html.includes(study.url));
         assert.match(html, /href="\/therapies\/longevity-assessment"/);

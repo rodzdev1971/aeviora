@@ -24,8 +24,15 @@ Have the practice's clinician review content before publishing clinical changes.
 
 `MedicationIllustration.jsx` renders a responsive SVG bottle/vial and the existing
 Aeviora logo as a separate adjacent image. No brand, dose, manufacturer claim,
-or actual product availability is printed on the bottle. A caption identifies it
-as an illustration rather than a dispensed product.
+or actual product availability is printed on the bottle. The bottle has only the
+medication name; its accessible image description identifies it as illustrative.
+There is no visible illustration stamp or caption beneath the image.
+
+Research and conclusions lead the detail page. FDA/off-label and safety content
+remains visible in a smaller, readable section after the studies. Metformin
+features the 2024 Cell primate study discussed by Parsemus in August 2025, plus
+selected 2026 human trials. Distinguish publication dates from coverage dates,
+and animal findings or biomarker changes from demonstrated human lifespan gains.
 
 Verification: `node --test server/tests/therapyResearch.test.js` checks both
 languages, all four detail routes, source links, separate logo placement, empty
