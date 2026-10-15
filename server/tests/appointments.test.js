@@ -157,6 +157,21 @@ test("HTTP endpoints enforce roles, booking ownership, strict payloads, private 
   assert.equal((await request(allSlotsUrl)).status, 400, "patients still require a bounded date range");
   const savedSlots = await (await request(allSlotsUrl, "GET", undefined, "admin")).json();
   assert.equal(savedSlots.slots.length, 2, "admins see saved slots beyond the current week");
+  const rewriteQuery = `path=${encodeURIComponent(`appointments/providers/${s.id}/slots`)}`;
+  const rewrittenAll = await request(`${allSlotsUrl}?${rewriteQuery}`, "GET", undefined, "admin");
+  assert.equal(rewrittenAll.status, 200, "Vercel's captured rewrite path must not be treated as a date filter");
+  assert.equal((await rewrittenAll.json()).slots.length, 2);
+  assert.equal((await request(`${allSlotsUrl}?${rewriteQuery}`)).status, 400, "routing metadata does not allow patients to read all dates");
+  const rewrittenWeek = `${allSlotsUrl}?${rewriteQuery}&from=2026-11-10T00:00:00Z&to=2026-11-11T00:00:00Z`;
+  for (const role of ["admin", "patient"]) {
+    const response = await request(rewrittenWeek, "GET", undefined, role);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.slots.length, 2);
+    if (role === "patient") assert.equal(body.slots[0].meetingUrl, undefined);
+  }
+  assert.equal((await request(`${allSlotsUrl}?${rewriteQuery}&from=invalid`, "GET", undefined, "admin")).status, 400);
+  assert.equal((await request(`${allSlotsUrl}?${rewriteQuery}&status=available`, "GET", undefined, "admin")).status, 400);
   const secondWindow = windowInput({ start: "2026-12-15T09:00", end: "2026-12-15T10:00" });
   assert.equal((await request(`/providers/${s.id}/availability`, "POST", secondWindow, "admin")).status, 201);
   const duplicate = await request(`/providers/${s.id}/availability`, "POST", secondWindow, "admin");

@@ -43,8 +43,13 @@ export function createAppointmentRouter({ providers = Provider, repository = app
   });
   router.get("/providers/:providerId/slots", async (req, res) => {
     const admin = req.user.role === "admin";
-    const allDates = admin && Object.keys(req.query).length === 0;
-    const input = z.strictObject({ from: z.iso.datetime(), to: z.iso.datetime() }).safeParse(req.query);
+    // vercel.json captures /api/:path* when forwarding to /api/index.
+    // That routing parameter is not an appointment filter. Copy because
+    // Express 5 exposes req.query through a getter.
+    const query = { ...req.query };
+    delete query.path;
+    const allDates = admin && Object.keys(query).length === 0;
+    const input = z.strictObject({ from: z.iso.datetime(), to: z.iso.datetime() }).safeParse(query);
     if (!allDates && !input.success) return res.status(400).json({ message: "Choose a valid date range." });
     const from = allDates ? null : new Date(input.data.from), to = allDates ? null : new Date(input.data.to);
     if (!allDates && (to <= from || to - from > 31 * 86400000)) return res.status(400).json({ message: "Choose a date range of up to 31 days." });
