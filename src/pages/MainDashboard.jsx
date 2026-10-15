@@ -4,7 +4,7 @@ import { ExternalLink, ShieldCheck, FlaskConical, Sparkles, UserRound, Video } f
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
-import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
+import TherapyExplorer from "./TherapyExplorer.jsx";
 import MembershipOptions from "../components/MembershipOptions.jsx";
 import PatientDirectory from "../components/PatientDirectory.jsx";
 
@@ -191,7 +191,7 @@ export default function MainDashboard() {
 
       <section className="mt-6 border-b border-aeviora-border pb-6">
         {showTherapyQuiz ? (
-          <TherapyInterestQuiz onClose={() => setShowTherapyQuiz(false)} />
+          <TherapyExplorer embedded onClose={() => setShowTherapyQuiz(false)} />
         ) : (
           <button
             type="button"

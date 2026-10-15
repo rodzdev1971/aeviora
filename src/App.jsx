@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import EmailVerification from "./pages/EmailVerification.jsx";
 import MainDashboard from "./pages/MainDashboard";
+import TherapyExplorer from "./pages/TherapyExplorer.jsx";
 import Profile from "./pages/Profile";
 import Directory from "./pages/Directory.jsx";
 import MembershipPlans from "./pages/MembershipPlans.jsx";
@@ -43,6 +44,9 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
             <Route path='dashboard' element={<MainDashboard />}/>
+            <Route path="therapies" element={<TherapyExplorer />} />
+            <Route path="therapies/:topicId" element={<TherapyExplorer />} />
+            <Route path="therapies/:topicId/:medicationId" element={<TherapyExplorer />} />
             <Route path='profile' element={<Profile />} />
             <Route path="directory" element={<Directory />} />
             <Route path="memberships" element={<MembershipPlans />} />
