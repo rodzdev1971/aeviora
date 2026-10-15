@@ -153,6 +153,21 @@ test("HTTP endpoints enforce roles, booking ownership, strict payloads, private 
   assert.equal(publicProviders.providers[0].email, undefined);
   assert.equal(publicProviders.providers[0].slots, undefined);
   assert.equal((await request(`/providers/${s.id}/availability`, "POST", windowInput(), "admin")).status, 201);
+  const allSlotsUrl = `/providers/${s.id}/slots`;
+  assert.equal((await request(allSlotsUrl)).status, 400, "patients still require a bounded date range");
+  const savedSlots = await (await request(allSlotsUrl, "GET", undefined, "admin")).json();
+  assert.equal(savedSlots.slots.length, 2, "admins see saved slots beyond the current week");
+  const secondWindow = windowInput({ start: "2026-12-15T09:00", end: "2026-12-15T10:00" });
+  assert.equal((await request(`/providers/${s.id}/availability`, "POST", secondWindow, "admin")).status, 201);
+  const duplicate = await request(`/providers/${s.id}/availability`, "POST", secondWindow, "admin");
+  assert.equal(duplicate.status, 409);
+  assert.match((await duplicate.json()).message, /overlaps/);
+  const reloadedSlots = await (await request(allSlotsUrl, "GET", undefined, "admin")).json();
+  assert.equal(reloadedSlots.slots.length, 4, "all dates retain both windows after an overlap error");
+  assert.equal(reloadedSlots.slots.at(-1).startsAt, "2026-12-15T14:30:00.000Z");
+  for (const query of ["?from=invalid", "?status=available", "?from=2026-11-10T00:00:00Z&to=2027-01-01T00:00:00Z"]) {
+    assert.equal((await request(allSlotsUrl + query, "GET", undefined, "admin")).status, 400);
+  }
   const listUrl = `/providers/${s.id}/slots?from=2026-11-10T00:00:00Z&to=2026-11-11T00:00:00Z`;
   const available = await (await request(listUrl)).json();
   assert.equal(available.slots.length, 2); assert.equal(available.slots[0].meetingUrl, undefined);
