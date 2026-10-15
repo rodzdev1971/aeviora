@@ -10,6 +10,7 @@ import {
   Mail,
   Users,
   CreditCard,
+  CalendarDays,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -35,6 +36,7 @@ export default function DashboardLayout() {
 
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
+    { label: "Appointments", href: "/appointments", icon: <CalendarDays size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
     { label: "Membership plans", href: "/memberships", icon: <CreditCard size={18} aria-hidden="true" /> },
     ...(["admin", "provider"].includes(user?.role)
@@ -43,6 +45,7 @@ export default function DashboardLayout() {
     ...(user?.role === "admin"
       ? [
           { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
+          { label: "Providers & appointments", href: "/admin/appointments", icon: <CalendarDays size={18} /> },
           { label: "Membership payments", href: "/admin/payments", icon: <CreditCard size={18} /> },
           { label: "Email manager", href: "/admin/email-templates", icon: <Mail size={18} aria-hidden="true" /> },
           { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },

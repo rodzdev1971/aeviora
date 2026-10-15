@@ -23,6 +23,8 @@ test("public and admin screens render translated text with stable routes and fie
       AdminEmailTemplates: ["Email templates", "Plantillas de correo"],
       Directory: ["Patient &amp; User Directory", "Directorio de pacientes y usuarios"],
       DashboardLayout: ["Membership plans", "Planes de membresía"],
+      Appointments: ["Book an appointment", "Reservar una cita"],
+      AdminAppointments: ["Providers &amp; appointments", "Profesionales y citas"],
     };
     for (const [name, [english, spanish]] of Object.entries(cases)) {
       const en = renderScreen(name, "en"), es = renderScreen(name, "es");

@@ -13,11 +13,13 @@ import AdminMemberships from "../../../src/pages/AdminMemberships.jsx";
 import AdminEmailTemplates from "../../../src/pages/AdminEmailTemplates.jsx";
 import Directory from "../../../src/pages/Directory.jsx";
 import DashboardLayout from "../../../src/components/dashboardlayout.jsx";
+import Appointments from "../../../src/pages/Appointments.jsx";
+import AdminAppointments from "../../../src/pages/AdminAppointments.jsx";
 import LanguageSelector from "../../../src/i18n/LanguageSelector.jsx";
 import { setLanguage } from "../../../src/i18n/language.js";
 export { apiRequest } from "../../../src/util/api.js";
 
-const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout };
+const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments };
 export function renderScreen(name, language) {
   setLanguage(language);
   const Screen = screens[name];

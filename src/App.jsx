@@ -8,6 +8,8 @@ import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import EmailVerification from "./pages/EmailVerification.jsx";
 import MainDashboard from "./pages/MainDashboard";
 import TherapyExplorer from "./pages/TherapyExplorer.jsx";
+import Appointments from "./pages/Appointments.jsx";
+import AdminAppointments from "./pages/AdminAppointments.jsx";
 import Profile from "./pages/Profile";
 import Directory from "./pages/Directory.jsx";
 import MembershipPlans from "./pages/MembershipPlans.jsx";
@@ -44,6 +46,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
             <Route path='dashboard' element={<MainDashboard />}/>
+            <Route path="appointments" element={<Appointments />} />
             <Route path="therapies" element={<TherapyExplorer />} />
             <Route path="therapies/:topicId" element={<TherapyExplorer />} />
             <Route path="therapies/:topicId/:medicationId" element={<TherapyExplorer />} />
@@ -53,6 +56,7 @@ export default function App() {
             <Route path="memberships/:planId/payment" element={<MembershipCheckout />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/appointments" element={<AdminAppointments />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />
               <Route path="admin/memberships" element={<AdminMemberships />} />
               <Route path="admin/fees" element={<AdminFees />} />

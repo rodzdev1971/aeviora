@@ -178,6 +178,7 @@ export default function MainDashboard() {
       <div className="mb-8">
         <p className="text-xs uppercase tracking-[0.3em] text-aeviora-gold">{t("Aeviora account")}</p>
         <h1 className="mt-2 font-display text-4xl">{t("Your account dashboard")}</h1>
+        <Link to="/appointments" className="btn-primary mt-4 inline-block">{t("Book an appointment")}</Link>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">{t("Manage your account, payments, and subscription here. Clinical information is accessed through your authorized healthcare portals.")}</p>
       </div>
       {notification && (
