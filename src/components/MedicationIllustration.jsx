@@ -2,13 +2,10 @@ import { useId } from "react";
 import logo from "../assets/Aeviorafavicon.png";
 import { company } from "../util/constants.jsx";
 
-export default function MedicationIllustration({ medication, language }) {
+function MedicationContainer({ name, kind, spanish, compact = false }) {
   const id = useId();
-  const spanish = language === "es";
-  const vial = medication.kind === "vial";
-  return <figure className="overflow-hidden rounded-3xl border border-aeviora-border bg-white">
-    <div className="flex min-h-80 flex-wrap items-center justify-center gap-3 bg-gradient-to-br from-aeviora-ivory to-aeviora-softSage px-5 py-8 sm:gap-7">
-      <svg viewBox="0 0 210 280" className="h-64 w-44 shrink-0" role="img" aria-label={spanish ? `Frasco ilustrativo de ${medication.name}` : `Illustrative ${medication.name} bottle`}>
+  const vial = kind === "vial";
+  return <svg viewBox="0 0 210 280" className={compact ? "h-52 w-36 shrink-0" : "h-64 w-44 shrink-0"} role="img" aria-label={spanish ? `${vial ? "Vial" : "Frasco"} ilustrativo de ${name}` : `Illustrative ${name} ${vial ? "vial" : "bottle"}`}>
         <defs>
           <linearGradient id={`${id}-glass`} x1="0" x2="1"><stop stopColor="#5a321c" /><stop offset=".35" stopColor="#a56a31" /><stop offset=".65" stopColor="#ce9851" /><stop offset="1" stopColor="#70401f" /></linearGradient>
           <linearGradient id={`${id}-cap`} x1="0" x2="1"><stop stopColor="#c4c9c4" /><stop offset=".5" stopColor="#fafbf8" /><stop offset="1" stopColor="#afb8b1" /></linearGradient>
@@ -20,9 +17,17 @@ export default function MedicationIllustration({ medication, language }) {
         <path d="M57 104 V231" stroke="white" strokeWidth="7" opacity=".15" strokeLinecap="round" />
         <rect x={vial ? 47 : 33} y="125" width={vial ? 116 : 144} height="91" fill="#faf8f0" />
         <path d={vial ? "M47 125h116" : "M33 125h144"} stroke="#536e58" strokeWidth="5" />
-        <text x="105" y="159" textAnchor="middle" fill="#304b3b" fontSize={medication.name.length > 10 ? 13 : 16} fontFamily="Georgia, serif">{medication.name}</text>
+        <text x="105" y="159" textAnchor="middle" fill="#304b3b" fontSize={name.length > 10 ? 13 : 16} fontFamily="Georgia, serif">{name}</text>
         <path d="M80 195h50" stroke="#c3ae76" />
-      </svg>
+      </svg>;
+}
+
+export default function MedicationIllustration({ medication, language }) {
+  const spanish = language === "es";
+  const kinds = medication.kind === "bottle-and-vial" ? ["bottle", "vial"] : [medication.kind];
+  return <figure className="overflow-hidden rounded-3xl border border-aeviora-border bg-white">
+    <div className="flex min-h-80 flex-wrap items-center justify-center gap-3 bg-gradient-to-br from-aeviora-ivory to-aeviora-softSage px-5 py-8 sm:gap-7">
+      {kinds.map((kind) => <MedicationContainer key={kind} kind={kind} name={medication.name} spanish={spanish} compact={kinds.length > 1 && kind === "vial"} />)}
       <div className="max-w-36 text-center">
         <img src={logo} alt={`${company.name} logo`} className="mx-auto h-20 w-20 rounded-full" />
         <p className="mt-3 font-display text-xl text-aeviora-primary">Aeviora</p>

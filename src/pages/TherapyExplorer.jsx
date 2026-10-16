@@ -43,6 +43,7 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
         <div className="space-y-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-aeviora-primary">{read(medication.category)}</p>
           <p className="text-lg leading-8 text-aeviora-charcoal">{read(medication.intro)}</p>
+          {medication.introSource && <SourceLink source={medication.introSource} />}
           <a href="#research-studies" className="btn-primary inline-flex items-center gap-2">{spanish ? "Descubrir los estudios" : "Discover the studies"}<ArrowRight size={17} aria-hidden="true" /></a>
           <p className="text-sm text-aeviora-slate">{spanish ? "De los mecanismos biológicos a los resultados en personas." : "From biological mechanisms to findings in people."}</p>
         </div>
@@ -72,6 +73,11 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
           </article>)}
         </div>
       </section>
+      {medication.furtherReading && <section aria-labelledby="further-reading">
+        <h2 id="further-reading" className="font-display text-2xl">{spanish ? "Lecturas complementarias" : "Further reading"}</h2>
+        <p className="mt-2 text-sm text-aeviora-slate">{spanish ? "Artículos explicativos para contexto; los estudios originales están enlazados arriba." : "Background explainers for context; original studies are linked above."}</p>
+        <div className="mt-2 grid gap-2">{medication.furtherReading.map((source) => <SourceLink key={source.url} source={source} />)}</div>
+      </section>}
       <section className="space-y-5 border-t border-aeviora-border pt-6 text-sm leading-6 text-aeviora-slate" aria-labelledby="regulatory-heading">
         <div>
           <h2 id="regulatory-heading" className="font-semibold text-aeviora-charcoal">{medication.regulatoryType === "offLabel" ? (spanish ? "FDA y uso fuera de indicación (off-label)" : "FDA status and off-label use") : (spanish ? "Situación ante la FDA: producto no aprobado" : "FDA status: unapproved product")}</h2>
@@ -86,7 +92,7 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
         <p className="text-xs leading-5">{spanish ? "Información educativa. Cualquier tratamiento requiere evaluación individual por un profesional autorizado." : "Educational information. Any treatment requires an individual evaluation by a licensed clinician."}</p>
       </section>
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-aeviora-border pt-5 text-sm">
-        <p className="text-aeviora-slate">{spanish ? "Fuentes revisadas: " : "Sources reviewed: "}{researchReviewedAt}</p>
+        <p className="text-aeviora-slate">{spanish ? "Fuentes revisadas: " : "Sources reviewed: "}{medication.reviewedAt || researchReviewedAt}</p>
         <a href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`} className="btn-outline">{spanish ? "Hablar con Aeviora" : "Talk with Aeviora"}</a>
       </footer>
     </> : topic ? <>

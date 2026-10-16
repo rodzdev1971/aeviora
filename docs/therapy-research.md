@@ -28,6 +28,16 @@ or actual product availability is printed on the bottle. The bottle has only the
 medication name; its accessible image description identifies it as illustrative.
 There is no visible illustration stamp or caption beneath the image.
 
+NAD+ uses both the bottle and a smaller vial, each with a distinct accessible
+description. Its expanded English/Spanish guide describes energy metabolism,
+DNA repair, NAD-dependent sirtuins, and tissue-specific age-related NAD changes.
+Primary-source cards cover the Martens 2018 oral-NR trial, Yoshino 2021 oral-NMN
+trial, Zhang 2016 mouse study, Zhu 2015 human brain study, and the existing
+Grant 2019 infusion pilot. Preserve their route, population, outcome and evidence
+limitations. The user's linked mechanistic review supports the introduction;
+MIT, Vail Health and Cleveland Clinic are separately labeled background reading.
+The supplied NPR link could not be retrieved and is not used as evidence.
+
 Research and conclusions lead the detail page. FDA/off-label and safety content
 remains visible in a smaller, readable section after the studies. Metformin
 features the 2024 Cell primate study discussed by Parsemus in August 2025, plus

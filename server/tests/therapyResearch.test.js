@@ -28,6 +28,17 @@ test("therapy navigation renders medication lists, sourced detail pages, and una
         }
         assert.ok(html.includes(medication.safetySource.url.replaceAll("&", "&amp;")));
         for (const study of medication.studies) assert.ok(html.includes(study.url));
+        if (medication.introSource) assert.ok(html.includes(medication.introSource.url));
+        for (const source of medication.furtherReading || []) assert.ok(html.includes(source.url));
+        if (medication.id === "nad-plus") {
+          assert.ok(html.includes(language === "es" ? "Frasco ilustrativo de NAD+" : "Illustrative NAD+ bottle"));
+          assert.ok(html.includes(language === "es" ? "Vial ilustrativo de NAD+" : "Illustrative NAD+ vial"));
+          assert.equal((html.match(/viewBox="0 0 210 280"/g) || []).length, 2);
+          assert.ok(html.includes("29599478") && html.includes("33888596") && html.includes("27127236") && html.includes("25730862"));
+          assert.ok(html.includes(language === "es" ? "NR oral" : "oral NR"));
+          assert.ok(html.includes(language === "es" ? "Estudio animal" : "Animal study"));
+          assert.ok(html.includes(medication.reviewedAt));
+        }
         assert.match(html, /href="\/therapies\/longevity-assessment"/);
         assert.match(html, /<\/svg><div[^>]*><img[^>]*alt="Aeviora Wellness logo"/);
         assert.ok([...html.matchAll(/<svg\b[\s\S]*?<\/svg>/g)].every(([svg]) => !svg.includes("Aeviora")), "branding stays outside the bottle");
