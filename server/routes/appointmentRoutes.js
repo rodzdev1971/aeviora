@@ -1,10 +1,10 @@
 import express from "express";
 import { z } from "zod";
 import Provider from "../models/appointmentProviders.js";
-import { providerInput, availabilityInput } from "../../shared/appointments.js";
+import { providerInput, availabilityInput, availabilityRemovalInput, availabilityRemovalSelection, timeZoneInput } from "../../shared/appointments.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
-import { AppointmentError, appointmentRepository, changeSchedule, addAvailability, changeSlot, publicProvider, visibleSlot } from "../services/appointments.js";
+import { AppointmentError, appointmentRepository, changeSchedule, addAvailability, removeAvailability, changeSlot, publicProvider, visibleSlot } from "../services/appointments.js";
 
 export function createAppointmentRouter({ providers = Provider, repository = appointmentRepository, authenticate = requireAuth,
   authorize = requireRole("admin"), audit = logAudit, now = () => new Date() } = {}) {
@@ -41,6 +41,24 @@ export function createAppointmentRouter({ providers = Provider, repository = app
     await record(req, "APPOINTMENT_PROVIDER_UPDATED", req.params.providerId);
     res.json({ provider: { ...publicProvider(result.provider), email: result.provider.email, revision: result.provider.revision } });
   });
+  router.get("/providers/:providerId/available-dates", async (req, res) => {
+    const query = { ...req.query };
+    delete query.path;
+    const input = z.strictObject({ timeZone: timeZoneInput, mode: z.enum(["telehealth", "in_person"]).optional() }).safeParse(query);
+    if (!input.success) return res.status(400).json({ message: "Choose a valid time zone and visit type." });
+    const provider = await repository.load(req.params.providerId);
+    if (!provider?.active) return res.status(404).json({ message: "Provider not found." });
+    const formatter = new Intl.DateTimeFormat("en", { timeZone: input.data.timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+    const dates = new Map(), currentTime = now();
+    for (const slot of provider.slots) {
+      if (slot.status !== "available" || new Date(slot.startsAt) <= currentTime || (input.data.mode && slot.mode !== input.data.mode)) continue;
+      const parts = formatter.formatToParts(new Date(slot.startsAt));
+      const part = (type) => parts.find((item) => item.type === type).value;
+      const date = `${part("year")}-${part("month")}-${part("day")}`;
+      dates.set(date, (dates.get(date) || 0) + 1);
+    }
+    res.json({ dates: [...dates].sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count })) });
+  });
   router.get("/providers/:providerId/slots", async (req, res) => {
     const admin = req.user.role === "admin";
     // vercel.json captures /api/:path* when forwarding to /api/index.
@@ -68,6 +86,25 @@ export function createAppointmentRouter({ providers = Provider, repository = app
     await changeSchedule(req.params.providerId, (provider) => addAvailability(provider, input.data, now()), repository);
     await record(req, "APPOINTMENT_AVAILABILITY_CREATED", req.params.providerId);
     res.status(201).json({ message: "Availability published." });
+  });
+  router.post("/providers/:providerId/availability/removal-preview", authorize, async (req, res) => {
+    const input = availabilityRemovalInput.safeParse(req.body);
+    if (!input.success) return res.status(400).json({ message: "Choose a valid date and, for selected hours, valid start and end times." });
+    const provider = await repository.load(req.params.providerId);
+    if (!provider) return res.status(404).json({ message: "Provider not found." });
+    let selection;
+    try { selection = availabilityRemovalSelection(provider.slots, input.data, provider.timeZone); }
+    catch (error) { return res.status(400).json({ message: error.message }); }
+    await record(req, "APPOINTMENT_SCHEDULE_VIEWED", provider._id);
+    res.json({ revision: provider.revision, removableCount: selection.removable.length, bookedCount: selection.bookedCount });
+  });
+  router.post("/providers/:providerId/availability/remove", authorize, async (req, res) => {
+    const input = z.strictObject({ selection: availabilityRemovalInput, revision: z.number().int().min(0) }).safeParse(req.body);
+    if (!input.success) return res.status(400).json({ message: "Preview the selected date and hours before removing availability." });
+    const result = await changeSchedule(req.params.providerId, (provider) => removeAvailability(provider, input.data.selection, input.data.revision, req.user), repository);
+    await audit({ req, actorId: req.user.id, actorRole: req.user.role, action: "APPOINTMENT_AVAILABILITY_REMOVED", targetType: "AppointmentProvider", targetId: req.params.providerId,
+      metadata: { removedCount: result.removedCount, scope: input.data.selection.scope } });
+    res.json({ message: "Unbooked availability removed. Booked appointments and cancellation history were preserved.", removedCount: result.removedCount });
   });
   router.get("/mine", async (req, res) => {
     const list = await providers.find({ "slots.userId": req.user.id }).select("+slots").lean();

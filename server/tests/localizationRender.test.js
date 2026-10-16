@@ -25,6 +25,7 @@ test("public and admin screens render translated text with stable routes and fie
       DashboardLayout: ["Membership plans", "Planes de membresía"],
       Appointments: ["Book an appointment", "Reservar una cita"],
       AdminAppointments: ["Providers &amp; appointments", "Profesionales y citas"],
+      AvailabilityRemoval: ["Remove availability", "Eliminar disponibilidad"],
     };
     for (const [name, [english, spanish]] of Object.entries(cases)) {
       const en = renderScreen(name, "en"), es = renderScreen(name, "es");

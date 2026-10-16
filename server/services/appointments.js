@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import Provider from "../models/appointmentProviders.js";
-import { availabilitySlots } from "../../shared/appointments.js";
+import { availabilitySlots, availabilityRemovalSelection } from "../../shared/appointments.js";
 
 export const scheduleCapacity = 2000;
 export class AppointmentError extends Error {
@@ -34,7 +34,7 @@ export async function changeSchedule(id, change, repository = appointmentReposit
     const result = change(provider);
     if (provider.slots.length > scheduleCapacity) fail("This provider's schedule has reached capacity. Remove unused slots or contact support to archive past appointments.");
     const saved = await repository.compareAndSwap(id, provider.revision, { slots: provider.slots, ...result.changes });
-    if (saved) return { provider: saved, slotId: result.slotId };
+    if (saved) return { provider: saved, slotId: result.slotId, removedCount: result.removedCount };
   }
   fail("The schedule changed. Refresh and try again.");
 }
@@ -49,6 +49,17 @@ export function addAvailability(provider, input, now = new Date()) {
   }
   provider.slots.push(...slots.map((slot) => ({ ...slot, _id: randomUUID() })));
   return {};
+}
+
+export function removeAvailability(provider, input, revision, user) {
+  if (user.role !== "admin") fail("Administrator access required.", 403);
+  if (provider.revision !== revision) fail("The schedule changed. Preview the removal again before confirming.");
+  let selection;
+  try { selection = availabilityRemovalSelection(provider.slots, input, provider.timeZone); }
+  catch (error) { fail(error.issues?.[0]?.message || error.message, 400); }
+  const ids = new Set(selection.removable.map((slot) => slot._id));
+  provider.slots = provider.slots.filter((slot) => !ids.has(slot._id));
+  return { removedCount: ids.size };
 }
 
 export function changeSlot(provider, slotId, action, user, now = new Date()) {

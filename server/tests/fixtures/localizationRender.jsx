@@ -15,13 +15,15 @@ import Directory from "../../../src/pages/Directory.jsx";
 import DashboardLayout from "../../../src/components/dashboardlayout.jsx";
 import Appointments from "../../../src/pages/Appointments.jsx";
 import AdminAppointments from "../../../src/pages/AdminAppointments.jsx";
+import AvailabilityRemoval from "../../../src/components/AvailabilityRemoval.jsx";
 import LanguageSelector from "../../../src/i18n/LanguageSelector.jsx";
-import { setLanguage } from "../../../src/i18n/language.js";
+import { setLanguage, getLanguage } from "../../../src/i18n/language.js";
 export { apiRequest } from "../../../src/util/api.js";
 
-const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments };
+const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval };
 export function renderScreen(name, language) {
   setLanguage(language);
   const Screen = screens[name];
-  return renderToStaticMarkup(<MemoryRouter><LanguageSelector /><Routes><Route element={<Outlet context={{ user: { id: "synthetic", role: "admin", firstName: "Test" } }} />}><Route path="*" element={<Screen />} /></Route></Routes></MemoryRouter>);
+  const props = name === "AvailabilityRemoval" ? { provider: { _id: "synthetic", name: "Test Provider", timeZone: "America/New_York" }, busy: false, remove: async () => {}, say: (en, es) => getLanguage() === "es" ? es : en } : {};
+  return renderToStaticMarkup(<MemoryRouter><LanguageSelector /><Routes><Route element={<Outlet context={{ user: { id: "synthetic", role: "admin", firstName: "Test" } }} />}><Route path="*" element={<Screen {...props} />} /></Route></Routes></MemoryRouter>);
 }

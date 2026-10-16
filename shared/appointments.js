@@ -10,6 +10,35 @@ export const providerInput = z.strictObject({
   timeZone: timeZoneInput.default("America/New_York"), active: z.boolean().default(true),
 });
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+export const availabilityRemovalInput = z.discriminatedUnion("scope", [
+  z.strictObject({ scope: z.literal("day"), date: z.iso.date() }),
+  z.strictObject({ scope: z.literal("hours"), date: z.iso.date(),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+    endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  }),
+]);
+
+export function availabilityRemovalSelection(slots, input, timeZone) {
+  const data = availabilityRemovalInput.parse(input);
+  timeZoneInput.parse(timeZone);
+  let overlaps;
+  if (data.scope === "hours") {
+    const start = zonedDateTime(`${data.date}T${data.startTime}`, timeZone);
+    const end = zonedDateTime(`${data.date}T${data.endTime}`, timeZone);
+    if (end <= start) throw new Error("Choose an end time after the start time on the same day.");
+    overlaps = (slot) => new Date(slot.startsAt) < end && new Date(slot.endsAt) > start;
+  } else {
+    // Compare local dates so whole-day removal also works on 23/25-hour days
+    // and in zones where a daylight saving transition skips midnight.
+    overlaps = (slot) => localParts(new Date(slot.startsAt), timeZone).slice(0, 10) <= data.date
+      && localParts(new Date(new Date(slot.endsAt).getTime() - 1), timeZone).slice(0, 10) >= data.date;
+  }
+  const matching = slots.filter(overlaps);
+  return {
+    removable: matching.filter((slot) => ["available", "blocked"].includes(slot.status)),
+    bookedCount: matching.filter((slot) => slot.status === "booked").length,
+  };
+}
 export const availabilityInput = z.strictObject({
   start: localDateTime, end: localDateTime,
   duration: z.number().int().min(15).max(120).default(30),

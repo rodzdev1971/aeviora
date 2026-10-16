@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import express from "express";
 import { randomUUID } from "node:crypto";
 import Provider from "../models/appointmentProviders.js";
-import { providerInput, availabilityInput, availabilitySlots, zonedDateTime } from "../../shared/appointments.js";
-import { addAvailability, changeSchedule, changeSlot, visibleSlot, scheduleCapacity } from "../services/appointments.js";
+import { providerInput, availabilityInput, availabilitySlots, zonedDateTime, availabilityRemovalSelection } from "../../shared/appointments.js";
+import { addAvailability, removeAvailability, changeSchedule, changeSlot, visibleSlot, scheduleCapacity } from "../services/appointments.js";
 import { createAppointmentRouter } from "../routes/appointmentRoutes.js";
-import { dateInputValue, scheduleRange } from "../../src/util/appointmentDisplay.js";
+import { dateInputValue, scheduleRange, appointmentDate, appointmentClock, scheduleDays } from "../../src/util/appointmentDisplay.js";
 
 const now = new Date("2026-10-14T12:00:00Z");
 const profile = () => ({ name: "Test Professional", credentials: "MD", specialty: "General care", email: "office@example.com", phone: "+12025550123", bio: "Synthetic provider", timeZone: "America/New_York", active: true });
@@ -68,6 +68,70 @@ test("calendar weeks follow local dates across DST and reject missing midnight b
   assert.equal(range.get("to"), "2026-11-06T05:00:00.000Z");
   assert.throws(() => scheduleRange("2026-02-30", "UTC"), /calendar/);
   assert.throws(() => scheduleRange("2018-11-04", "America/Sao_Paulo"), /daylight saving/);
+});
+
+test("single-day queries honor local midnight and 23/25-hour daylight saving days", () => {
+  const spring = new URLSearchParams(scheduleRange("2027-03-14", "America/New_York", 1));
+  assert.equal(spring.get("from"), "2027-03-14T05:00:00.000Z");
+  assert.equal(spring.get("to"), "2027-03-15T04:00:00.000Z");
+  const fall = new URLSearchParams(scheduleRange("2026-11-01", "America/New_York", 1));
+  assert.equal(fall.get("from"), "2026-11-01T04:00:00.000Z");
+  assert.equal(fall.get("to"), "2026-11-02T05:00:00.000Z");
+  assert.match(appointmentDate("2026-11-10"), /Tuesday.*November 10, 2026/);
+  assert.match(appointmentDate("2026-11-10", "es"), /martes.*noviembre/);
+  assert.match(appointmentClock({ startsAt: "2026-11-10T14:00Z", endsAt: "2026-11-10T14:30Z" }, "America/New_York"), /9:00 AM.*9:30 AM/);
+});
+
+test("admin schedule dates include every status, sort chronologically and use the provider's calendar", () => {
+  const slots = [
+    { _id: "cancelled", startsAt: "2026-11-12T15:00Z", status: "cancelled" },
+    { _id: "booked", startsAt: "2026-11-11T01:00Z", status: "booked" },
+    { _id: "available", startsAt: "2026-11-10T23:30Z", status: "available" },
+    { _id: "blocked", startsAt: "2026-11-11T15:00Z", status: "blocked" },
+  ];
+  const days = scheduleDays(slots, "America/New_York");
+  assert.deepEqual(days.map((day) => ({ date: day.date, ids: day.slots.map((slot) => slot._id) })), [
+    { date: "2026-11-10", ids: ["available", "booked"] },
+    { date: "2026-11-11", ids: ["blocked"] },
+    { date: "2026-11-12", ids: ["cancelled"] },
+  ]);
+  assert.equal(days[0].slots.filter((slot) => slot.status === "booked").length, 1);
+  assert.equal(scheduleDays(slots, "Pacific/Kiritimati")[0].date, "2026-11-11");
+  assert.deepEqual(scheduleDays([], "America/New_York"), []);
+  assert.equal(slots[0]._id, "cancelled", "grouping does not reorder the source schedule");
+});
+
+test("date dropdown counts only future available slots, follows the user's calendar and visit type, and matches daily results", async (t) => {
+  const s = store();
+  const p = s.records.get(s.id);
+  p.slots = [
+    { startsAt: "2026-10-14T11:00Z", status: "available" },
+    { startsAt: "2026-11-10T23:30Z", status: "available" },
+    { startsAt: "2026-11-11T00:00Z", status: "available", mode: "in_person" },
+    { startsAt: "2026-11-11T00:30Z", status: "blocked" },
+    { startsAt: "2026-11-11T01:00Z", status: "booked" },
+    { startsAt: "2026-11-11T01:30Z", status: "cancelled" },
+  ].map((slot) => ({ _id: randomUUID(), mode: "telehealth", ...slot, endsAt: new Date(new Date(slot.startsAt).getTime() + 30 * 60000), meetingUrl: "https://example.com/private-room", patientEmail: "private@example.com" }));
+  const app = express();
+  app.use(createAppointmentRouter({ ...s, now: () => now, audit: async () => {}, authenticate: (req, res, next) => { req.user = patient; next(); } }));
+  const server = app.listen(0, "127.0.0.1"); await new Promise((resolve) => server.once("listening", resolve));
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}/providers/${s.id}`;
+  const requestDates = (timeZone, extra = {}) => fetch(`${base}/available-dates?${new URLSearchParams({ timeZone, ...extra })}`);
+  assert.deepEqual(await (await requestDates("America/New_York", { path: `appointments/providers/${s.id}/available-dates` })).json(), { dates: [{ date: "2026-11-10", count: 2 }] });
+  assert.deepEqual(await (await requestDates("UTC")).json(), { dates: [{ date: "2026-11-10", count: 1 }, { date: "2026-11-11", count: 1 }] });
+  assert.deepEqual(await (await requestDates("Pacific/Kiritimati")).json(), { dates: [{ date: "2026-11-11", count: 2 }] });
+  assert.deepEqual(await (await requestDates("America/New_York", { mode: "in_person" })).json(), { dates: [{ date: "2026-11-10", count: 1 }] });
+  const daily = await (await fetch(`${base}/slots?${scheduleRange("2026-11-10", "America/New_York", 1)}`)).json();
+  assert.equal(daily.slots.length, 2);
+  assert.ok(daily.slots.every((slot) => slot.meetingUrl === undefined && slot.patientEmail === undefined));
+  assert.equal((await requestDates("invalid/zone")).status, 400);
+  assert.equal((await requestDates("UTC", { mode: "invalid" })).status, 400);
+  assert.equal((await requestDates("UTC", { status: "booked" })).status, 400);
+  p.slots.filter((slot) => slot.status === "available").forEach((slot) => { slot.status = "booked"; });
+  assert.deepEqual(await (await requestDates("UTC")).json(), { dates: [] });
+  p.active = false;
+  assert.equal((await requestDates("UTC")).status, 404);
 });
 
 test("weekly patterns select inclusive weekdays and preserve office hours across DST", () => {
@@ -171,6 +235,56 @@ test("patient cancellation remains possible at capacity; public slot DTO omits i
   assert.equal(visibleSlot(p, p.slots[0], patient).meetingUrl, undefined);
 });
 
+test("bulk removal handles whole days, partial-hour overlaps, and preserves bookings and other days", async () => {
+  const s = store();
+  await changeSchedule(s.id, (p) => addAvailability(p, windowInput({ end: "2026-11-10T12:00" }), now), s.repository);
+  await changeSchedule(s.id, (p) => addAvailability(p, windowInput({ start: "2026-11-11T09:00", end: "2026-11-11T10:00" }), now), s.repository);
+  let p = s.records.get(s.id);
+  p.slots[0].status = "booked"; p.slots[0].userId = patient.id;
+  p.slots[1].status = "cancelled"; p.slots[2].status = "blocked";
+  const keptIds = [p.slots[0]._id, p.slots[1]._id, ...p.slots.slice(6).map((slot) => slot._id)];
+  const hours = { scope: "hours", date: "2026-11-10", startTime: "10:15", endTime: "10:45" };
+  assert.equal(availabilityRemovalSelection(p.slots, hours, p.timeZone).removable.length, 2, "partial overlaps remove the complete slots");
+  const partial = await changeSchedule(s.id, (provider) => removeAvailability(provider, hours, p.revision, admin), s.repository);
+  assert.equal(partial.removedCount, 2);
+  p = s.records.get(s.id);
+  const day = { scope: "day", date: "2026-11-10" };
+  assert.equal(availabilityRemovalSelection(p.slots, day, p.timeZone).bookedCount, 1);
+  const result = await changeSchedule(s.id, (provider) => removeAvailability(provider, day, p.revision, admin), s.repository);
+  assert.equal(result.removedCount, 2);
+  assert.deepEqual(result.provider.slots.map((slot) => slot._id), keptIds);
+  const noMatches = await changeSchedule(s.id, (provider) => removeAvailability(provider, day, result.provider.revision, admin), s.repository);
+  assert.equal(noMatches.removedCount, 0);
+  assert.equal(noMatches.provider.slots[0].status, "booked");
+});
+
+test("whole-day removal follows provider calendar boundaries through DST and midnight", () => {
+  const make = (start, end) => ({ startsAt: new Date(start), endsAt: new Date(end), status: "available" });
+  const slots = [make("2026-11-01T03:30Z", "2026-11-01T04:00Z"), make("2026-11-01T04:00Z", "2026-11-01T05:00Z"),
+    make("2026-11-01T05:00Z", "2026-11-01T06:00Z"), make("2026-11-02T04:30Z", "2026-11-02T05:30Z"), make("2026-11-02T05:30Z", "2026-11-02T06:00Z")];
+  assert.deepEqual(availabilityRemovalSelection(slots, { scope: "day", date: "2026-11-01" }, "America/New_York").removable, slots.slice(1, 4));
+  assert.throws(() => availabilityRemovalSelection(slots, { scope: "hours", date: "2026-11-01", startTime: "01:00", endTime: "03:00" }, "America/New_York"), /daylight saving/);
+  assert.throws(() => availabilityRemovalSelection(slots, { scope: "hours", date: "2026-11-10", startTime: "10:00", endTime: "09:00" }, "UTC"), /end time/);
+  assert.throws(() => availabilityRemovalSelection(slots, { scope: "day", date: "2026-02-30" }, "UTC"));
+});
+
+test("bulk removal refuses stale previews and races atomically with booking", async () => {
+  const s = store();
+  await changeSchedule(s.id, (p) => addAvailability(p, windowInput(), now), s.repository);
+  const before = structuredClone(s.records.get(s.id));
+  const selection = { scope: "day", date: "2026-11-10" };
+  await assert.rejects(changeSchedule(s.id, (p) => removeAvailability(p, selection, before.revision, patient), s.repository), { status: 403 });
+  const outcomes = await Promise.allSettled([
+    changeSchedule(s.id, (p) => changeSlot(p, before.slots[0]._id, "book", patient, now), s.repository),
+    changeSchedule(s.id, (p) => removeAvailability(p, selection, before.revision, admin), s.repository),
+  ]);
+  assert.equal(outcomes.filter((result) => result.status === "fulfilled").length, 1);
+  const saved = s.records.get(s.id);
+  assert.equal(saved.slots[0].status, "booked");
+  await assert.rejects(changeSchedule(s.id, (p) => removeAvailability(p, selection, before.revision, admin), s.repository), { status: 409 });
+  assert.deepEqual(s.records.get(s.id), saved);
+});
+
 test("HTTP endpoints enforce roles, booking ownership, strict payloads, private links and revision conflicts", async (t) => {
   const s = store(); const audits = [];
   const app = express(); app.use(express.json());
@@ -245,6 +359,25 @@ test("HTTP endpoints enforce roles, booking ownership, strict payloads, private 
   const cancelled = await (await request("/mine")).json();
   assert.equal(cancelled.appointments[0].status, "cancelled");
   assert.equal(cancelled.appointments[0].meetingUrl, undefined);
+  const previewUrl = `/providers/${s.id}/availability/removal-preview`, removeUrl = `/providers/${s.id}/availability/remove`;
+  const daySelection = { scope: "day", date: "2026-11-10" };
+  assert.equal((await request(previewUrl, "POST", daySelection)).status, 403);
+  assert.equal((await request(removeUrl, "POST", { selection: daySelection, revision: 0 })).status, 403);
+  assert.equal((await request(previewUrl, "POST", { ...daySelection, status: "booked" }, "admin")).status, 400);
+  assert.equal((await request(previewUrl, "POST", { scope: "hours", date: "2026-11-10", startTime: "10:00", endTime: "09:00" }, "admin")).status, 400);
+  const previewResponse = await request(previewUrl, "POST", daySelection, "admin");
+  assert.equal(previewResponse.status, 200);
+  const preview = await previewResponse.json();
+  assert.equal(preview.removableCount, 1);
+  assert.equal((await request(removeUrl, "POST", { selection: daySelection }, "admin")).status, 400);
+  const removal = await request(removeUrl, "POST", { selection: daySelection, revision: preview.revision }, "admin");
+  assert.equal(removal.status, 200);
+  assert.equal((await removal.json()).removedCount, 1);
+  assert.equal((await request(removeUrl, "POST", { selection: daySelection, revision: preview.revision }, "admin")).status, 409);
+  const retained = s.records.get(s.id).slots;
+  assert.equal(retained.length, 11);
+  assert.ok(retained.some((slot) => slot._id === available.slots[0]._id && slot.status === "cancelled"));
+  assert.ok(audits.some((entry) => entry.action === "APPOINTMENT_AVAILABILITY_REMOVED" && entry.metadata.removedCount === 1));
   assert.ok(audits.some((entry) => entry.action === "APPOINTMENT_UPDATED"));
   assert.ok(audits.every((entry) => !entry.metadata?.patientEmail));
 });
