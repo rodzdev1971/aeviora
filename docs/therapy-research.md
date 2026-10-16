@@ -28,8 +28,10 @@ or actual product availability is printed on the bottle. The bottle has only the
 medication name; its accessible image description identifies it as illustrative.
 There is no visible illustration stamp or caption beneath the image.
 
-NAD+ uses both the bottle and a smaller vial, each with a distinct accessible
-description. Its expanded English/Spanish guide describes energy metabolism,
+NAD+ uses an amber bottle and a smaller clear-glass injection vial with a metal
+crimp cap and visible rubber stopper, each with a distinct accessible description.
+The pair scales together on a shared baseline, with the vial in front on the
+right and separate branding centered below. Its expanded English/Spanish guide describes energy metabolism,
 DNA repair, NAD-dependent sirtuins, and tissue-specific age-related NAD changes.
 Primary-source cards cover the Martens 2018 oral-NR trial, Yoshino 2021 oral-NMN
 trial, Zhang 2016 mouse study, Zhu 2015 human brain study, and the existing
