@@ -48,5 +48,41 @@ test("therapy navigation renders medication lists, sourced detail pages, and una
     assert.match(renderTherapy("/therapies/unknown"), /Topic not found/);
     assert.match(renderTherapy("/therapies/longevity-assessment/unknown"), /Topic not found/);
     assert.match(renderTherapy("/therapies/hormone-optimization/metformin"), /Topic not found/);
+    assert.match(renderTherapy("/therapies"), /type="search"/);
+    for (const [query, expected] of [
+      ["  METFOR  ", "/therapies/longevity-assessment/metformin"],
+      ["metformina", "/therapies/longevity-assessment/metformin"],
+      ["glutation", "/therapies/longevity-assessment/glutathione"],
+      ["Glutatión", "/therapies/longevity-assessment/glutathione"],
+      ["rapamicina", "/therapies/longevity-assessment/rapamycin"],
+      ["sirolimus", "/therapies/longevity-assessment/rapamycin"],
+      ["NAD+", "/therapies/longevity-assessment/nad-plus"],
+      ["nicotinamide adenine", "/therapies/longevity-assessment/nad-plus"],
+      ["hormone", "/therapies/hormone-optimization"],
+      ["optimizacion hormonal", "/therapies/hormone-optimization"],
+      ["glp1", "/therapies/glp1-program"],
+    ]) {
+      for (const language of ["en", "es"]) {
+        const html = renderTherapy(`/therapies?q=${encodeURIComponent(query)}`, language);
+        assert.ok(html.includes(`href="${expected}"`), `${language}: ${query} finds its guide or topic`);
+        assert.ok(html.includes(language === "es" ? "Resultados de búsqueda" : "Search results"));
+      }
+    }
+    const nadSearch = renderTherapy("/therapies?q=nad");
+    assert.ok(nadSearch.includes('href="/therapies/nad-iv-therapy"'));
+    assert.ok(nadSearch.includes('href="/therapies/longevity-assessment/nad-plus"'));
+    assert.ok(!nadSearch.includes('href="/therapies/longevity-assessment/metformin"'));
+    const topicSearch = renderTherapy("/therapies/hormone-optimization?q=glut");
+    assert.ok(topicSearch.includes('href="/therapies/longevity-assessment/glutathione"'), "topic-page search covers the whole library");
+    assert.ok(!topicSearch.includes("No medication guides for this topic yet"));
+    for (const query of ["no-such-medication-xyz", "+++", '<img src=x onerror="alert(1)">']) {
+      const html = renderTherapy(`/therapies?q=${encodeURIComponent(query)}`);
+      assert.ok(html.includes("No medications or topics match that name"));
+      assert.ok(!html.includes('<img src=x'), "search text is escaped");
+    }
+    const cleared = renderTherapy("/therapies?q=");
+    assert.ok(!cleared.includes('id="therapy-search-results"'));
+    assert.ok(cleared.includes('href="/therapies/hormone-optimization"'));
+    assert.ok(!renderTherapy("/therapies/longevity-assessment/metformin").includes('id="therapy-search"'), "search stays on browsing pages");
   } finally { await vite.close(); }
 });

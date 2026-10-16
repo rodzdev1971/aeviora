@@ -9,6 +9,15 @@ The first collection is `longevity-assessment`: Metformin, Glutathione, Rapamyci
 and NAD+. Other existing topics show an explicit empty state. Unknown topics,
 medications, or mismatched topic/medication URLs show a recovery link.
 
+The explorer's topic list and topic pages include **Search medications and topics**.
+Results update while typing, cover the entire library, and link directly to topic
+overviews and medication guides. Matching ignores case, accents and punctuation,
+supports partial names, and includes English/Spanish topic labels and medication
+aliases maintained in `therapyResearch.js`. The `q` URL parameter preserves the
+search when returning from a guide; typing replaces the current history entry.
+**Clear** restores normal browsing and returns focus to the search box. No-match
+results provide guidance without suggesting unavailable medication guides.
+
 Edit `src/util/therapyResearch.js` to maintain the English/Spanish summaries,
 study designs, limitations, safety notes, and primary-source URLs. Topic names
 and contact information remain in `src/util/constants.jsx`. Each medication is

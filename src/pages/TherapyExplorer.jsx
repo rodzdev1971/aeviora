@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, X } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, Search, X } from "lucide-react";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { getLanguage, t } from "../i18n/language.js";
 import { company, protocols } from "../util/constants.jsx";
 import { therapyMedications, regulatorySources, researchReviewedAt } from "../util/therapyResearch.js";
 import MedicationIllustration from "../components/MedicationIllustration.jsx";
+import { searchTherapies } from "../util/therapySearch.js";
 
 function SourceLink({ source, compact = false }) {
   return <a href={source.url} target="_blank" rel="noopener noreferrer" className={`mt-3 inline-flex items-center gap-2 ${compact ? "text-xs" : "text-sm"} font-semibold text-aeviora-primary underline underline-offset-4`}>{source.title}<ExternalLink size={14} aria-hidden="true" /></a>;
@@ -17,6 +18,18 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
   const spanish = language === "es";
   const read = (value) => value?.[spanish ? "es" : "en"];
   const { topicId, medicationId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const searching = Boolean(query.trim());
+  const results = searchTherapies(query, protocols);
+  const resultCount = results.topics.length + results.medications.length;
+  function changeSearch(value) {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (value) next.set("q", value); else next.delete("q");
+      return next;
+    }, { replace: true, preventScrollReset: true });
+  }
   const heading = useRef(null);
   const topic = protocols.find((item) => item.id === topicId);
   const medications = therapyMedications[topicId] || [];
@@ -37,7 +50,24 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
       {!medication && !invalid && <p className="mt-3 max-w-2xl text-sm leading-6 text-aeviora-slate">{topic ? (spanish ? "Elige una opción para conocer la investigación, sus límites y su situación ante la FDA." : "Choose an option to explore the research, its limitations and FDA status.") : (spanish ? "Selecciona un tema y luego una opción para leer su guía de investigación." : "Select a topic, then an option to read its research guide.")}</p>}
     </header>
 
-    {invalid ? <div className="card"><p>{spanish ? "Esta guía no está disponible. Vuelve a los temas para seguir explorando." : "This guide is not available. Return to the topics to keep exploring."}</p><Link to="/therapies" className="btn-primary mt-5 inline-block">{spanish ? "Ver temas" : "Browse topics"}</Link></div> : medication ? <>
+    {!invalid && !medication && <form role="search" onSubmit={(event) => event.preventDefault()} className="mb-6 rounded-2xl border border-aeviora-border bg-aeviora-ivory p-4 sm:p-5">
+      <label htmlFor="therapy-search" className="block text-sm font-semibold text-aeviora-primary">{spanish ? "Buscar medicamentos y temas" : "Search medications and topics"}</label>
+      <div className="mt-2 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1"><Search size={19} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-aeviora-slate" /><input id="therapy-search" type="search" maxLength={100} value={query} onChange={(event) => changeSearch(event.target.value)} placeholder={spanish ? "NAD+, metformina, longevidad…" : "NAD+, Metformin, longevity…"} className="input pl-11" aria-describedby="therapy-search-help" aria-controls={searching ? "therapy-search-results" : undefined} /></div>
+        {query && <button type="button" onClick={() => { changeSearch(""); document.getElementById("therapy-search")?.focus(); }} className="rounded-lg px-2 py-3 text-sm font-semibold text-aeviora-primary underline underline-offset-4">{spanish ? "Limpiar" : "Clear"}</button>}
+      </div>
+      <p id="therapy-search-help" className="mt-2 text-xs leading-5 text-aeviora-slate">{spanish ? "Busca en toda la biblioteca por nombre de medicamento o tema. Los resultados aparecen mientras escribes." : "Search the whole library by medication or topic name. Results update as you type."}</p>
+    </form>}
+
+    {!invalid && !medication && searching ? <section id="therapy-search-results" aria-labelledby="therapy-search-heading" className="space-y-6">
+      <div><h2 id="therapy-search-heading" className="font-display text-2xl">{spanish ? "Resultados de búsqueda" : "Search results"}</h2><p role="status" className="mt-2 text-sm text-aeviora-slate">{resultCount} {spanish ? (resultCount === 1 ? "resultado" : "resultados") : (resultCount === 1 ? "result" : "results")}</p></div>
+      {!results.topics.length && !results.medications.length && <div className="card"><p>{spanish ? "No encontramos medicamentos ni temas con ese nombre. Prueba otro nombre o limpia la búsqueda para ver todos los temas." : "No medications or topics match that name. Try another name or clear the search to browse all topics."}</p></div>}
+      {results.medications.length > 0 && <div><h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-aeviora-primary">{spanish ? "Medicamentos" : "Medications"}</h3><div className="grid gap-3 sm:grid-cols-2">{results.medications.map(({ medication: item, topic: parent }) => <Link key={`${parent.id}/${item.id}`} to={`/therapies/${parent.id}/${item.id}`} className="card group transition hover:border-aeviora-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aeviora-primary">
+        <div className="flex items-center justify-between gap-3"><h4 className="font-display text-xl text-aeviora-primary">{item.name}</h4><ArrowRight size={18} aria-hidden="true" /></div><p className="mt-2 text-sm text-aeviora-slate">{read(item.category)}</p><p className="mt-3 text-xs text-aeviora-slate">{t(parent.name)}</p>
+        <p className="mt-3 text-xs font-semibold text-amber-900">{item.regulatoryType === "offLabel" ? (spanish ? "Uso off-label para longevidad" : "Off-label for longevity") : (spanish ? "No aprobado por la FDA para longevidad" : "Not FDA-approved for longevity")}</p>
+      </Link>)}</div></div>}
+      {results.topics.length > 0 && <div><h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-aeviora-primary">{spanish ? "Temas" : "Topics"}</h3><div className="grid gap-3 sm:grid-cols-2">{results.topics.map((item) => <Link key={item.id} to={`/therapies/${item.id}`} className="flex items-center gap-4 rounded-2xl border border-aeviora-border bg-white p-5 transition hover:border-aeviora-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aeviora-primary"><span className="text-aeviora-primary" aria-hidden="true">{item.icon}</span><span className="min-w-0 flex-1"><span className="block font-semibold">{t(item.name)}</span><span className="mt-1 block text-xs text-aeviora-slate">{t(item.description)}</span></span><ArrowRight size={17} aria-hidden="true" /></Link>)}</div></div>}
+    </section> : invalid ? <div className="card"><p>{spanish ? "Esta guía no está disponible. Vuelve a los temas para seguir explorando." : "This guide is not available. Return to the topics to keep exploring."}</p><Link to="/therapies" className="btn-primary mt-5 inline-block">{spanish ? "Ver temas" : "Browse topics"}</Link></div> : medication ? <>
       <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <MedicationIllustration medication={medication} language={language} />
         <div className="space-y-5">

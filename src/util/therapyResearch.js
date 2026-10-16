@@ -11,6 +11,7 @@ export const therapyMedications = {
   "longevity-assessment": [
     {
       id: "metformin", name: "Metformin", kind: "bottle", regulatoryType: "offLabel",
+      aliases: ["Metformina"],
       category: text("Metformin and the biology of aging", "Metformina y biología del envejecimiento"),
       intro: text("A prescription medicine for type 2 diabetes, also studied for its possible role in healthy aging.", "Un medicamento recetado para la diabetes tipo 2, también estudiado por su posible papel en el envejecimiento saludable."),
       regulatory: text("Metformin is FDA-approved for type 2 diabetes. Use for longevity or anti-aging is off-label: the FDA has not approved it for that purpose.", "La metformina está aprobada por la FDA para la diabetes tipo 2. Su uso para longevidad o antienvejecimiento está fuera de indicación (off-label): la FDA no lo ha aprobado para ese fin."),
@@ -49,6 +50,7 @@ export const therapyMedications = {
     },
     {
       id: "glutathione", name: "Glutathione", kind: "vial", regulatoryType: "compounded",
+      aliases: ["Glutatión", "Glutation"],
       category: text("Antioxidant research", "Investigación sobre antioxidantes"),
       intro: text("An antioxidant made by the body. Studies of oral supplementation and injectable preparations must be considered separately.", "Un antioxidante producido por el cuerpo. Los estudios de suplementos orales y preparaciones inyectables deben considerarse por separado."),
       regulatory: text("Glutathione is not FDA-approved for longevity. Compounded glutathione injections are not FDA-approved products; describing them simply as off-label would not convey that distinction.", "El glutatión no está aprobado por la FDA para longevidad. Las inyecciones de glutatión de preparación magistral no son productos aprobados por la FDA; describirlas solo como off-label no comunica esa diferencia."),
@@ -64,6 +66,7 @@ export const therapyMedications = {
     },
     {
       id: "rapamycin", name: "Rapamycin", kind: "bottle", regulatoryType: "offLabel",
+      aliases: ["Rapamicina", "Sirolimus"],
       category: text("mTOR and aging research", "Investigación sobre mTOR y envejecimiento"),
       intro: text("Also called sirolimus, this prescription medicine affects mTOR signaling.", "También llamado sirolimus, este medicamento recetado afecta la señalización mTOR."),
       regulatory: text("Rapamune (sirolimus) has FDA-approved uses, including prevention of kidney transplant rejection and treatment of lymphangioleiomyomatosis. Longevity use is off-label, not FDA-approved. Compounded versions are not FDA-approved products.", "Rapamune (sirolimus) tiene usos aprobados por la FDA, como prevenir el rechazo de trasplantes renales y tratar la linfangioleiomiomatosis. Su uso para longevidad es off-label, no aprobado por la FDA. Las versiones magistrales no son productos aprobados por la FDA."),
@@ -79,6 +82,7 @@ export const therapyMedications = {
     },
     {
       id: "nad-plus", name: "NAD+", kind: "bottle-and-vial", regulatoryType: "compounded", reviewedAt: "2026-10-15",
+      aliases: ["Nicotinamide adenine dinucleotide", "Dinucleótido de nicotinamida y adenina", "NAD", "NR", "NMN"],
       category: text("Cellular metabolism research", "Investigación sobre metabolismo celular"),
       intro: text("Nicotinamide adenine dinucleotide (NAD+) is an essential cellular coenzyme involved in energy metabolism and DNA repair, and is required by sirtuins, proteins studied for their roles in aging. Age-related declines in NAD+ have been reported in several tissues, motivating research into whether restoring it can improve healthspan—the years lived in good health—or lifespan.", "El dinucleótido de nicotinamida y adenina (NAD+) es una coenzima celular esencial que participa en el metabolismo energético y la reparación del ADN, y es necesaria para las sirtuinas, proteínas estudiadas por su papel en el envejecimiento. Se han observado descensos del NAD+ asociados a la edad en varios tejidos, lo que impulsa la investigación sobre si restaurarlo puede mejorar los años de vida con buena salud o la duración de la vida."),
       introSource: { title: "NAD+ in Aging: Molecular Mechanisms and Translational Implications · review", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7494058/" },
