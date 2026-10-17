@@ -1,14 +1,16 @@
 import { t } from "../i18n/language.js";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { apiRequest } from "../util/api";
+import { loginDestination } from "../util/loginDestination.js";
 
 export default function Login() {
   useLanguage();
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   async function handleLogin(event) {
     event.preventDefault();
     if (submitting) return;
@@ -17,7 +19,7 @@ export default function Login() {
     setError("");
     try {
       await apiRequest("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), password: data.get("password") }) });
-      navigate("/dashboard");
+      navigate(loginDestination(location.state?.from), { replace: true });
     } catch (error) { setError(error.message || "Unable to sign in."); }
     finally { setSubmitting(false); }
   }

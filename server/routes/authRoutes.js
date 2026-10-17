@@ -9,6 +9,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { z } from "zod";
 import { logAudit } from "../utils/auditLogger.js";
 import { requestEmailVerification, verificationStatus } from "../services/emailVerification.js";
+import { notifyNewSignup } from "../services/adminPush.js";
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.post("/register", async (req, res) => {
     catch { console.warn("Registration template unavailable; using default."); }
     const verificationEmail = await requestEmailVerification(user.email, { template });
     await logAudit({ req, actorId: user._id, actorRole: user.role, action: "USER_CREATED", targetType: "User", targetId: user._id });
+    await notifyNewSignup();
     return res.status(201).json({
       message: verificationEmail === "accepted"
         ? "Account created. A verification link has been sent to your email. Check your inbox and spam folder, and verify within 24 hours to activate your account."

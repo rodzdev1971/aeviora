@@ -11,6 +11,7 @@ import {
   Users,
   CreditCard,
   CalendarDays,
+  ChartNoAxesCombined,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -45,6 +46,7 @@ export default function DashboardLayout() {
     ...(user?.role === "admin"
       ? [
           { label: "Admin", href: "/admin", icon: <ShieldCheck size={18} /> },
+          { label: "Metrics & notifications", href: "/admin/metrics", icon: <ChartNoAxesCombined size={18} aria-hidden="true" /> },
           { label: "Providers & appointments", href: "/admin/appointments", icon: <CalendarDays size={18} /> },
           { label: "Membership payments", href: "/admin/payments", icon: <CreditCard size={18} /> },
           { label: "Email manager", href: "/admin/email-templates", icon: <Mail size={18} aria-hidden="true" /> },

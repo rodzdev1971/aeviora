@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { createApp } from "./app.js";
 
 dotenv.config({ path: "./server/.env" });
+dotenv.config({ path: "./server/.env.web-push.local" });
 const app = createApp();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/aeviora_wellness";

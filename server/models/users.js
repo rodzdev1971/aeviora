@@ -80,4 +80,5 @@ const userSchema = new mongoose.Schema({
   paymentReminderAt: Date,
 }, { timestamps: true, strict: "throw", collection: "users" });
 
+userSchema.index({ createdAt: -1, _id: -1 });
 export default mongoose.model("User", userSchema);

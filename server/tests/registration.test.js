@@ -280,6 +280,8 @@ test("HTTP registration, pending/active login, cookie auth, account isolation an
   const accounts = [];
   const savedEnv = { ...process.env };
   process.env.NODE_ENV = "test";
+  delete process.env.WEB_PUSH_PUBLIC_KEY;
+  delete process.env.WEB_PUSH_PRIVATE_KEY;
   Object.assign(process.env, { FRONTEND_ORIGIN: "https://example.com", SMTP_HOST: "smtp.example.com", SMTP_PORT: "587", SMTP_USER: "synthetic", SMTP_PASS: "synthetic", SMTP_FROM: "sender@example.com" });
   process.env.JWT_ACCESS_SECRET = "synthetic-test-secret-only";
   delete process.env.DEV_ACTIVATE_ACCOUNTS;

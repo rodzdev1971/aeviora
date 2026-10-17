@@ -18,6 +18,7 @@ import TermsOfUse from "./pages/termsofuse.jsx";
 import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AccountTerms from "./pages/AccountTerms.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import AdminMetrics from "./pages/AdminMetrics.jsx";
 import AdminBenefits from "./pages/AdminBenefits.jsx";
 import AdminMemberships from "./pages/AdminMemberships.jsx";
 import AdminFees from "./pages/AdminFees.jsx";
@@ -56,6 +57,8 @@ export default function App() {
             <Route path="memberships/:planId/payment" element={<MembershipCheckout />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/metrics" element={<AdminMetrics />} />
+              <Route path="admin/metrics/:metric" element={<AdminMetrics />} />
               <Route path="admin/appointments" element={<AdminAppointments />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />
               <Route path="admin/memberships" element={<AdminMemberships />} />

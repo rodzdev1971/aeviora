@@ -21,6 +21,8 @@ import emailTemplateRoutes from "./routes/emailTemplateRoutes.js";
 import renewalReminderRoutes from "./routes/renewalReminderRoutes.js";
 import membershipUpgradeRoutes from "./routes/membershipUpgradeRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
+import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
+import adminPushRoutes from "./routes/adminPushRoutes.js";
 
 export function createApp({ connectDatabase, trustProxy = false } = {}) {
   const app = express();
@@ -99,6 +101,8 @@ app.use("/api/membership-upgrades", membershipUpgradeRoutes);
 app.use("/api/cron", renewalReminderRoutes);
 app.use("/api/membership-billing", membershipBillingRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/metrics", adminMetricsRoutes);
+app.use("/api/admin/push", adminPushRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/admin/benefits", benefitRoutes);
 app.use("/api/admin/memberships", membershipRoutes);

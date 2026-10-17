@@ -18,6 +18,9 @@ const auditLogSchema = new mongoose.Schema(
       required: true,
       enum: [
         "USER_CREATED",
+        "ADMIN_METRICS_VIEWED",
+        "ADMIN_PUSH_ENABLED",
+        "ADMIN_PUSH_DISABLED",
         "APPOINTMENT_PROVIDER_CREATED",
         "APPOINTMENT_PROVIDER_UPDATED",
         "APPOINTMENT_AVAILABILITY_CREATED",
