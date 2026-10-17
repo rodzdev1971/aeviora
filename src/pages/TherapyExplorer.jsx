@@ -6,6 +6,7 @@ import { getLanguage, t } from "../i18n/language.js";
 import { company, protocols } from "../util/constants.jsx";
 import { therapyMedications, regulatorySources, researchReviewedAt } from "../util/therapyResearch.js";
 import MedicationIllustration from "../components/MedicationIllustration.jsx";
+import TherapyTopicOverview from "../components/TherapyTopicOverview.jsx";
 import { searchTherapies } from "../util/therapySearch.js";
 
 function SourceLink({ source, compact = false }) {
@@ -47,7 +48,7 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
       </div>
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-aeviora-gold">{spanish ? "Biblioteca de bienestar" : "Wellness library"}{medication && ` / ${t(topic.name)}`}</p>
       <h1 id="therapy-explorer-heading" ref={heading} tabIndex={-1} className="mt-3 font-display text-3xl text-aeviora-primary outline-none sm:text-4xl">{title}</h1>
-      {!medication && !invalid && <p className="mt-3 max-w-2xl text-sm leading-6 text-aeviora-slate">{topic ? (spanish ? "Elige una opción para conocer la investigación, sus límites y su situación ante la FDA." : "Choose an option to explore the research, its limitations and FDA status.") : (spanish ? "Selecciona un tema y luego una opción para leer su guía de investigación." : "Select a topic, then an option to read its research guide.")}</p>}
+      {!medication && !invalid && <p className="mt-3 max-w-2xl text-sm leading-6 text-aeviora-slate">{topic ? (spanish ? "Conoce los síntomas, las opciones de atención y cómo pueden influir en tu vida diaria. Explora las guías de investigación disponibles más abajo." : "Learn about symptoms, care options and how they may affect daily life. Explore available research guides below.") : (spanish ? "Explora cada tema para conocer los síntomas, cómo puede ayudar la atención y las guías de medicamentos disponibles." : "Explore each topic for background, symptoms, how care may help and available medication guides.")}</p>}
     </header>
 
     {!invalid && !medication && <form role="search" onSubmit={(event) => event.preventDefault()} className="mb-6 rounded-2xl border border-aeviora-border bg-aeviora-ivory p-4 sm:p-5">
@@ -126,13 +127,15 @@ export default function TherapyExplorer({ embedded = false, onClose }) {
         <a href={`tel:${company.telephone.replace(/[^+\d]/g, "")}`} className="btn-outline">{spanish ? "Hablar con Aeviora" : "Talk with Aeviora"}</a>
       </footer>
     </> : topic ? <>
+      <TherapyTopicOverview topicId={topic.id} language={language} />
+      <h2 className="mb-4 font-display text-2xl text-aeviora-primary">{spanish ? "Guías de medicamentos e investigación" : "Medication and research guides"}</h2>
       {medications.length ? <div className="grid gap-4 sm:grid-cols-2">{medications.map((item, index) => <Link key={item.id} to={`/therapies/${topic.id}/${item.id}`} className="group card transition hover:border-aeviora-primary hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aeviora-primary">
         <div className="flex items-center justify-between text-aeviora-gold"><span className="text-xs font-semibold tracking-widest">0{index + 1}</span><ArrowRight aria-hidden="true" size={20} /></div>
-        <h2 className="mt-5 font-display text-2xl text-aeviora-primary">{item.name}</h2>
+        <h3 className="mt-5 font-display text-2xl text-aeviora-primary">{item.name}</h3>
         <p className="mt-2 text-sm leading-6 text-aeviora-slate">{read(item.category)}</p>
         <p className="mt-4 text-xs font-semibold text-amber-900">{item.regulatoryType === "offLabel" ? (spanish ? "Uso off-label para longevidad" : "Off-label for longevity") : (spanish ? "No aprobado por la FDA para longevidad" : "Not FDA-approved for longevity")}</p>
         <span className="mt-5 inline-block text-sm font-semibold text-aeviora-primary underline underline-offset-4">{spanish ? "Explorar la investigación" : "Explore the research"}</span>
-      </Link>)}</div> : <div className="card"><h2 className="font-display text-xl">{spanish ? "Aún no hay guías de medicamentos para este tema" : "No medication guides for this topic yet"}</h2><p className="mt-3 text-sm leading-7 text-aeviora-slate">{t(topic.description)}</p><Link to="/therapies/longevity-assessment" className="mt-5 inline-block font-semibold text-aeviora-primary underline">{spanish ? "Explorar las guías de longevidad" : "Explore the longevity guides"}</Link></div>}
+      </Link>)}</div> : <div className="card"><h3 className="font-display text-xl">{spanish ? "Aún no hay guías de medicamentos para este tema" : "No medication guides for this topic yet"}</h3><p className="mt-3 text-sm leading-7 text-aeviora-slate">{spanish ? "Puedes usar el resumen anterior para preparar tus preguntas para la consulta." : "Use the overview above to prepare questions for your consultation."}</p><Link to="/therapies" className="mt-5 inline-block font-semibold text-aeviora-primary underline">{spanish ? "Explorar otros temas" : "Explore other topics"}</Link></div>}
       <p className="mt-5 text-sm leading-6 text-aeviora-slate">{spanish ? "Estas opciones se presentan para educación, no como tratamientos probados para prolongar la vida. Su inclusión no confirma disponibilidad ni idoneidad para ti." : "These options are presented for education, not as proven treatments to extend life. Inclusion does not confirm availability or suitability for you."}</p>
     </> : <div className="grid gap-3 sm:grid-cols-2">{protocols.map((item) => <Link key={item.id} to={`/therapies/${item.id}`} className="flex items-center gap-4 rounded-2xl border border-aeviora-border bg-white p-5 transition hover:border-aeviora-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aeviora-primary"><span className="text-aeviora-primary" aria-hidden="true">{item.icon}</span><span className="min-w-0 flex-1"><span className="block font-semibold">{t(item.name)}</span><span className="mt-1 block text-xs text-aeviora-slate">{therapyMedications[item.id]?.length ? (spanish ? "4 guías de investigación" : "4 research guides") : (spanish ? "Resumen del tema" : "Topic overview")}</span></span><ArrowRight size={17} aria-hidden="true" /></Link>)}</div>}
   </section>;

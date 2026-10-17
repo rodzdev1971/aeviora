@@ -6,7 +6,11 @@ Topic links lead to `/therapies/:topicId`; medication links lead to
 guard and dashboard layout. The public home-page questionnaire is unchanged.
 
 The first collection is `longevity-assessment`: Metformin, Glutathione, Rapamycin,
-and NAD+. Other existing topics show an explicit empty state. Unknown topics,
+and NAD+. All eight topics include bilingual background, symptoms or reasons
+for evaluation, how care may help, quality-of-life goals, clinical considerations,
+and expandable source links before any medication guides. Topics without
+medication guides keep their educational overview and a smaller empty state.
+Unknown topics,
 medications, or mismatched topic/medication URLs show a recovery link.
 
 The explorer's topic list and topic pages include **Search medications and topics**.
@@ -23,6 +27,15 @@ study designs, limitations, safety notes, and primary-source URLs. Topic names
 and contact information remain in `src/util/constants.jsx`. Each medication is
 educational content, not a prescribing, pricing, or inventory record. No therapy
 selections are saved to an account and no dosing instructions are provided.
+
+Maintain topic education in `src/util/therapyTopics.js`, rendered by
+`TherapyTopicOverview.jsx`. Names and descriptions remain in `constants.jsx`.
+The overview distinguishes symptoms from diagnosis, conditions that may be
+asymptomatic, treatment of a confirmed deficiency, and unestablished wellness
+claims. Links include NIH, FDA, Endocrine Society and original research. Do not
+generalize benefits of an approved medicine to an entire peptide category or
+oral NAD precursor research to NAD+ injections. The topic source-review date
+is also an editorial date, not clinician approval.
 
 The pages distinguish longevity use of approved metformin/sirolimus products
 (off-label) from unapproved compounded glutathione/NAD+ products. Do not imply

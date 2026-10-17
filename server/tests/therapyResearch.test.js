@@ -3,12 +3,28 @@ import assert from "node:assert/strict";
 import { createServer } from "vite";
 import react from "@vitejs/plugin-react";
 import { therapyMedications } from "../../src/util/therapyResearch.js";
+import { therapyTopics } from "../../src/util/therapyTopics.js";
 
 test("therapy navigation renders medication lists, sourced detail pages, and unavailable topics in both languages", async () => {
   const vite = await createServer({ configFile: false, envDir: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true, ws: false }, appType: "custom" });
   try {
     const { renderTherapy } = await vite.ssrLoadModule("/server/tests/fixtures/therapyRender.jsx");
     assert.match(renderTherapy("/therapies"), /href="\/therapies\/longevity-assessment"/);
+    const { protocols } = await vite.ssrLoadModule("/src/util/constants.jsx");
+    assert.deepEqual(Object.keys(therapyTopics).sort(), protocols.map((topic) => topic.id).sort(), "every topic has an educational overview");
+    for (const topic of protocols) {
+      for (const language of ["en", "es"]) {
+        const html = renderTherapy(`/therapies/${topic.id}`, language);
+        assert.ok(html.includes(language === "es" ? "Comprender este tema" : "Understanding this topic"));
+        for (const key of ["background", "symptoms", "help", "quality", "evaluation"]) {
+          // Compare rendered text after escaping the same characters React escapes.
+          const expected = therapyTopics[topic.id][key][language].replaceAll("&", "&amp;").replaceAll("'", "&#x27;").replaceAll('"', "&quot;");
+          assert.ok(html.includes(expected), `${topic.id}: ${language} includes ${key}`);
+        }
+        for (const source of therapyTopics[topic.id].sources) assert.ok(html.includes(`href="${source.url}"`));
+        assert.ok(html.indexOf('id="topic-background-heading"') < html.indexOf(language === "es" ? "Guías de medicamentos e investigación" : "Medication and research guides"), "background precedes medication guides");
+      }
+    }
     const list = renderTherapy("/therapies/longevity-assessment");
     assert.deepEqual(therapyMedications["longevity-assessment"].map((item) => item.name), ["Metformin", "Glutathione", "Rapamycin", "NAD+"]);
     for (const medication of therapyMedications["longevity-assessment"]) {
