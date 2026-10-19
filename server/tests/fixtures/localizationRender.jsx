@@ -16,12 +16,14 @@ import DashboardLayout from "../../../src/components/dashboardlayout.jsx";
 import Appointments from "../../../src/pages/Appointments.jsx";
 import AdminAppointments from "../../../src/pages/AdminAppointments.jsx";
 import AdminMetrics from "../../../src/pages/AdminMetrics.jsx";
+import Referrals from "../../../src/pages/Referrals.jsx";
+import AdminReferrals from "../../../src/pages/AdminReferrals.jsx";
 import AvailabilityRemoval from "../../../src/components/AvailabilityRemoval.jsx";
 import LanguageSelector from "../../../src/i18n/LanguageSelector.jsx";
 import { setLanguage, getLanguage } from "../../../src/i18n/language.js";
 export { apiRequest } from "../../../src/util/api.js";
 
-const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics };
+const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals };
 export function renderScreen(name, language) {
   setLanguage(language);
   const Screen = screens[name];

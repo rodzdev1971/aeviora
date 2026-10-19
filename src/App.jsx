@@ -19,6 +19,8 @@ import AccountPrivacy from "./pages/AccountPrivacy.jsx";
 import AccountTerms from "./pages/AccountTerms.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminMetrics from "./pages/AdminMetrics.jsx";
+import Referrals from "./pages/Referrals.jsx";
+import AdminReferrals from "./pages/AdminReferrals.jsx";
 import AdminBenefits from "./pages/AdminBenefits.jsx";
 import AdminMemberships from "./pages/AdminMemberships.jsx";
 import AdminFees from "./pages/AdminFees.jsx";
@@ -54,10 +56,12 @@ export default function App() {
             <Route path='profile' element={<Profile />} />
             <Route path="directory" element={<Directory />} />
             <Route path="memberships" element={<MembershipPlans />} />
+            <Route path="referrals" element={<Referrals />} />
             <Route path="memberships/:planId/payment" element={<MembershipCheckout />} />
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/metrics" element={<AdminMetrics />} />
+              <Route path="admin/referrals" element={<AdminReferrals />} />
               <Route path="admin/metrics/:metric" element={<AdminMetrics />} />
               <Route path="admin/appointments" element={<AdminAppointments />} />
               <Route path="admin/benefits" element={<AdminBenefits />} />

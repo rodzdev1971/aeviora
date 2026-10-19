@@ -23,6 +23,7 @@ import membershipUpgradeRoutes from "./routes/membershipUpgradeRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
 import adminPushRoutes from "./routes/adminPushRoutes.js";
+import referralRoutes from "./routes/referralRoutes.js";
 
 export function createApp({ connectDatabase, trustProxy = false } = {}) {
   const app = express();
@@ -93,6 +94,7 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", passwordResetRoutes);
 app.use("/api/auth", emailVerificationRoutes);
+app.use("/api/referrals", referralRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);

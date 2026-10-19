@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/users.js";
 import { VERIFICATION_LIFETIME } from "./emailVerification.js";
 import { createRegistrationSchema } from "../../shared/registration.js";
+import { resolveReferral, ReferralError } from "./referrals.js";
 import {
   registrationConfig,
   initialAccountStatus,
@@ -23,6 +24,7 @@ export async function registerAccount(
     config = registrationConfig(),
     now = () => new Date(),
     status = initialAccountStatus(),
+    referral = resolveReferral,
   } = {},
 ) {
   const parsed = createRegistrationSchema(
@@ -66,6 +68,13 @@ export async function registerAccount(
       { email: "An account with this email already exists." },
     );
   const timestamp = now();
+  if (account.referralCode) {
+    try { await referral(account.referralCode, { email: account.email, now: timestamp }); }
+    catch (error) {
+      if (!(error instanceof ReferralError)) throw error;
+      throw new RegistrationError(error.status, error.message, { referralCode: error.message });
+    }
+  }
   const consent = (granted) => ({
     granted,
     recordedAt: timestamp,

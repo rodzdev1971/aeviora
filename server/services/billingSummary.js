@@ -1,3 +1,8 @@
+export function zelleAmountDueCents(zelle) {
+  const price = Math.round(zelle.price * 100);
+  return Math.max(0, price - (zelle.payments?.length ? 0 : zelle.referralDiscountCents || 0));
+}
+
 export function zelleBalance(zelle, now = new Date()) {
   // Legacy cancellations do not store the cancellation date needed to calculate arrears.
   if (zelle?.status === "canceled" && zelle.dueAt) return { amount: null, periods: null };
@@ -6,7 +11,7 @@ export function zelleBalance(zelle, now = new Date()) {
   if (!Number.isFinite(date.getTime()) || !Number.isFinite(zelle.price)) throw new Error("Invalid billing record");
   // Manual renewal does not accrue charges for periods with no paid access.
   const periods = date <= now ? 1 : 0;
-  return { amount: Math.round(zelle.price * 100) * periods / 100, periods };
+  return { amount: zelleAmountDueCents(zelle) * periods / 100, periods };
 }
 
 export function invoiceSubscription(invoice) {

@@ -1,5 +1,74 @@
 # Membership payments
 
+## Member referrals and affiliate coupons
+
+The portal includes **Referral rewards** at `/referrals` and **Affiliates &
+referral coupons** at `/admin/referrals`. A current paid patient/user member can
+create one unique affiliate ID and coupon code; admins can also create/find a
+code by member email. Free, unpaid, expired and suspended accounts cannot start
+an eligible referral offer. Earlier reward balances remain visible when a
+membership ends. Codes are random identifiers and do not contain personal data.
+
+New affiliate coupons default to enabled, with **10% off the customer's first
+membership payment**. Open the admin page's **Defaults for new affiliate codes**
+to manage these settings. The default affiliate commission is 20% of the membership amount
+actually collected after discount, excluding tax: $2 for each $10 collected.
+For example, a $100 membership with a 10% referral discount costs $90 initially
+and earns an $18 commission. The customer then pays $100 on each renewal and the
+affiliate earns $20 on each qualifying paid renewal while eligible. Recurring
+commission is the default; admins can select first-payment-only instead.
+Defaults affect new codes only;
+existing codes have their own editable discount, commission, cadence and enabled
+state. Changing a code invalidates links using its old spelling.
+
+The member's share link opens `/register?ref=CODE`. Registration validates and
+saves the code; a new paid member may also enter it at checkout. A referral code
+is optional and independent of marketing/SMS consent. Checkout shows the first
+payment discount and the normal 30-day renewal price before continuing. The
+server checks the code, self-referral restrictions, owner eligibility and prior
+paid membership history, and verifies the displayed total again. One offer per
+new paid member is reserved on first checkout; its financial terms are retained
+across retries. Disabling the affiliate or losing eligible membership prevents
+new uses; a reserved, already-open Stripe checkout can remain usable until its
+30-minute expiration. Changing settings does not rewrite a completed payment.
+
+Stripe uses a server-created `duration=once` coupon and keeps the recurring
+catalog price unchanged. Zelle stores a first-payment discount separately;
+confirmed receipts, balances and reminders use the reduced first amount and
+then the full renewal price. Rewards require signed paid-invoice events or an
+admin-confirmed bank receipt, not a browser redirect or an unpaid signup.
+Invoice/receipt IDs deduplicate rewards, including webhook and confirmation
+retries. Snapshot commission cadence is used for already-reserved referrals;
+the affiliate must still be enabled and eligible when a qualifying payment is
+processed. Upgrades/proration invoices do not create referral rewards.
+
+Add `charge.refunded` and `charge.dispute.created` to the existing Stripe webhook
+at `/api/payments/webhook`, along with `invoice.paid`, `invoice.payment_failed`,
+`checkout.session.completed`, `customer.subscription.updated` and
+`customer.subscription.deleted`. Refund reconciliation reads current provider
+state, handles refund-before-invoice event delivery and proportionally reduces
+rewards. Disputed charges conservatively reverse the reward. Automatic reversal
+is monotonic: a won dispute requires a separate business review rather than
+automatically recreating a previously reversed reward. Zelle reversals are
+recorded manually by an admin with a reason.
+
+The reward ledger is in integer USD cents. Admins can record a payout reference
+only for an unchanged, unpaid reward, or reverse a reward with a reason. **These
+actions record accounting entries; the website does not transfer money or apply
+the bonus as membership credit.** A payout should be recorded after it has been
+sent externally. A later refund preserves the payout and can leave a negative
+affiliate balance requiring settlement with the member. Affiliate owners see
+their own amounts and membership names, without referred users' names/emails.
+Admin changes, payouts and manual reversals are audited. The new collections
+are `referralaffiliates`, `referralsettings`, `referralredemptions`, and
+`referralrewards`; standard Mongoose indexes and the unique payment `_id` protect
+identity and replay safety. No environment variables or new dependencies are
+needed beyond the existing Stripe setup. Enable and exercise this in Stripe
+test mode before using it for live checkout; no live payment was made here.
+
+Synthetic verification:
+`node --test server/tests/referrals.test.js server/tests/referralCheckout.test.js`.
+
 Members choose a plan with Stripe checkout or Zelle. Zelle recipient: **786-280-7650 — Aeviora Wellness by Health LIfeguide LLC** (as supplied by the business).
 
 ## Zelle workflow

@@ -73,6 +73,7 @@ export default function AdminDashboard() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-aeviora-gold">{t("Administration")}</p>
         <h1 className="mt-2 font-display text-3xl">{t("Account overview")}</h1>
         <Link to="/admin/metrics" className="mt-4 inline-block btn-primary">{t("Metrics & notifications")}</Link>
+        <Link to="/admin/referrals" className="mt-4 inline-block btn-secondary">{t("Affiliates & referral coupons")}</Link>
         <Link to="/admin/appointments" className="mt-4 inline-block btn-secondary">{t("Providers & appointments")}</Link>
         <Link to="/admin/payments" className="mt-4 inline-block btn-secondary">{t("Record Zelle payments")}</Link>
         <Link to="/admin/email-templates" className="mt-4 inline-block btn-secondary">{t("Manage email templates")}</Link>

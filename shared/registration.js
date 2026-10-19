@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { referralCodeSchema } from "./referrals.js";
 
 const optionalText = (max) =>
   z
@@ -114,6 +115,7 @@ export function createRegistrationSchema(requiredAddressFields = []) {
       privacyVersion: z.string().min(1).max(100),
       smsConsent: z.boolean().default(false),
       marketingConsent: z.boolean().default(false),
+      referralCode: referralCodeSchema,
     })
     .superRefine((data, ctx) => {
       validateAddress(data, ctx, requiredAddressFields);

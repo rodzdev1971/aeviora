@@ -57,6 +57,9 @@ For billing, also configure `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, and
 `STRIPE_WEBHOOK_SECRET`. Register the webhook at
 `https://YOUR_DOMAIN/api/payments/webhook`. Use test-mode values in previews.
 The function disables automatic body parsing so Express can validate raw signatures.
+Member referral rewards also require `invoice.paid`, `charge.refunded`, and
+`charge.dispute.created` webhook deliveries. See `docs/membership-payments.md`
+for affiliate defaults, customer discounts, reward accounting and rollout checks.
 
 ## Verification after deployment
 

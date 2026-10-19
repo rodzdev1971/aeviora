@@ -26,6 +26,8 @@ test("public and admin screens render translated text with stable routes and fie
       Appointments: ["Book an appointment", "Reservar una cita"],
       AdminAppointments: ["Providers &amp; appointments", "Profesionales y citas"],
       AdminMetrics: ["Metrics &amp; notifications", "Métricas y notificaciones"],
+      Referrals: ["Referral rewards", "Bonos por referidos"],
+      AdminReferrals: ["Affiliates &amp; referral coupons", "Afiliados y cupones de referido"],
       AvailabilityRemoval: ["Remove availability", "Eliminar disponibilidad"],
     };
     for (const [name, [english, spanish]] of Object.entries(cases)) {

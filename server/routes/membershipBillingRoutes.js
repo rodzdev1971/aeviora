@@ -8,7 +8,9 @@ import { sendEmail, emailFailure } from "../services/email.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { nextBillingDate, zelleRecipient } from "../../shared/zelle.js";
 import { syncMembership } from "../services/syncMembership.js";
-import { zelleBalance, invoiceSubscription, validateZelleInvoice } from "../services/billingSummary.js";
+import { zelleBalance, zelleAmountDueCents, invoiceSubscription, validateZelleInvoice } from "../services/billingSummary.js";
+import { referralOffer, recordZelleReferrals, ReferralError, assertNoPriorStripeMembership } from "../services/referrals.js";
+import { referralCodeSchema } from "../../shared/referrals.js";
 import ManualPayment from "../models/manualMembershipPayment.js";
 import { zellePaidThrough } from "../services/membershipPeriods.js";
 import { planChangeBlocked, planChangeMessage } from "../services/planChangePolicy.js";
@@ -30,9 +32,18 @@ async function selectZelle(req, res, accountId) {
     if (subscriptions.data.some((item) => !["canceled", "incomplete_expired"].includes(item.status)) || sessions.data.some((item) => item.mode === "subscription")) return res.status(409).json({ message: "An existing Stripe subscription or checkout must be closed first." });
     await syncMembership(account, stripe, User);
   }
-  const user = await User.findOneAndUpdate({ _id: accountId, accountStatus: "active", stripeSubscriptionId: null, "zelle.status": { $nin: ["pending", "active"] } }, { $set: { "zelle.status": "pending", "zelle.planId": plan._id, "zelle.name": plan.name, "zelle.price": plan.price, "zelle.dueAt": new Date() }, $unset: { "zelle.reminderAt": "" } }, { new: true });
+  const input = referralCodeSchema.safeParse(req.body.referralCode ?? account.referralCode ?? "");
+  if (!input.success) return res.status(400).json({ message: "Enter a valid referral code." });
+  let referral;
+  try {
+    if (input.data && account.stripeCustomerId) await assertNoPriorStripeMembership(account, new Stripe(process.env.STRIPE_SECRET_KEY));
+    referral = await referralOffer(account, input.data, plan, { reserve: true });
+  }
+  catch (error) { if (error instanceof ReferralError) return res.status(error.status).json({ message: error.message }); throw error; }
+  if (referral && req.body.expectedReferralTotalCents !== referral.totalCents) return res.status(409).json({ message: "The referral discount changed. Apply the code again to review the current total." });
+  const user = await User.findOneAndUpdate({ _id: accountId, accountStatus: "active", stripeSubscriptionId: null, "zelle.status": { $nin: ["pending", "active"] } }, { $set: { ...(referral ? { referralCode: referral.redemption.code } : {}), "zelle.status": "pending", "zelle.planId": plan._id, "zelle.name": plan.name, "zelle.price": plan.price, "zelle.referralDiscountCents": referral?.discountCents || 0, "zelle.dueAt": new Date() }, $unset: { "zelle.reminderAt": "" } }, { new: true });
   if (!user) return res.status(409).json({ message: "You already have a membership. Refresh the page." });
-  res.json({ message: "Zelle membership selected. Send payment, then an administrator will confirm it." });
+  res.json({ message: "Zelle membership selected. Send payment, then an administrator will confirm it.", amountDueCents: referral?.totalCents ?? Math.round(plan.price * 100) });
 }
 router.post("/zelle", (req, res) => selectZelle(req, res, req.user.id));
 router.post("/zelle/cancel", (req, res) => {
@@ -109,9 +120,16 @@ router.post("/:id/confirm", async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user || user.accountStatus !== "active" || !["pending", "active"].includes(user.zelle?.status)) return res.status(409).json({ message: "Membership is not eligible for confirmation." });
   const due = new Date(parsed.data.dueAt);
+  // A retry after the receipt was saved can safely finish referral accounting.
+  if (user.zelle.payments?.some((payment) => payment.reference === parsed.data.reference)) {
+    if (!user.referralCode) return res.status(409).json({ message: "Period already confirmed, reference reused, or membership changed. Refresh." });
+    await recordZelleReferrals(user);
+    return res.json({ message: "This Zelle payment was already recorded." });
+  }
   const start = new Date(Math.max(due.getTime(), Date.now())), end = nextBillingDate(start);
-  const result = await User.updateOne({ _id: user._id, accountStatus: "active", "zelle.status": { $in: ["pending", "active"] }, "zelle.dueAt": due, "zelle.payments.reference": { $ne: parsed.data.reference } }, { $set: { "zelle.status": "active", "zelle.dueAt": end }, $push: { "zelle.payments": { periodStart: start, periodEnd: end, amount: user.zelle.price, reference: parsed.data.reference, confirmedBy: req.user.id, confirmedAt: new Date() } } });
+  const result = await User.updateOne({ _id: user._id, accountStatus: "active", "zelle.status": { $in: ["pending", "active"] }, "zelle.dueAt": due, "zelle.payments.reference": { $ne: parsed.data.reference } }, { $set: { "zelle.status": "active", "zelle.dueAt": end }, $push: { "zelle.payments": { periodStart: start, periodEnd: end, amount: zelleAmountDueCents(user.zelle) / 100, reference: parsed.data.reference, confirmedBy: req.user.id, confirmedAt: new Date() } } });
   if (!result.modifiedCount) return res.status(409).json({ message: "Period already confirmed, reference reused, or membership changed. Refresh." });
+  if (user.referralCode) await recordZelleReferrals(await User.findById(user._id));
   await logAudit({ req, actorId: req.user.id, actorRole: "admin", action: "ZELLE_PAYMENT_CONFIRMED", targetType: "User", targetId: user._id });
   res.json({ message: "Monthly payment confirmed." });
 });
@@ -139,7 +157,7 @@ router.post("/:id/remind", async (req, res) => {
   if (user.zelle?.status === "active") {
     if (!user.zelle.dueAt || user.zelle.dueAt > now) return res.json({ outcome: "skipped" });
     filter = { "zelle.status": "active", "zelle.dueAt": { $lte: now } };
-    text = `Your ${user.zelle.name} membership payment of $${user.zelle.price.toFixed(2)} was due ${user.zelle.dueAt.toISOString().slice(0, 10)}. Send Zelle to ${zelleRecipient.phone}, ${zelleRecipient.name}. If you recently paid, contact us so we can confirm your payment.`;
+    text = `Your ${user.zelle.name} membership payment of $${(zelleAmountDueCents(user.zelle) / 100).toFixed(2)} was due ${user.zelle.dueAt.toISOString().slice(0, 10)}. Send Zelle to ${zelleRecipient.phone}, ${zelleRecipient.name}. If you recently paid, contact us so we can confirm your payment.`;
   } else if (user.stripeSubscriptionId) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, { expand: ["latest_invoice"] });

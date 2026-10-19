@@ -12,6 +12,7 @@ import {
   CreditCard,
   CalendarDays,
   ChartNoAxesCombined,
+  Gift,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -40,6 +41,7 @@ export default function DashboardLayout() {
     { label: "Appointments", href: "/appointments", icon: <CalendarDays size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
     { label: "Membership plans", href: "/memberships", icon: <CreditCard size={18} aria-hidden="true" /> },
+    { label: "Referral rewards", href: "/referrals", icon: <Gift size={18} aria-hidden="true" /> },
     ...(["admin", "provider"].includes(user?.role)
       ? [{ label: "Patient & User Directory", href: "/directory", icon: <Users size={18} aria-hidden="true" /> }]
       : []),
@@ -49,6 +51,7 @@ export default function DashboardLayout() {
           { label: "Metrics & notifications", href: "/admin/metrics", icon: <ChartNoAxesCombined size={18} aria-hidden="true" /> },
           { label: "Providers & appointments", href: "/admin/appointments", icon: <CalendarDays size={18} /> },
           { label: "Membership payments", href: "/admin/payments", icon: <CreditCard size={18} /> },
+          { label: "Affiliates & referral coupons", href: "/admin/referrals", icon: <Gift size={18} aria-hidden="true" /> },
           { label: "Email manager", href: "/admin/email-templates", icon: <Mail size={18} aria-hidden="true" /> },
           { label: "Benefits", href: "/admin/benefits", icon: <ShieldCheck size={18} /> },
           { label: "Fee catalogs", href: "/admin/fees", icon: <ShieldCheck size={18} /> },

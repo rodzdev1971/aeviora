@@ -18,6 +18,11 @@ const auditLogSchema = new mongoose.Schema(
       required: true,
       enum: [
         "USER_CREATED",
+        "REFERRAL_AFFILIATE_CREATED",
+        "REFERRAL_AFFILIATE_UPDATED",
+        "REFERRAL_DEFAULTS_UPDATED",
+        "REFERRAL_PAYOUT_RECORDED",
+        "REFERRAL_REWARD_VOIDED",
         "ADMIN_METRICS_VIEWED",
         "ADMIN_PUSH_ENABLED",
         "ADMIN_PUSH_DISABLED",

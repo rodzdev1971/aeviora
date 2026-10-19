@@ -1,7 +1,7 @@
-import { t } from "../i18n/language.js";
+import { t, getLanguage } from "../i18n/language.js";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import PasswordInput from "../components/passwordInput";
 import { apiRequest } from "../util/api";
@@ -24,6 +24,8 @@ const addressFields = [
 
 export default function Register() {
   const language = useLanguage();
+  const [searchParams] = useSearchParams();
+  const say = (en, es) => getLanguage() === "es" ? es : en;
   const [config, setConfig] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [errors, setErrors] = useState({});
@@ -77,6 +79,7 @@ export default function Register() {
       privacyVersion: config.privacyVersion,
       smsConsent: data.has("smsConsent"),
       marketingConsent: data.has("marketingConsent"),
+      referralCode: data.get("referralCode") || "",
     });
     const parsed = createRegistrationSchema(
       config.requiredAddressFields,
@@ -209,6 +212,12 @@ export default function Register() {
                     <legend className="mb-4 font-semibold">{t("Contact details")}</legend>
                     <div className="grid gap-5 sm:grid-cols-2">
                       {t(fields.map(renderField))}
+                    </div>
+                    <div>
+                      <label htmlFor="referralCode" className="label">{say("Referral / discount code (optional)", "Código de referido / descuento (opcional)")}</label>
+                      <input id="referralCode" name="referralCode" defaultValue={(searchParams.get("ref") || "").slice(0, 32)} maxLength={32} autoCapitalize="characters" autoComplete="off" className="input uppercase" aria-invalid={Boolean(errors.referralCode)} aria-describedby="referral-code-help" />
+                      <p id="referral-code-help" className="mt-2 text-xs text-aeviora-slate">{say("Your code will be saved for your first paid membership. Review the discount before payment. The referring member may earn a bonus.", "El código se guardará para tu primera membresía de pago. Revisa el descuento antes de pagar. El miembro que te refirió puede recibir un bono.")}</p>
+                      {errors.referralCode && <p role="alert" className="mt-1 text-sm text-red-700">{t(errors.referralCode)}</p>}
                     </div>
                     <details
                       open={
