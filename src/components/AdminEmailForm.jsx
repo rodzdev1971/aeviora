@@ -5,11 +5,14 @@ import { apiRequest } from "../util/api";
 import { emailTemplates, fillEmailTemplate } from "../util/emailTemplates";
 import { Link } from "react-router-dom";
 import { renderEmailTemplate } from "../../shared/emailTemplates";
+import { appendFormLinks } from "../../shared/formLinks.js";
+import AdminFormLinkPicker from "./AdminFormLinkPicker.jsx";
 
 export default function AdminEmailForm({ recipient, onClose }) {
   useLanguage();
   const [subject, setSubject] = useState("");
   const [text, setText] = useState("");
+  const [selectedForms, setSelectedForms] = useState([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -55,9 +58,9 @@ export default function AdminEmailForm({ recipient, onClose }) {
     try {
       const result = await apiRequest("/api/admin/email", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: recipient._id, subject, text }),
+        body: JSON.stringify({ userId: recipient._id, subject, text, formLinkIds: selectedForms.map((form) => form._id) }),
       });
-      setMessage(result.message); setSubject(""); setText("");
+      setMessage(result.message); setSubject(""); setText(""); setSelectedForms([]);
     } catch (failure) { setError(failure.message); }
     finally { setBusy(false); }
   }
@@ -95,6 +98,8 @@ export default function AdminEmailForm({ recipient, onClose }) {
       </label>
       <label className="block">{t("Message")}<textarea required maxLength={10000} rows={7} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} className="input mt-1 w-full" />
       </label>
+      <AdminFormLinkPicker selected={selectedForms} onChange={setSelectedForms} disabled={busy} />
+      {selectedForms.length > 0 && <details className="rounded-lg bg-aeviora-ivory p-4"><summary className="cursor-pointer text-sm font-semibold">{t("Preview message with form links")}</summary><p className="mt-3 whitespace-pre-wrap break-words text-sm">{appendFormLinks(text, selectedForms)}</p></details>}
       <div className="flex flex-wrap gap-3">
         <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim()} className="btn-primary disabled:opacity-50">{t(busy ? "Sending…" : "Send email")}</button>
         <button type="button" disabled={busy} onClick={onClose} className="btn-secondary">{t("Close")}</button>

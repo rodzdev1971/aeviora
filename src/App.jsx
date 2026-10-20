@@ -26,6 +26,7 @@ import AdminMemberships from "./pages/AdminMemberships.jsx";
 import AdminFees from "./pages/AdminFees.jsx";
 import AdminPayments from "./pages/AdminPayments.jsx";
 import AdminEmailTemplates from "./pages/AdminEmailTemplates.jsx";
+import AdminFormLinks from "./pages/AdminFormLinks.jsx";
 import ProtectedRoute from "./components/protectedroute";
 import DashboardLayout from "./components/dashboardlayout";
 
@@ -69,6 +70,7 @@ export default function App() {
               <Route path="admin/fees" element={<AdminFees />} />
               <Route path="admin/payments" element={<AdminPayments />} />
               <Route path="admin/email-templates" element={<AdminEmailTemplates />} />
+              <Route path="admin/form-links" element={<AdminFormLinks />} />
             </Route>
         </Route>
       </Route>

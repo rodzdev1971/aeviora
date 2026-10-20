@@ -1076,6 +1076,8 @@
   "This account is already verified or is unavailable for verification.": "Esta cuenta ya está verificada o no está disponible para verificación.",
   "Account manually verified and activated.": "Cuenta verificada manualmente y activada.",
   "Manually verify and activate the account for {{0}}? Only continue after confirming the account owner's identity.": "¿Verificar manualmente y activar la cuenta de {{0}}? Continúa solo después de confirmar la identidad del titular de la cuenta.",
+  "Form links & QR codes": "Enlaces de formularios y códigos QR",
+  "Preview message with form links": "Vista previa con enlaces de formularios",
   "Referral rewards": "Bonos por referidos",
   "Affiliates & referral coupons": "Afiliados y cupones de referido",
   "This referral coupon is unavailable. Remove it or use another code.": "Este cupón de referido no está disponible. Elimínalo o usa otro código.",

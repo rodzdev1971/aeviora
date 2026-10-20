@@ -70,11 +70,12 @@ export async function verifyEmailConnection(dependencies) {
   await withTransport(dependencies, (transport) => transport.verify());
 }
 
-export async function sendEmail({ to, subject, text }, dependencies) {
+export async function sendEmail({ to, subject, text, attachments }, dependencies) {
   await withTransport(dependencies, async (transport, config) => {
     const result = await transport.sendMail({
       from: { name: "Aeviora Wellness", address: config.SMTP_FROM },
       to: { address: z.email().parse(to) }, subject, text,
+      ...(attachments?.length ? { attachments } : {}),
     });
     if (!result.accepted?.length) throw new Error("Message rejected.");
   });

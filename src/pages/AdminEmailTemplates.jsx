@@ -37,6 +37,7 @@ export default function AdminEmailTemplates() {
   return <section className="mx-auto max-w-4xl space-y-5">
     <Link to="/admin" className="underline">{t("Back to administration")}</Link>
     <h1 className="font-display text-3xl">{t("Email templates")}</h1>
+    <Link to="/admin/form-links" className="btn-secondary inline-block">{t("Form links & QR codes")}</Link>
     <p>{t("Create reusable messages for the admin email composer. Edit Registration welcome to change the automatic email sent after signup.")}</p>
     <p className="text-sm">{t("Available placeholders: ")}{t("{{firstName}}, {{lastName}}, {{accountStatus}}")}{t(". Messages are plain text.")}</p>
     {error && <p role="alert" className="text-red-700">{t(error)}</p>}

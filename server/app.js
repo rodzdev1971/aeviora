@@ -24,6 +24,7 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
 import adminPushRoutes from "./routes/adminPushRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
+import formLinkRoutes from "./routes/formLinkRoutes.js";
 
 export function createApp({ connectDatabase, trustProxy = false } = {}) {
   const app = express();
@@ -111,6 +112,7 @@ app.use("/api/admin/memberships", membershipRoutes);
 app.use("/api/admin/fees", feeRoutes);
 app.use("/api/admin/email", emailRoutes);
 app.use("/api/admin/email-templates", emailTemplateRoutes);
+app.use("/api/admin/form-links", formLinkRoutes);
 app.use("/api", (req, res) => res.status(404).json({ message: "API endpoint not found." }));
 
 

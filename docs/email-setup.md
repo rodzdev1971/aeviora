@@ -75,6 +75,41 @@ An SMTP failure does not undo the account or report registration as failed. The 
 
 ## Endpoints and verification
 
+### Saved form links and provider QR codes
+
+Open **Admin → Email manager → Form links & QR codes** (`/admin/form-links`).
+Save a title, reusable HTTPS share URL, optional description, and/or the PNG/JPEG
+QR image exported by the form provider (including HIPP FORMS). A URL or QR image
+is required; either can be used alone. QR uploads are limited to 200 KB each.
+The database `formLinks` collection holds this shared library, separate from
+accounts and completed forms. This is a library of provider links/images, not
+an integration that creates forms or imports responses. Verify each provider
+URL and QR destination before sharing it. Use reusable form links rather than
+patient-specific submission links. Completed forms remain with the provider.
+
+Admins can search by title/description, edit an entry, replace/remove its QR
+image, or archive it by clearing **Available in the email composer**. The listing
+is paginated and excludes image data; the edit/detail request loads one QR image.
+Only administrators can read or change the library. New audit entries record
+the form ID and actor, without storing URLs, QR content or email bodies in logs.
+
+In **Email user**, select up to five entries under **Saved form links & QR
+codes**. Review **Preview message with form links**, then send normally. The
+server loads the selected IDs again and appends their current titles and URLs
+to the text message; saved QR images are attached as PNG/JPEG files. If an entry
+was archived or removed, sending is rejected until the selection is reviewed.
+Custom attachment URLs, paths and arbitrary recipient addresses are not accepted
+from the browser. QR attachments use stored bytes with SMTP file/URL fetching
+disabled. Editing a library entry does not change an email already delivered.
+
+- `GET/POST /api/admin/form-links`: search/list or add shared form entries.
+- `GET/PUT /api/admin/form-links/:id`: load or update one entry, including its QR.
+- `POST /api/admin/email` accepts optional `formLinkIds` (up to five unique UUIDs).
+
+Run `node --test server/tests/formLinks.test.js server/tests/email.test.js` with
+synthetic data. Tests do not contact the form provider or SMTP provider, and do
+not send real email. No new dependencies or environment settings are required.
+
 - `GET /api/admin/email/status`: configuration format only; returns variable names and hints.
 - `POST /api/admin/email/verify`: connection/authentication check, no email sent.
 - `POST /api/admin/email`: compose/send to a stored user ID, with subject and text.

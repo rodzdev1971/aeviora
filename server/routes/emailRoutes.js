@@ -2,6 +2,9 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import User from "../models/users.js";
+import FormLink from "../models/formLinks.js";
+import { formLinkIds } from "../../shared/formLinks.js";
+import { formLinkEmail } from "../services/formLinks.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 import { emailConfigurationStatus, emailFailure, emailFailureMessage, verifyEmailConnection, sendEmail } from "../services/email.js";
@@ -10,10 +13,12 @@ const input = z.strictObject({
   userId: z.uuid(),
   subject: z.string().trim().min(1).max(160).regex(/^[^\r\n]+$/),
   text: z.string().trim().min(1).max(10000),
+  formLinkIds,
 });
 
 export function createEmailRouter({ authenticate = requireAuth, authorize = requireRole("admin"),
   findUser = (id) => User.findById(id).select("email accountStatus"),
+  findForms = (ids) => FormLink.find({ _id: { $in: ids }, enabled: true }).select("title url hasQrImage +qrImage").lean(),
   send = sendEmail, diagnostics = emailConfigurationStatus, verify = verifyEmailConnection, audit = logAudit } = {}) {
   const router = express.Router();
   router.use(authenticate, authorize);
@@ -33,8 +38,12 @@ export function createEmailRouter({ authenticate = requireAuth, authorize = requ
     if (!parsed.success) return res.status(400).json({ message: "Select a user and enter a subject (up to 160 characters) and message (up to 10,000 characters)." });
     const user = await findUser(parsed.data.userId);
     if (!user || user.accountStatus === "deleted") return res.status(404).json({ message: "Recipient account not found." });
+    const ids = parsed.data.formLinkIds;
+    const forms = ids.length ? await findForms(ids) : [];
+    if (forms.length !== ids.length) return res.status(409).json({ message: "A selected form is unavailable. Refresh the form library and review your selection." });
+    const ordered = ids.map((id) => forms.find((form) => form._id === id));
     try {
-      await send({ to: user.email, subject: parsed.data.subject, text: parsed.data.text });
+      await send({ to: user.email, subject: parsed.data.subject, ...formLinkEmail(parsed.data.text, ordered) });
     } catch (error) {
       console.warn("Admin email:", emailFailure(error));
       return res.status(503).json({ message: `${emailFailureMessage(error)} Check provider logs before retrying to avoid duplicate delivery.` });
