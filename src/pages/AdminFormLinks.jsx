@@ -4,6 +4,7 @@ import { useLanguage } from "../i18n/useLanguage.js";
 import { getLanguage } from "../i18n/language.js";
 import { apiRequest } from "../util/api.js";
 import { MAX_QR_BYTES } from "../../shared/formLinks.js";
+import { notifyFormLibraryChanged } from "../util/formLibraryEvents.js";
 
 const blank = { title: "", url: "", description: "", enabled: true, qrImage: "" };
 export default function AdminFormLinks() {
@@ -24,6 +25,7 @@ export default function AdminFormLinks() {
     try {
       const data = await apiRequest(`/api/admin/form-links${id ? `/${id}` : ""}`, { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       setId(data.link._id); setMessage(say("Form link saved.", "Enlace guardado.")); setRevision((value) => value + 1);
+      notifyFormLibraryChanged();
     } catch (failure) { setError(failure.message); }
     finally { setBusy(false); }
   }
@@ -49,7 +51,7 @@ export default function AdminFormLinks() {
   return <section className="mx-auto max-w-5xl space-y-6">
     <Link to="/admin/email-templates" className="text-sm underline">{say("Back to email manager", "Volver al administrador de correo")}</Link>
     <header><h1 className="font-display text-3xl">{say("Form links & QR codes", "Enlaces de formularios y códigos QR")}</h1><p className="mt-3 text-sm leading-7 text-aeviora-slate">{say("Save the share URLs and QR images supplied by your form provider, including HIPP FORMS. Use reusable links; completed forms stay with the form provider. Verify that each QR image opens the intended form.", "Guarda los enlaces y las imágenes QR de tu proveedor, incluido HIPP FORMS. Usa enlaces reutilizables; los formularios completados permanecen con el proveedor. Comprueba que cada QR abra el formulario correcto.")}</p></header>
-    {error && <p role="alert" className="text-red-700">{error}</p>}{message && <p role="status" className="text-green-800">{message}</p>}
+    {error && <p role="alert" className="text-red-700">{error}</p>}{message && <div role="status" className="space-y-2 text-green-800"><p>{message}</p><Link to="/directory" className="inline-block text-sm underline">{say("Send a saved form: choose a person in the directory, then Email user", "Enviar un formulario: elige una persona en el directorio y luego Enviar correo al usuario")}</Link></div>}
     <form onSubmit={save} className="card"><fieldset disabled={busy} className="space-y-4">
       <legend className="mb-4 font-display text-2xl">{say(id ? "Edit saved form" : "Add a form link", id ? "Editar formulario guardado" : "Agregar enlace de formulario")}</legend>
       <label className="block text-sm font-semibold">{say("Form title", "Título del formulario")}<input required maxLength={120} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input mt-2" /></label>

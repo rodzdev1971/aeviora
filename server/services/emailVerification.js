@@ -2,6 +2,7 @@ import { randomBytes, createHash } from "node:crypto";
 import User from "../models/users.js";
 import { sendEmail, emailFailure } from "./email.js";
 import { registrationTemplate, renderEmailTemplate } from "../../shared/emailTemplates.js";
+import { formLinkEmail, loadTemplateFormLinks } from "./formLinks.js";
 
 export const VERIFICATION_LIFETIME = 24 * 60 * 60 * 1000;
 export const verificationDigest = (token) => createHash("sha256").update(token).digest("hex");
@@ -15,6 +16,7 @@ export function verificationStatus(user, now = new Date()) {
 
 export async function requestEmailVerification(email, {
   users = User, send = sendEmail, now = new Date(), origin = process.env.FRONTEND_ORIGIN, template,
+  resolveForms = loadTemplateFormLinks,
   report = (category) => console.warn("Verification email:", category),
 } = {}) {
   try {
@@ -35,8 +37,9 @@ export async function requestEmailVerification(email, {
     const url = new URL("/verify-email", base);
     url.hash = token;
     try {
+      const savedForms = await resolveForms(template || registrationTemplate);
       await send({ to: user.email, subject: "Verify your Aeviora Wellness account",
-        text: `Verify your email to activate your account:\n${url}\n\nOpen the link and select Verify my email. This single-use link expires in 24 hours. After that, your registration will be marked Not verified; you can request a new link from the sign-in page.\n\nIf you did not create this account, ignore this email.\n\n${renderEmailTemplate(template || registrationTemplate, { firstName: user.firstName, lastName: user.lastName, accountStatus: "pending" }).text}` });
+        ...formLinkEmail(`Verify your email to activate your account:\n${url}\n\nOpen the link and select Verify my email. This single-use link expires in 24 hours. After that, your registration will be marked Not verified; you can request a new link from the sign-in page.\n\nIf you did not create this account, ignore this email.\n\n${renderEmailTemplate(template || registrationTemplate, { firstName: user.firstName, lastName: user.lastName, accountStatus: "pending" }).text}`, savedForms) });
     } catch (error) {
       // Permit an immediate retry after a confirmed send failure, without changing a newer request.
       await users.updateOne({ _id: user._id, emailVerificationTokenHash: tokenHash }, { $unset: { emailVerificationRequestedAt: "" } });

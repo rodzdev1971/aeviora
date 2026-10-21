@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { z } from "zod";
 import { registrationTemplate, renderEmailTemplate } from "../../shared/emailTemplates.js";
+import { formLinkEmail, loadTemplateFormLinks } from "./formLinks.js";
 
 const settings = z.object({
   SMTP_HOST: z.string().trim().min(1),
@@ -81,11 +82,13 @@ export async function sendEmail({ to, subject, text, attachments }, dependencies
   });
 }
 
-export async function sendRegistrationEmail(user, { send = sendEmail, template = registrationTemplate, report = (category) => console.warn("Registration email:", category) } = {}) {
+export async function sendRegistrationEmail(user, { send = sendEmail, template = registrationTemplate, resolveForms = loadTemplateFormLinks, report = (category) => console.warn("Registration email:", category) } = {}) {
   try {
+    const rendered = renderEmailTemplate(template, user);
     await send({
       to: user.email,
-      ...renderEmailTemplate(template, user),
+      subject: rendered.subject,
+      ...formLinkEmail(rendered.text, await resolveForms(template)),
     });
     return "accepted";
   } catch (error) {

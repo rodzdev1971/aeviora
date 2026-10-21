@@ -1,4 +1,12 @@
 import { MAX_QR_BYTES, appendFormLinks } from "../../shared/formLinks.js";
+import FormLink from "../models/formLinks.js";
+
+export async function loadTemplateFormLinks(template, { links = FormLink } = {}) {
+  const ids = template.formLinkIds || [];
+  if (!ids.length) return [];
+  const forms = await links.find({ _id: { $in: ids }, enabled: true }).select("title url hasQrImage +qrImage").lean();
+  return ids.map((id) => forms.find((form) => form._id === id)).filter(Boolean);
+}
 
 export function qrAttachment(form) {
   if (!form.qrImage) return null;

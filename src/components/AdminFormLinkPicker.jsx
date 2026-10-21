@@ -3,16 +3,21 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { getLanguage } from "../i18n/language.js";
 import { apiRequest } from "../util/api.js";
+import { subscribeFormLibraryRefresh } from "../util/formLibraryEvents.js";
 
 export default function AdminFormLinkPicker({ selected, onChange, disabled }) {
   useLanguage();
   const say = (en, es) => getLanguage() === "es" ? es : en;
   const [search, setSearch] = useState(""), [page, setPage] = useState(1), [revision, setRevision] = useState(0), [result, setResult] = useState(null), [error, setError] = useState("");
   const key = `${search}:${page}:${revision}`;
+  useEffect(() => subscribeFormLibraryRefresh(() => {
+    setError("");
+    setRevision((value) => value + 1);
+  }), []);
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      apiRequest(`/api/admin/form-links?enabled=true&search=${encodeURIComponent(search)}&page=${page}`, { signal: controller.signal }).then((data) => setResult({ ...data, key })).catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
+      apiRequest(`/api/admin/form-links?enabled=true&search=${encodeURIComponent(search)}&page=${page}`, { signal: controller.signal, cache: "no-store" }).then((data) => setResult({ ...data, key })).catch((failure) => { if (!controller.signal.aborted) setError(failure.message); });
     }, 200);
     return () => { clearTimeout(timer); controller.abort(); };
   }, [search, page, key]);

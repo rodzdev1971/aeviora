@@ -43,6 +43,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
     const saved = savedTemplates.find((item) => item._id === templateId);
     const draft = saved ? renderEmailTemplate(saved, recipient) : template ? fillEmailTemplate(template, recipient) : { subject: "", text: "" };
     setSubject(draft.subject); setText(draft.text); setMessage("");
+    setSelectedForms(saved?.formLinks || []);
   }
   useEffect(() => {
     const controller = new AbortController();
@@ -94,11 +95,11 @@ export default function AdminEmailForm({ recipient, onClose }) {
       </div>
       <p className="text-sm text-aeviora-slate">{t("Templates fill in the recipient's first name. Edit the subject and message before sending.")}</p>
       <div className="flex gap-4 text-sm"><Link to="/admin/email-templates" className="underline">{t("Create or edit saved templates")}</Link><button type="button" disabled={busy} className="underline" onClick={() => setTemplateRevision((value) => value + 1)}>{t("Refresh templates")}</button></div>
+      <AdminFormLinkPicker selected={selectedForms} onChange={setSelectedForms} disabled={busy} />
       <label className="block">{t("Subject")}<input autoFocus required maxLength={160} value={subject} disabled={busy} onChange={(event) => setSubject(event.target.value)} className="input mt-1 w-full" />
       </label>
       <label className="block">{t("Message")}<textarea required maxLength={10000} rows={7} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} className="input mt-1 w-full" />
       </label>
-      <AdminFormLinkPicker selected={selectedForms} onChange={setSelectedForms} disabled={busy} />
       {selectedForms.length > 0 && <details className="rounded-lg bg-aeviora-ivory p-4"><summary className="cursor-pointer text-sm font-semibold">{t("Preview message with form links")}</summary><p className="mt-3 whitespace-pre-wrap break-words text-sm">{appendFormLinks(text, selectedForms)}</p></details>}
       <div className="flex flex-wrap gap-3">
         <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim()} className="btn-primary disabled:opacity-50">{t(busy ? "Sending…" : "Send email")}</button>

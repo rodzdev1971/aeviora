@@ -95,12 +95,26 @@ the form ID and actor, without storing URLs, QR content or email bodies in logs.
 
 In **Email user**, select up to five entries under **Saved form links & QR
 codes**. Review **Preview message with form links**, then send normally. The
-server loads the selected IDs again and appends their current titles and URLs
+form picker is separate from the **Email template** dropdown. It automatically
+refreshes after library saves, cross-tab library changes, and returning to a
+visible/focused composer tab; **Refresh forms** also forces a fresh read. The
+library save confirmation links to the directory to choose a recipient.
+The server loads the selected IDs again and appends their current titles and URLs
 to the text message; saved QR images are attached as PNG/JPEG files. If an entry
 was archived or removed, sending is rejected until the selection is reviewed.
 Custom attachment URLs, paths and arbitrary recipient addresses are not accepted
 from the browser. QR attachments use stored bytes with SMTP file/URL fetching
 disabled. Editing a library entry does not change an email already delivered.
+
+The **Email manager → templates page** also contains **Saved form links & QR
+codes** directly inside the template editor. Select forms there and save the
+template to retain their IDs. Selecting that template later in **Email user**
+restores both its message and its form/QR selections. The template preview shows
+the titled links, and QR images are attached when the message is sent. Forms
+remain library items rather than appearing as separate email templates. Existing
+templates without selections continue to work. The automatic Registration welcome
+template also supports saved forms while retaining the required activation link;
+archived or missing library entries are omitted from automatic welcome emails.
 
 - `GET/POST /api/admin/form-links`: search/list or add shared form entries.
 - `GET/PUT /api/admin/form-links/:id`: load or update one entry, including its QR.

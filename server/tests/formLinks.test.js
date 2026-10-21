@@ -11,6 +11,7 @@ import { createEmailRouter } from "../routes/emailRoutes.js";
 import { qrAttachment, formLinkEmail } from "../services/formLinks.js";
 import { formLinkInput, MAX_QR_BYTES } from "../../shared/formLinks.js";
 import { sendEmail } from "../services/email.js";
+import { notifyFormLibraryChanged, subscribeFormLibraryRefresh } from "../../src/util/formLibraryEvents.js";
 
 const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=";
 const input = { title: "New patient form", url: "https://forms.example.com/share?form=synthetic&lang=en", description: "General reusable form", enabled: true, qrImage: png };
@@ -36,15 +37,20 @@ test("admin library persists titles, links and QR images; sending uses stored ac
   t.mock.method(User, "findById", (id) => ({ select: async () => ({ _id: id, role: id === "admin" ? "admin" : "patient", accountStatus: "active" }) }));
   t.mock.method(AuditLog, "create", async () => ({}));
   const items = new Map(), sent = [], audited = [];
+  const matching = (filter) => [...items.values()].filter((item) => {
+    if (filter.enabled !== undefined && item.enabled !== filter.enabled) return false;
+    if (!filter.$or) return true;
+    return filter.$or.some((condition) => Object.entries(condition).some(([key, value]) => new RegExp(value.$regex, value.$options).test(item[key] || "")));
+  });
   const links = {
     create: async (data) => { const item = { _id: randomUUID(), ...data }; items.set(item._id, item); return item; },
     findByIdAndUpdate: async (id, update) => { const item = items.get(id); if (!item) return null; Object.assign(item, update.$set); return item; },
     findById: (id) => ({ select: () => ({ lean: async () => items.get(id) }) }),
-    find: () => {
-      const chain = { select: (selection) => { assert.ok(!selection.includes("qrImage"), "list excludes QR payloads"); return chain; }, sort: () => chain, skip: () => chain, limit: () => chain, lean: async () => [...items.values()].map((item) => { const metadata = { ...item }; delete metadata.qrImage; return metadata; }) };
+    find: (filter) => {
+      const chain = { select: (selection) => { assert.ok(!selection.includes("qrImage"), "list excludes QR payloads"); return chain; }, sort: () => chain, skip: () => chain, limit: () => chain, lean: async () => matching(filter).map((item) => { const metadata = { ...item }; delete metadata.qrImage; return metadata; }) };
       return chain;
     },
-    countDocuments: async () => items.size,
+    countDocuments: async (filter) => matching(filter).length,
   };
   const audit = async (event) => { const record = { ...event }; delete record.req; audited.push(record); };
   const app = express(); app.use(express.json({ limit: "1mb" }), cookieParser());
@@ -61,6 +67,9 @@ test("admin library persists titles, links and QR images; sending uses stored ac
   assert.equal(response.status, 200);
   const first = (await response.json()).link;
   assert.equal(first.hasQrImage, true); assert.equal(items.get(first._id).qrImage, png);
+  const composer = await (await request("/forms?enabled=true&search=&page=1&path=admin%2Fform-links")).json();
+  assert.equal(composer.total, 1, "the exact composer query finds a newly saved available form");
+  assert.equal(composer.links[0]._id, first._id);
   const second = (await (await request("/forms", { method: "POST", body: { ...input, title: "Follow-up form", qrImage: "" } })).json()).link;
   const list = await (await request("/forms")).json(); assert.equal(list.total, 2);
   assert.ok(!JSON.stringify(list).includes(png));
@@ -75,10 +84,33 @@ test("admin library persists titles, links and QR images; sending uses stored ac
   assert.equal((await request("/email", { method: "POST", body: { ...email, formLinkIds: [first._id, first._id] } })).status, 400);
   assert.equal((await request("/email", { method: "POST", body: { ...email, formLinkIds: Array.from({ length: 6 }, randomUUID) } })).status, 400);
   assert.equal((await request(`/forms/${first._id}`, { method: "PUT", body: { ...input, enabled: false } })).status, 200);
+  const available = await (await request("/forms?enabled=true&search=&page=1")).json();
+  assert.deepEqual(available.links.map((item) => item._id), [second._id], "only archived entries are excluded");
   assert.equal((await request("/email", { method: "POST", body: email })).status, 409, "archived forms cannot be sent from a stale selection");
   assert.equal(sent.length, 1);
   assert.ok(audited.some((event) => event.action === "FORM_LINK_SAVED"));
   assert.ok(!JSON.stringify(audited).includes(input.url), "audits omit form URLs and message content");
+});
+
+test("an open composer refreshes after form saves, cross-tab changes and returning to a visible tab", () => {
+  const browser = new EventTarget(), page = new EventTarget();
+  const stored = new Map();
+  browser.localStorage = { setItem: (key, value) => stored.set(key, value) };
+  page.visibilityState = "visible";
+  let refreshes = 0;
+  const stop = subscribeFormLibraryRefresh(() => refreshes++, browser, page);
+  notifyFormLibraryChanged(browser);
+  assert.equal(refreshes, 1, "saving a form invalidates an already-open composer");
+  const storage = new Event("storage"); storage.key = [...stored.keys()][0];
+  browser.dispatchEvent(storage);
+  assert.equal(refreshes, 2, "another tab's form save refreshes the library");
+  page.visibilityState = "hidden"; browser.dispatchEvent(new Event("focus"));
+  assert.equal(refreshes, 2, "hidden tabs defer work");
+  page.visibilityState = "visible"; page.dispatchEvent(new Event("visibilitychange"));
+  browser.dispatchEvent(new Event("focus"));
+  assert.equal(refreshes, 4, "returning to the composer reloads the saved library");
+  stop(); notifyFormLibraryChanged(browser); browser.dispatchEvent(new Event("focus"));
+  assert.equal(refreshes, 4, "closing the composer removes refresh listeners");
 });
 
 test("SMTP transports saved QR bytes as attachments while keeping file and URL access disabled", async () => {

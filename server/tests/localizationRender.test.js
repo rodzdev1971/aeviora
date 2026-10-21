@@ -40,6 +40,8 @@ test("public and admin screens render translated text with stable routes and fie
       assert.deepEqual(attributes(es), attributes(en), `${name}: routes and field identifiers are unchanged`);
       assert.equal(renderScreen(name, "en"), en, `${name}: switching back restores English`);
     }
+    assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
+    assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
     globalThis.window.location.hash = "#" + "a".repeat(64);
     assert.match(renderScreen("EmailVerification", "en"), /Verify my email/);
     assert.match(renderScreen("EmailVerification", "es"), /Verificar mi correo/);
