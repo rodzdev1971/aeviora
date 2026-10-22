@@ -1,4 +1,4 @@
-import { t } from "../i18n/language.js";
+import { t, getLocale } from "../i18n/language.js";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -36,13 +36,14 @@ export default function AdminEmailTemplates() {
     try { await apiRequest(`/api/admin/email-templates/${id}`, { method: "DELETE" }); setTemplates((current) => current.filter((item) => item._id !== id)); setId(""); setForm(blank); setSelectedForms([]); setMessage("Template deleted."); }
     catch (failure) { setError(failure.message); } finally { setBusy(false); }
   }
-  const preview = renderEmailTemplate(form, { firstName: "Alex", lastName: "Example", accountStatus: "pending" });
+  const preview = renderEmailTemplate(form, { firstName: "Alex", lastName: "Example", accountStatus: "pending" }, { startsAt: "2026-11-16T15:30:00Z", timeZone: "America/New_York", providerName: "Dr. Example" }, getLocale());
   return <section className="mx-auto max-w-4xl space-y-5">
     <Link to="/admin" className="underline">{t("Back to administration")}</Link>
     <h1 className="font-display text-3xl">{t("Email templates")}</h1>
     <Link to="/admin/form-links" className="btn-secondary inline-block">{t("Form links & QR codes")}</Link>
     <p>{t("Create reusable messages for the admin email composer. Edit Registration welcome to change the automatic email sent after signup.")}</p>
-    <p className="text-sm">{t("Available placeholders: ")}{t("{{firstName}}, {{lastName}}, {{accountStatus}}")}{t(". Messages are plain text.")}</p>
+    <p className="text-sm">{t("Available placeholders: ")}<code>{"{{firstName}}, {{lastName}}, {{accountStatus}}, {{appointmentDate}}, {{appointmentTime}}, {{providerName}}"}</code>{t(". Messages are plain text.")}</p>
+    <p className="text-sm">{t("Appointment placeholders use the recipient's selected booking when composing an email. The preview below uses a sample appointment.")}</p>
     {error && <p role="alert" className="text-red-700">{t(error)}</p>}
     {message && <p role="status" className="text-green-800">{t(message)}</p>}
     <label className="block">{t("Saved template")}<select className="input mt-2" disabled={busy} value={id} onChange={(event) => { const template = templates.find((item) => item._id === event.target.value); setId(event.target.value); setForm(template ? { name: template.name, subject: template.subject, text: template.text } : blank); setSelectedForms(template?.formLinks || []); setMessage(""); }}><option value="">{t("New template")}</option>{templates.map((template) => <option key={template._id} value={template._id}>{template.name}{t(template._id === "registration" ? " (automatic registration)" : "")}</option>)}</select></label>

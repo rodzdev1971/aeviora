@@ -75,6 +75,41 @@ An SMTP failure does not undo the account or report registration as failed. The 
 
 ## Endpoints and verification
 
+### Appointment placeholders
+
+Admin templates and messages support `{{appointmentDate}}`, `{{appointmentTime}}`
+and `{{providerName}}`, alongside the existing name/account placeholders. For example:
+
+```text
+Hello {{firstName}},
+Your consultation is on {{appointmentDate}} at {{appointmentTime}}
+with {{providerName}}.
+```
+
+In **Email user**, choose the **Appointment details** built-in template or a
+saved appointment template, then select **Appointment for this email**. The
+selection lists only that recipient's booked consultations (future and the last
+90 days). It never exposes private meeting URLs or other patients' details.
+Date and time use the provider's saved time zone; the time includes its zone
+abbreviation and observes daylight saving time. Rendering follows the admin's
+English/Spanish interface language. The template editor uses a clearly labeled
+sample appointment; the composer previews the actual selected booking.
+
+Messages with appointment placeholders require a selection before sending.
+The API re-reads the booked slot, checks recipient ownership and the provider's
+schedule revision, then fills the placeholders from server records. A changed,
+canceled or reassigned appointment requires **Refresh appointments** and another
+review. Client-supplied provider names or dates are not accepted as overrides.
+No confirmation/reminder is sent automatically by this change. Appointment
+placeholders cannot be saved in the automatic Registration welcome template.
+
+- `GET /api/admin/email/appointments/:userId`: admin-only appointment choices.
+- `POST /api/admin/email` accepts optional `appointment` with `providerId`,
+  `slotId`, and the displayed schedule `revision`.
+
+Run `node --test server/tests/emailAppointments.test.js` for synthetic ownership,
+staleness, cancellation, formatting and daylight-saving checks. No real email is sent.
+
 ### Saved form links and provider QR codes
 
 Open **Admin → Email manager → Form links & QR codes** (`/admin/form-links`).

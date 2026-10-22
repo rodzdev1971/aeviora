@@ -4,7 +4,7 @@ import EmailTemplate from "../models/emailTemplates.js";
 import FormLink from "../models/formLinks.js";
 import { formLinkIds } from "../../shared/formLinks.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { registrationTemplate } from "../../shared/emailTemplates.js";
+import { registrationTemplate, hasAppointmentPlaceholders } from "../../shared/emailTemplates.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 export const templateInput = z.strictObject({ name: z.string().trim().min(1).max(100), subject: z.string().trim().min(1).max(160).regex(/^[^\r\n]+$/), text: z.string().trim().min(1).max(10000), formLinkIds });
@@ -25,6 +25,7 @@ async function save(req, res) {
   const parsed = templateInput.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ message: "Enter a template name, single-line subject, and message within the field limits." });
   if (req.params.id === "registration" && !parsed.data.text.includes("{{accountStatus}}")) return res.status(400).json({ message: "Keep {{accountStatus}} in the registration template so pending and active users receive the correct instructions." });
+  if (req.params.id === "registration" && hasAppointmentPlaceholders(parsed.data)) return res.status(400).json({ message: "Appointment placeholders belong in appointment email templates, not the automatic registration welcome." });
   if (parsed.data.formLinkIds.length && await FormLink.countDocuments({ _id: { $in: parsed.data.formLinkIds }, enabled: true }) !== parsed.data.formLinkIds.length) return res.status(409).json({ message: "A selected form is unavailable. Refresh the form library and review your selection." });
   const template = req.params.id ? await EmailTemplate.findByIdAndUpdate(req.params.id, { $set: parsed.data }, { new: true, upsert: req.params.id === "registration", runValidators: true }) : await EmailTemplate.create(parsed.data);
   if (!template) return res.status(404).json({ message: "Template not found." });

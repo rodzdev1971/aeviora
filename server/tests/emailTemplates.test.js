@@ -60,6 +60,8 @@ test("saved forms persist in templates and reload into messages with QR attachme
   forms[0].enabled = false;
   response = await fetch(base + "/templates", { method: "POST", headers, body: JSON.stringify(input) });
   assert.equal(response.status, 409, "templates cannot save stale archived selections");
+  response = await fetch(base + "/templates/registration", { method: "PUT", headers, body: JSON.stringify({ ...input, formLinkIds: [], text: "{{accountStatus}}\n{{appointmentDate}}" }) });
+  assert.equal(response.status, 400, "automatic registration cannot use appointment-specific placeholders");
 });
 
 test("registration verification keeps its activation link when a saved template includes forms", async () => {

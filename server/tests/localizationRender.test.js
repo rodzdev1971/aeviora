@@ -42,6 +42,7 @@ test("public and admin screens render translated text with stable routes and fie
     }
     assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
     assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
+    for (const token of ["{{appointmentDate}}", "{{appointmentTime}}", "{{providerName}}"]) assert.ok(renderScreen("AdminEmailTemplates", "en").includes(token), "appointment placeholders are documented in the template editor");
     globalThis.window.location.hash = "#" + "a".repeat(64);
     assert.match(renderScreen("EmailVerification", "en"), /Verify my email/);
     assert.match(renderScreen("EmailVerification", "es"), /Verificar mi correo/);

@@ -1,18 +1,22 @@
-import { t } from "../i18n/language.js";
+import { t, getLocale } from "../i18n/language.js";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../util/api";
 import { emailTemplates, fillEmailTemplate } from "../util/emailTemplates";
 import { Link } from "react-router-dom";
-import { renderEmailTemplate } from "../../shared/emailTemplates";
+import { renderEmailTemplate, hasAppointmentPlaceholders } from "../../shared/emailTemplates";
 import { appendFormLinks } from "../../shared/formLinks.js";
 import AdminFormLinkPicker from "./AdminFormLinkPicker.jsx";
+import AdminEmailAppointmentPicker from "./AdminEmailAppointmentPicker.jsx";
 
 export default function AdminEmailForm({ recipient, onClose }) {
   useLanguage();
   const [subject, setSubject] = useState("");
   const [text, setText] = useState("");
   const [selectedForms, setSelectedForms] = useState([]);
+  const [appointment, setAppointment] = useState(null);
+  const appointmentNeeded = hasAppointmentPlaceholders({ subject, text });
+  const preview = renderEmailTemplate({ subject, text }, recipient, appointment, getLocale());
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -59,7 +63,7 @@ export default function AdminEmailForm({ recipient, onClose }) {
     try {
       const result = await apiRequest("/api/admin/email", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: recipient._id, subject, text, formLinkIds: selectedForms.map((form) => form._id) }),
+        body: JSON.stringify({ userId: recipient._id, subject, text, formLinkIds: selectedForms.map((form) => form._id), ...(appointmentNeeded && appointment ? { appointment: { providerId: appointment.providerId, slotId: appointment.slotId, revision: appointment.revision } } : {}) }),
       });
       setMessage(result.message); setSubject(""); setText(""); setSelectedForms([]);
     } catch (failure) { setError(failure.message); }
@@ -95,14 +99,16 @@ export default function AdminEmailForm({ recipient, onClose }) {
       </div>
       <p className="text-sm text-aeviora-slate">{t("Templates fill in the recipient's first name. Edit the subject and message before sending.")}</p>
       <div className="flex gap-4 text-sm"><Link to="/admin/email-templates" className="underline">{t("Create or edit saved templates")}</Link><button type="button" disabled={busy} className="underline" onClick={() => setTemplateRevision((value) => value + 1)}>{t("Refresh templates")}</button></div>
+      <AdminEmailAppointmentPicker recipientId={recipient._id} selected={appointment} onChange={setAppointment} disabled={busy} />
       <AdminFormLinkPicker selected={selectedForms} onChange={setSelectedForms} disabled={busy} />
       <label className="block">{t("Subject")}<input autoFocus required maxLength={160} value={subject} disabled={busy} onChange={(event) => setSubject(event.target.value)} className="input mt-1 w-full" />
       </label>
+      {appointmentNeeded && <div className="rounded-xl bg-aeviora-ivory p-4"><h3 className="font-semibold">{t("Appointment email preview")}</h3>{!appointment && <p className="mt-2 text-sm text-amber-900">{t("Select an appointment to fill these placeholders before sending.")}</p>}<p className="mt-3 font-semibold">{preview.subject}</p><p className="mt-3 whitespace-pre-wrap break-words text-sm">{appendFormLinks(preview.text, selectedForms)}</p></div>}
       <label className="block">{t("Message")}<textarea required maxLength={10000} rows={7} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} className="input mt-1 w-full" />
       </label>
-      {selectedForms.length > 0 && <details className="rounded-lg bg-aeviora-ivory p-4"><summary className="cursor-pointer text-sm font-semibold">{t("Preview message with form links")}</summary><p className="mt-3 whitespace-pre-wrap break-words text-sm">{appendFormLinks(text, selectedForms)}</p></details>}
+      {selectedForms.length > 0 && <details className="rounded-lg bg-aeviora-ivory p-4"><summary className="cursor-pointer text-sm font-semibold">{t("Preview message with form links")}</summary><p className="mt-3 whitespace-pre-wrap break-words text-sm">{appendFormLinks(preview.text, selectedForms)}</p></details>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim()} className="btn-primary disabled:opacity-50">{t(busy ? "Sending…" : "Send email")}</button>
+        <button type="submit" disabled={busy || checking || configured !== true || !subject.trim() || !text.trim() || (appointmentNeeded && !appointment)} className="btn-primary disabled:opacity-50">{t(busy ? "Sending…" : "Send email")}</button>
         <button type="button" disabled={busy} onClick={onClose} className="btn-secondary">{t("Close")}</button>
       </div>
     </form>
