@@ -21,7 +21,17 @@ Defaults affect new codes only;
 existing codes have their own editable discount, commission, cadence and enabled
 state. Changing a code invalidates links using its old spelling.
 
-The member's share link opens `/register?ref=CODE`. Registration validates and
+The member's share link opens `/register?ref=CODE`.
+The **Referral rewards** page also provides a ready-to-share English/Spanish
+message with the company introduction, the affiliate's current discount/code,
+first-payment terms, contact details, and referral link. **Copy message** copies
+the full text. **Share by SMS** opens the device share menu when available;
+otherwise it copies the message and opens the SMS app for pasting. **Share by
+email** opens an email draft with its subject and body filled. The member chooses
+the recipient and sends from their own app; no SMS/email is sent by the server.
+Messages are only offered while the affiliate and coupon are eligible.
+
+Registration validates and
 saves the code; a new paid member may also enter it at checkout. A referral code
 is optional and independent of marketing/SMS consent. Checkout shows the first
 payment discount and the normal 30-day renewal price before continuing. The

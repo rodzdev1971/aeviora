@@ -19,10 +19,15 @@ import AdminMetrics from "../../../src/pages/AdminMetrics.jsx";
 import Referrals from "../../../src/pages/Referrals.jsx";
 import AdminReferrals from "../../../src/pages/AdminReferrals.jsx";
 import AdminFormLinks from "../../../src/pages/AdminFormLinks.jsx";
+import ReferralShareCard from "../../../src/components/ReferralShareCard.jsx";
 import AvailabilityRemoval from "../../../src/components/AvailabilityRemoval.jsx";
 import LanguageSelector from "../../../src/i18n/LanguageSelector.jsx";
 import { setLanguage, getLanguage } from "../../../src/i18n/language.js";
 export { apiRequest } from "../../../src/util/api.js";
+export function renderReferralShare(language) {
+  setLanguage(language);
+  return renderToStaticMarkup(<ReferralShareCard affiliate={{ code: "AEV-SYNTHETIC", discountPercent: 10, commissionPercent: 20 }} link="https://example.com/register?ref=AEV-SYNTHETIC" />);
+}
 
 const screens = { Home, Login, Register, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals, AdminFormLinks };
 export function renderScreen(name, language) {

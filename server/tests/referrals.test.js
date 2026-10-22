@@ -3,10 +3,28 @@ import assert from "node:assert/strict";
 import { affiliateEligible, ensureAffiliate, resolveReferral, referralOffer, recordReferralPayment, recordZelleReferrals, recordStripeReferral, reconcileStripeReferralRefunds, rewardSummary, ReferralError, assertNoPriorStripeMembership } from "../services/referrals.js";
 import { referralAmounts, referralCodeSchema, defaultReferralTerms } from "../../shared/referrals.js";
 import { ReferralAffiliate, ReferralSettings } from "../models/referrals.js";
+import { referralShareMessage } from "../../src/util/referralShare.js";
 import { zelleBalance } from "../services/billingSummary.js";
 import { registerAccount } from "../services/registration.js";
 
 const now = new Date("2026-10-19T15:00:00Z");
+test("referral share copy uses current offer terms and preserves the full message in an email draft", () => {
+  const company = { name: "Synthetic Wellness", telephone: "202-555-0123", email: "synthetic@example.com" };
+  const affiliate = { code: "AEV-SYNTHETIC", discountPercent: 12.5, commissionPercent: 20 };
+  const link = "https://example.com/register?ref=AEV-SYNTHETIC&source=member";
+  for (const language of ["en", "es"]) {
+    const result = referralShareMessage({ company, affiliate, link }, language);
+    for (const value of [company.name, company.telephone, company.email, affiliate.code, link, "12.5%"] ) assert.ok(result.text.includes(value));
+    const draft = new URL(result.emailHref);
+    assert.equal(draft.protocol, "mailto:");
+    assert.equal(draft.searchParams.get("body"), result.text);
+    assert.equal(draft.searchParams.get("subject"), result.subject);
+    assert.equal(draft.searchParams.has("source"), false, "referral URL query stays inside the email body");
+    assert.ok(result.text.includes(language === "es" ? "primer pago" : "first paid membership payment"));
+  }
+  const noBonus = referralShareMessage({ company, affiliate: { ...affiliate, commissionPercent: 0 }, link });
+  assert.ok(!noBonus.text.includes("earn a referral bonus"));
+});
 function fixture(overrides = {}) {
   const owner = { _id: "owner", role: "patient", accountStatus: "active", email: "owner@example.com", stripePaidThrough: new Date("2026-11-19"), stripePaidPrice: 100, ...overrides };
   const affiliate = { _id: "affiliate", userId: owner._id, code: "AEV-TEST123", enabled: true, discountPercent: 10, commissionPercent: 20, commissionMode: "first_payment" };

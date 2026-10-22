@@ -8,7 +8,7 @@ test("public and admin screens render translated text with stable routes and fie
   globalThis.window = { location: { search: "", hash: "" }, history: { replaceState() {} } };
   const vite = await createServer({ configFile: false, envDir: false, plugins: [react()], optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true }, appType: "custom" });
   try {
-    const { renderScreen, apiRequest } = await vite.ssrLoadModule("/server/tests/fixtures/localizationRender.jsx");
+    const { renderScreen, apiRequest, renderReferralShare } = await vite.ssrLoadModule("/server/tests/fixtures/localizationRender.jsx");
     const cases = {
       Home: ["Make wellness part of your everyday life.", "Haz del bienestar parte de tu vida diaria."],
       Login: ["Account Login", "Acceso a la cuenta"],
@@ -43,6 +43,15 @@ test("public and admin screens render translated text with stable routes and fie
     assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
     assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
     for (const token of ["{{appointmentDate}}", "{{appointmentTime}}", "{{providerName}}"]) assert.ok(renderScreen("AdminEmailTemplates", "en").includes(token), "appointment placeholders are documented in the template editor");
+    for (const language of ["en", "es"]) {
+      const html = renderReferralShare(language);
+      assert.ok(html.includes(language === "en" ? "Copy message" : "Copiar mensaje"));
+      assert.ok(html.includes(language === "en" ? "Share by SMS" : "Compartir por SMS"));
+      assert.ok(html.includes(language === "en" ? "Share by email" : "Compartir por correo"));
+      assert.match(html, /<textarea[^>]*readOnly/);
+      assert.ok(html.includes("10%") && html.includes("AEV-SYNTHETIC"));
+      assert.ok(html.includes('href="mailto:?subject='));
+    }
     globalThis.window.location.hash = "#" + "a".repeat(64);
     assert.match(renderScreen("EmailVerification", "en"), /Verify my email/);
     assert.match(renderScreen("EmailVerification", "es"), /Verificar mi correo/);

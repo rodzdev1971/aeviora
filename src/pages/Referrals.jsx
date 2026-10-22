@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { getLocale, getLanguage } from "../i18n/language.js";
 import { apiRequest } from "../util/api.js";
+import ReferralShareCard from "../components/ReferralShareCard.jsx";
 
 export default function Referrals() {
   useLanguage();
@@ -42,7 +43,7 @@ export default function Referrals() {
           <p className="break-all text-xs text-aeviora-slate">{say("Affiliate ID: ", "ID de afiliado: ")}{affiliate._id}</p>
           <p>{affiliate.discountPercent}% {say("off their first membership payment", "de descuento en su primer pago de membresía")}</p>
           <p>{say("Your bonus: ", "Tu bono: ")}{affiliate.commissionPercent}% {say("of the membership amount paid after discounts, excluding tax", "del importe de membresía pagado después de descuentos, sin impuestos")} · {affiliate.commissionMode === "recurring" ? say("Qualifying payments and renewals", "Pagos y renovaciones elegibles") : say("First paid membership payment only", "Solo el primer pago de membresía")}</p>
-          {affiliate.enabled && affiliate.discountPercent > 0 && data.eligible ? <div><label className="label" htmlFor="referral-link">{say("Your referral link", "Tu enlace de referido")}</label><input id="referral-link" readOnly value={link} onFocus={(event) => event.target.select()} className="input w-full" /><button type="button" className="btn-primary mt-3" onClick={copy}>{say("Copy link", "Copiar enlace")}</button></div> : <p className="rounded-xl bg-aeviora-ivory p-4">{say("This coupon is not currently available. Contact the team to review its discount and activation.", "Este cupón no está disponible. Contacta al equipo para revisar el descuento y su activación.")}</p>}
+          {affiliate.enabled && affiliate.discountPercent > 0 && data.eligible ? <div><label className="label" htmlFor="referral-link">{say("Your referral link", "Tu enlace de referido")}</label><input id="referral-link" readOnly value={link} onFocus={(event) => event.target.select()} className="input w-full" /><button type="button" className="btn-primary mt-3" onClick={copy}>{say("Copy link", "Copiar enlace")}</button><ReferralShareCard affiliate={affiliate} link={link} /></div> : <p className="rounded-xl bg-aeviora-ivory p-4">{say("This coupon is not currently available. Contact the team to review its discount and activation.", "Este cupón no está disponible. Contacta al equipo para revisar el descuento y su activación.")}</p>}
         </> : data.eligible && <button type="button" disabled={busy} onClick={create} className="btn-primary disabled:opacity-50">{say(busy ? "Creating…" : "Create my referral code", busy ? "Creando…" : "Crear mi código")}</button>}
       </div>
       <div className="grid gap-4 sm:grid-cols-3">{[[say("Earned", "Ganado"), data.summary.earnedCents - data.summary.reversedCents], [say("Paid out", "Pagado"), data.summary.paidCents], [say("Balance", "Saldo"), data.summary.balanceCents]].map(([label, value]) => <div className="card" key={label}><p className="text-sm">{label}</p><p className="mt-2 font-display text-3xl text-aeviora-primary">{money(value)}</p></div>)}</div>
