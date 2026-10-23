@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { getLocale, getLanguage } from "../i18n/language.js";
 import { apiRequest } from "../util/api.js";
+import AdminBusinessAffiliates from "../components/AdminBusinessAffiliates.jsx";
 
 function TermsForm({ initial, onSave, busy, say, affiliate = false }) {
   function submit(event) {
@@ -57,6 +58,7 @@ export default function AdminReferrals() {
     {error && <p role="alert" className="text-red-700">{error}<button type="button" className="ml-3 underline" onClick={() => { setError(""); setLoading(true); setRevision((value) => value + 1); }}>{say("Reload", "Recargar")}</button></p>}
     {message && <p role="status">{message}</p>}
     {loading && <p role="status">{say("Loading referrals…", "Cargando referidos…")}</p>}
+    <AdminBusinessAffiliates onViewRewards={(id) => { setFilter(id); setRewardPage(1); setLoading(true); setRevision((value) => value + 1); }} />
     {defaults && <details className="card"><summary className="cursor-pointer font-display text-2xl">{say("Defaults for new affiliate codes", "Valores para códigos nuevos")}</summary><p className="my-4 text-sm">{say("Set the customer discount and enable the program. Defaults apply to newly created codes; edit existing affiliates individually. Reserved offers retain their agreed terms.", "Define el descuento y activa el programa. Estos valores aplican a códigos nuevos; edita los existentes individualmente. Las ofertas reservadas conservan sus condiciones.")}</p><TermsForm key={`defaults-${revision}`} initial={defaults} busy={busy || loading} say={say} onSave={(values) => act("/defaults", values, "PUT")} /></details>}
     <div className="card"><h2 className="font-display text-2xl">{say("Create or find a member's code", "Crear o buscar el código de un miembro")}</h2><form className="mt-4" onSubmit={(event) => { event.preventDefault(); act("/affiliates", { email: new FormData(event.currentTarget).get("email") }); }}><fieldset disabled={busy || loading} className="flex flex-wrap items-end gap-3"><label className="min-w-0 flex-1 text-sm">{say("Member account email", "Correo del miembro")}<input name="email" type="email" required maxLength={254} className="input mt-2" /></label><button type="submit" className="btn-primary">{say("Create / find code", "Crear / buscar código")}</button></fieldset></form><p className="mt-3 text-xs">{say("A current paid membership is required for a new affiliate code.", "Se requiere una membresía de pago vigente para crear un código.")}</p></div>
     <section aria-labelledby="affiliate-list-heading"><h2 id="affiliate-list-heading" className="font-display text-2xl">{say("Affiliate codes", "Códigos de afiliados")}</h2>

@@ -42,6 +42,8 @@ test("public and admin screens render translated text with stable routes and fie
     }
     assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
     assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
+    assert.ok(renderScreen("AdminReferrals", "en").includes("Business affiliates (B2B)"));
+    assert.ok(renderScreen("AdminReferrals", "es").includes("Afiliados comerciales (B2B)"));
     for (const token of ["{{appointmentDate}}", "{{appointmentTime}}", "{{providerName}}"]) assert.ok(renderScreen("AdminEmailTemplates", "en").includes(token), "appointment placeholders are documented in the template editor");
     for (const language of ["en", "es"]) {
       const html = renderReferralShare(language);

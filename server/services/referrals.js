@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import User from "../models/users.js";
-import { ReferralAffiliate, ReferralSettings, ReferralRedemption, ReferralReward } from "../models/referrals.js";
+import { ReferralAffiliate, BusinessAffiliate, ReferralSettings, ReferralRedemption, ReferralReward } from "../models/referrals.js";
 import { defaultReferralTerms, referralAmounts } from "../../shared/referrals.js";
 import { memberStatus } from "./memberStatus.js";
 import { invoiceSubscription } from "./billingSummary.js";
@@ -14,7 +14,13 @@ export function affiliateEligible(user, now = new Date()) {
 }
 export const referralRepository = {
   user: (id) => User.findById(id),
-  affiliate: (filter) => ReferralAffiliate.findOne(filter),
+  affiliate: async (filter) => {
+    const member = await ReferralAffiliate.findOne(filter);
+    if (member || filter.userId || (filter.code && !filter.code.startsWith("B2B-"))) return member;
+    return BusinessAffiliate.findOne(filter);
+  },
+  businessByIdentity: (nameKey, email) => BusinessAffiliate.findOne({ nameKey, email }),
+  createBusiness: (data) => BusinessAffiliate.create(data),
   settings: () => ReferralSettings.findById("default").lean(),
   createAffiliate: (data) => ReferralAffiliate.create(data),
   redemption: (id) => ReferralRedemption.findById(id),
@@ -22,6 +28,30 @@ export const referralRepository = {
   firstPayment: (id, paymentId, paidAt) => ReferralRedemption.updateOne({ _id: id, firstPaymentId: { $exists: false } }, { $set: { firstPaymentId: paymentId, firstPaidAt: paidAt } }),
   reward: (data) => ReferralReward.updateOne({ _id: data._id }, { $setOnInsert: data }, { upsert: true }),
 };
+
+export async function registerBusinessAffiliate(input, { repository = referralRepository } = {}) {
+  const nameKey = input.businessName.trim().replace(/\s+/g, " ").toLowerCase();
+  const existing = await repository.businessByIdentity(nameKey, input.email);
+  if (existing) return existing;
+  const settings = await repository.settings() || defaultReferralTerms;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const code = `B2B-${randomBytes(6).toString("hex").toUpperCase()}`;
+    if (await repository.affiliate({ code })) continue;
+    try { return await repository.createBusiness({ ...input, nameKey, code, kind: "business", enabled: settings.enabled, discountPercent: settings.discountPercent, commissionPercent: settings.commissionPercent, commissionMode: settings.commissionMode }); }
+    catch (error) {
+      if (error.code !== 11000) throw error;
+      const concurrent = await repository.businessByIdentity(nameKey, input.email);
+      if (concurrent) return concurrent;
+    }
+  }
+  throw new ReferralError("Unable to create the business affiliate code. Please retry.", 503);
+}
+
+export async function referralOwner(affiliate, repository = referralRepository, now = new Date()) {
+  if (affiliate.kind === "business") return { eligible: Boolean(affiliate.enabled), email: affiliate.email };
+  const user = await repository.user(affiliate.userId);
+  return { eligible: affiliateEligible(user, now), email: user?.email };
+}
 
 export async function ensureAffiliate(user, { repository = referralRepository, now = new Date() } = {}) {
   const existing = await repository.affiliate({ userId: String(user._id) });
@@ -42,8 +72,8 @@ export async function ensureAffiliate(user, { repository = referralRepository, n
 export async function resolveReferral(code, { repository = referralRepository, userId, email, now = new Date() } = {}) {
   const affiliate = await repository.affiliate({ code });
   if (!affiliate?.enabled || affiliate.discountPercent <= 0) throw new ReferralError("This referral coupon is unavailable. Remove it or use another code.");
-  const owner = await repository.user(affiliate.userId);
-  if (!affiliateEligible(owner, now)) throw new ReferralError("This referral coupon is unavailable. Remove it or use another code.");
+  const owner = await referralOwner(affiliate, repository, now);
+  if (!owner.eligible) throw new ReferralError("This referral coupon is unavailable. Remove it or use another code.");
   if (affiliate.userId === String(userId) || (email && owner.email === email)) throw new ReferralError("You cannot use your own referral code.");
   return affiliate;
 }
@@ -97,7 +127,7 @@ export async function recordReferralPayment({ userId, paymentId, method, first, 
   if (!redemption || !Number.isSafeInteger(baseCents) || baseCents <= 0) return;
   if (!first && redemption.commissionMode !== "recurring") return;
   const affiliate = await repository.affiliate({ _id: redemption.affiliateId });
-  if (!affiliate?.enabled || !affiliateEligible(await repository.user(affiliate.userId), paidAt)) return;
+  if (!affiliate?.enabled || !(await referralOwner(affiliate, repository, paidAt)).eligible) return;
   if (affiliate.userId === String(userId)) return;
   if (first) {
     await repository.firstPayment(String(userId), paymentId, paidAt);

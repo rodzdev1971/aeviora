@@ -2,6 +2,48 @@
 
 ## Member referrals and affiliate coupons
 
+### Business affiliates (B2B)
+
+**Admin → Affiliates & referral coupons → Business affiliates (B2B)** registers
+a business with its name and contact email, plus optional contact name, phone
+and HTTPS website. It creates a unique `B2B-…` code and a customer registration
+link. A business does not need a personal paid membership or a patient login;
+only administrators manage business records. Records live in the separate
+`businessAffiliates` collection, so the existing unique member-user index does
+not need to be replaced. Business name/contact-email pairs deduplicate retries.
+
+Business codes inherit the saved affiliate defaults (initially a 10% first-payment
+customer discount and 20% recurring business commission). Select **Edit /
+invitation** to change contact details, code, discount, commission or cadence,
+or disable the business. Business enabled status replaces the personal paid-
+membership eligibility check. The new-customer, first-payment discount,
+self-referral, replay, refund and payout protections still apply. Using the
+business's contact email to redeem its own offer is rejected. `B2B-` codes are
+reserved for businesses; member-code edits cannot claim that prefix.
+
+The selected business has a referral-link field, an **Invitation for the business**
+with its terms and customer-ready message, and the customer-facing SMS/email
+share card. **Email invitation to business** opens an addressed draft in the
+admin's email app; it does not send automatically. Copy the business invitation
+for the contact, or the separate customer message for end users. The business
+can forward/copy its link and customer message without access to the admin portal.
+No authentication credentials, patient details or private business contact
+information are included in the public offer endpoint/customer share message.
+
+**View rewards below** filters the existing reward ledger by the business's
+affiliate ID. Paid Stripe invoices and confirmed Zelle receipts earn business
+rewards; admins record payouts and reversals through the existing ledger.
+Disabling a business prevents new uses and rewards. Earlier ledger history is
+preserved, and an already-open Stripe session may remain usable until it expires.
+
+Admin-only endpoints: `GET/POST /api/referrals/admin/businesses` and
+`PATCH /api/referrals/admin/businesses/:id`. Public registration and checkout use
+the same code/offer routes as member referrals. Business registrations/edits use
+the affiliate audit actions without recording contact information in audit metadata.
+Synthetic checks: `node --test server/tests/businessAffiliates.test.js`.
+
+### Member affiliate defaults and payments
+
 The portal includes **Referral rewards** at `/referrals` and **Affiliates &
 referral coupons** at `/admin/referrals`. A current paid patient/user member can
 create one unique affiliate ID and coupon code; admins can also create/find a

@@ -3,16 +3,16 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import User from "../models/users.js";
 import Plan from "../models/membershipPlans.js";
-import { ReferralAffiliate, ReferralSettings, ReferralRedemption, ReferralReward } from "../models/referrals.js";
-import { affiliateEligible, ensureAffiliate, resolveReferral, referralOffer, rewardSummary, hasPaidMembership, ReferralError } from "../services/referrals.js";
-import { defaultReferralTerms, referralCodeSchema, referralTermsSchema } from "../../shared/referrals.js";
+import { ReferralAffiliate, BusinessAffiliate, ReferralSettings, ReferralRedemption, ReferralReward } from "../models/referrals.js";
+import { affiliateEligible, ensureAffiliate, registerBusinessAffiliate, resolveReferral, referralOffer, rewardSummary, hasPaidMembership, ReferralError } from "../services/referrals.js";
+import { defaultReferralTerms, referralCodeSchema, referralTermsSchema, businessAffiliateInput } from "../../shared/referrals.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 
 const router = express.Router();
 const idSchema = z.string().uuid();
 const offerSchema = z.strictObject({ code: referralCodeSchema, planId: z.string().regex(/^[a-f\d]{24}$/i) });
-const adminTerms = referralTermsSchema.extend({ code: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{6,32}$/) });
+const adminTerms = referralTermsSchema.extend({ code: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{6,32}$/).refine((code) => !code.startsWith("B2B-")) });
 const pagination = z.object({ page: z.coerce.number().int().min(1).max(100000).default(1), search: z.string().trim().max(100).default("") });
 const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const audit = (req, action, targetId) => logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action, targetType: "Referral", targetId });
@@ -59,6 +59,32 @@ router.post("/quote", safe(async (req, res) => {
 }));
 
 router.use("/admin", requireRole("admin"));
+router.get("/admin/businesses", safe(async (req, res) => {
+  const input = pagination.safeParse(req.query);
+  if (!input.success) return res.status(400).json({ message: "Use a valid page and search." });
+  const { page, search } = input.data;
+  const pattern = new RegExp(escape(search), "i");
+  const filter = search ? { $or: ["businessName", "contactName", "email", "code"].map((field) => ({ [field]: pattern })) } : {};
+  const [businesses, total] = await Promise.all([BusinessAffiliate.find(filter).sort({ businessName: 1, _id: 1 }).skip((page - 1) * 25).limit(25).lean(), BusinessAffiliate.countDocuments(filter)]);
+  const rows = await Promise.all(businesses.map(async (business) => ({ ...business, summary: rewardSummary(await ReferralReward.find({ affiliateId: business._id }).select("rewardCents reversedCents paidCents").lean()) })));
+  res.json({ businesses: rows, total, page, totalPages: Math.ceil(total / 25) });
+}));
+router.post("/admin/businesses", safe(async (req, res) => {
+  const input = businessAffiliateInput.safeParse(req.body);
+  if (!input.success) return res.status(400).json({ message: "Enter the business name, contact email and valid optional contact details." });
+  const business = await registerBusinessAffiliate(input.data);
+  await audit(req, "REFERRAL_AFFILIATE_CREATED", business._id);
+  res.json({ business });
+}));
+router.patch("/admin/businesses/:id", safe(async (req, res) => {
+  const input = businessAffiliateInput.extend({ ...referralTermsSchema.shape, code: z.string().trim().toUpperCase().regex(/^B2B-[A-Z0-9-]{4,28}$/) }).safeParse(req.body);
+  if (!idSchema.safeParse(req.params.id).success || !input.success || (input.data.enabled && input.data.discountPercent <= 0)) return res.status(400).json({ message: "Review the business details, B2B code, discount and commission settings." });
+  if (await ReferralAffiliate.exists({ code: input.data.code })) return res.status(409).json({ message: "This code is already assigned to a member affiliate." });
+  const business = await BusinessAffiliate.findByIdAndUpdate(req.params.id, { $set: { ...input.data, nameKey: input.data.businessName.replace(/\s+/g, " ").toLowerCase() } }, { new: true, runValidators: true });
+  if (!business) return res.status(404).json({ message: "Business affiliate not found." });
+  await audit(req, "REFERRAL_AFFILIATE_UPDATED", business._id);
+  res.json({ business });
+}));
 router.get("/admin/defaults", safe(async (req, res) => res.json({ defaults: await ReferralSettings.findById("default").lean() || defaultReferralTerms })));
 router.put("/admin/defaults", safe(async (req, res) => {
   const input = referralTermsSchema.safeParse(req.body);
