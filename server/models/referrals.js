@@ -26,9 +26,16 @@ const businessSchema = new mongoose.Schema({
   phone: { type: String, default: "", maxlength: 40 },
   website: { type: String, default: "", maxlength: 2000 },
   code: { type: String, required: true, unique: true, match: /^B2B-[A-Z0-9-]{4,28}$/ },
+  portalLoginTokenHash: { type: String, select: false },
+  portalLoginEmail: { type: String, select: false },
+  portalLoginExpiresAt: { type: Date, select: false },
+  portalLoginRequestedAt: { type: Date, select: false },
+  portalSessionVersion: { type: Number, default: 0, select: false },
   ...terms,
 }, { ...options, collection: "businessAffiliates" });
 businessSchema.index({ nameKey: 1, email: 1 }, { unique: true });
+businessSchema.index({ email: 1, _id: 1 });
+businessSchema.index({ portalLoginTokenHash: 1 }, { unique: true, sparse: true });
 const redemptionSchema = new mongoose.Schema({
   // One immutable offer per new member, shared by checkout retries and both payment methods.
   _id: { type: String, required: true },

@@ -80,7 +80,7 @@ router.patch("/admin/businesses/:id", safe(async (req, res) => {
   const input = businessAffiliateInput.extend({ ...referralTermsSchema.shape, code: z.string().trim().toUpperCase().regex(/^B2B-[A-Z0-9-]{4,28}$/) }).safeParse(req.body);
   if (!idSchema.safeParse(req.params.id).success || !input.success || (input.data.enabled && input.data.discountPercent <= 0)) return res.status(400).json({ message: "Review the business details, B2B code, discount and commission settings." });
   if (await ReferralAffiliate.exists({ code: input.data.code })) return res.status(409).json({ message: "This code is already assigned to a member affiliate." });
-  const business = await BusinessAffiliate.findByIdAndUpdate(req.params.id, { $set: { ...input.data, nameKey: input.data.businessName.replace(/\s+/g, " ").toLowerCase() } }, { new: true, runValidators: true });
+  const business = await BusinessAffiliate.findByIdAndUpdate(req.params.id, { $set: { ...input.data, nameKey: input.data.businessName.replace(/\s+/g, " ").toLowerCase() }, $inc: { portalSessionVersion: 1 }, $unset: { portalLoginTokenHash: "", portalLoginEmail: "", portalLoginExpiresAt: "" } }, { new: true, runValidators: true });
   if (!business) return res.status(404).json({ message: "Business affiliate not found." });
   await audit(req, "REFERRAL_AFFILIATE_UPDATED", business._id);
   res.json({ business });

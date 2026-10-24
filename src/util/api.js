@@ -15,6 +15,7 @@ export async function apiRequest(path, options = {}) {
       data.message || "The request could not be completed.",
     );
     error.fields = data.fields;
+    error.status = response.status;
     throw error;
   }
   return data;

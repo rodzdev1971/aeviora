@@ -14,6 +14,8 @@ test("public and admin screens render translated text with stable routes and fie
       Login: ["Account Login", "Acceso a la cuenta"],
       Register: ["Create your free account", "Crea tu cuenta gratuita"],
       BusinessAffiliateRegistration: ["Business affiliate registration", "Registro de afiliado comercial"],
+      BusinessAffiliateLogin: ["Business affiliate sign in", "Acceso de afiliado comercial"],
+      BusinessAffiliateDashboard: ["Business affiliate portal", "Portal de afiliado comercial"],
       PasswordRecovery: ["Recover your account", "Recupera tu cuenta"],
       EmailVerification: ["Request a verification link", "Solicitar un enlace de verificación"],
       AccountTerms: ["Account Terms of Use", "Términos de uso de la cuenta"],

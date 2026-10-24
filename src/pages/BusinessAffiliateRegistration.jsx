@@ -35,6 +35,7 @@ export default function BusinessAffiliateRegistration() {
     {business ? <>
       <p role="status">{say("Your business is registered. Save your referral code and customer invitation below. Contact Aeviora Wellness for changes or payout questions.", "Tu negocio está registrado. Guarda tu código y la invitación para clientes. Contacta a Aeviora Wellness para cambios o preguntas sobre pagos.")}</p>
       <p className="font-semibold">{business.businessName} · {business.code}</p>
+      <Link to="/business-affiliate/login" className="btn-primary inline-block">{say("Sign in to view your business records", "Accede para ver tus registros comerciales")}</Link>
       {business.enabled && business.discountPercent > 0 && <ReferralShareCard affiliate={business} link={`${window.location.origin}/register?ref=${encodeURIComponent(business.code)}`} />}
     </> : <form onSubmit={submit} className="space-y-4">
       {!invitation ? <>

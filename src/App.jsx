@@ -4,6 +4,8 @@ import LanguageSelector from "./i18n/LanguageSelector.jsx";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import BusinessAffiliateRegistration from "./pages/BusinessAffiliateRegistration.jsx";
+import BusinessAffiliateLogin from "./pages/BusinessAffiliateLogin.jsx";
+import BusinessAffiliateDashboard from "./pages/BusinessAffiliateDashboard.jsx";
 import Login from "./pages/Login";
 import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import EmailVerification from "./pages/EmailVerification.jsx";
@@ -40,6 +42,8 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/business-affiliate/register" element={<BusinessAffiliateRegistration />} />
+      <Route path="/business-affiliate/login" element={<BusinessAffiliateLogin />} />
+      <Route path="/business-affiliate/dashboard" element={<BusinessAffiliateDashboard />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<PasswordRecovery key="forgot" />} />

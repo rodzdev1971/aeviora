@@ -4,6 +4,8 @@ import Home from "../../../src/pages/Home.jsx";
 import Login from "../../../src/pages/Login.jsx";
 import Register from "../../../src/pages/Register.jsx";
 import BusinessAffiliateRegistration from "../../../src/pages/BusinessAffiliateRegistration.jsx";
+import BusinessAffiliateLogin from "../../../src/pages/BusinessAffiliateLogin.jsx";
+import BusinessAffiliateDashboard from "../../../src/pages/BusinessAffiliateDashboard.jsx";
 import PasswordRecovery from "../../../src/pages/PasswordRecovery.jsx";
 import EmailVerification from "../../../src/pages/EmailVerification.jsx";
 import AccountTerms from "../../../src/pages/AccountTerms.jsx";
@@ -30,7 +32,7 @@ export function renderReferralShare(language) {
   return renderToStaticMarkup(<ReferralShareCard affiliate={{ code: "AEV-SYNTHETIC", discountPercent: 10, commissionPercent: 20 }} link="https://example.com/register?ref=AEV-SYNTHETIC" />);
 }
 
-const screens = { Home, Login, Register, BusinessAffiliateRegistration, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals, AdminFormLinks };
+const screens = { Home, Login, Register, BusinessAffiliateRegistration, BusinessAffiliateLogin, BusinessAffiliateDashboard, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals, AdminFormLinks };
 export function renderScreen(name, language) {
   setLanguage(language);
   const Screen = screens[name];

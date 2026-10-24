@@ -58,6 +58,7 @@ export default function Login() {
           <Link to="/forgot-password" className="text-gray-500">{t("Forgot password?")}</Link>
         </div>
         <Link to="/verify-email" className="mt-5 block text-sm text-aeviora-primary underline">{t("Need a verification email?")}</Link>
+        <Link to="/business-affiliate/login" className="mt-4 block text-sm text-aeviora-primary underline">{t("Business affiliate sign in")}</Link>
       </div>
     </main>
   );

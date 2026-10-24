@@ -25,6 +25,7 @@ import adminMetricsRoutes from "./routes/adminMetricsRoutes.js";
 import adminPushRoutes from "./routes/adminPushRoutes.js";
 import referralRoutes from "./routes/referralRoutes.js";
 import businessInvitationRoutes from "./routes/businessInvitationRoutes.js";
+import businessPortalRoutes from "./routes/businessPortalRoutes.js";
 import formLinkRoutes from "./routes/formLinkRoutes.js";
 
 export function createApp({ connectDatabase, trustProxy = false } = {}) {
@@ -98,6 +99,7 @@ app.use("/api/auth", passwordResetRoutes);
 app.use("/api/auth", emailVerificationRoutes);
 app.use("/api/referrals", referralRoutes);
 app.use("/api/business-invitations", businessInvitationRoutes);
+app.use("/api/business-portal", businessPortalRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/users", patientRoutes);
 app.use("/api/audit", auditRoutes);
