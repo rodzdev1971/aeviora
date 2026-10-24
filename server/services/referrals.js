@@ -29,11 +29,11 @@ export const referralRepository = {
   reward: (data) => ReferralReward.updateOne({ _id: data._id }, { $setOnInsert: data }, { upsert: true }),
 };
 
-export async function registerBusinessAffiliate(input, { repository = referralRepository } = {}) {
+export async function registerBusinessAffiliate(input, { repository = referralRepository, terms } = {}) {
   const nameKey = input.businessName.trim().replace(/\s+/g, " ").toLowerCase();
   const existing = await repository.businessByIdentity(nameKey, input.email);
   if (existing) return existing;
-  const settings = await repository.settings() || defaultReferralTerms;
+  const settings = terms || await repository.settings() || defaultReferralTerms;
   for (let attempt = 0; attempt < 3; attempt++) {
     const code = `B2B-${randomBytes(6).toString("hex").toUpperCase()}`;
     if (await repository.affiliate({ code })) continue;

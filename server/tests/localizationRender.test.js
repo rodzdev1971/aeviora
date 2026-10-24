@@ -13,6 +13,7 @@ test("public and admin screens render translated text with stable routes and fie
       Home: ["Make wellness part of your everyday life.", "Haz del bienestar parte de tu vida diaria."],
       Login: ["Account Login", "Acceso a la cuenta"],
       Register: ["Create your free account", "Crea tu cuenta gratuita"],
+      BusinessAffiliateRegistration: ["Business affiliate registration", "Registro de afiliado comercial"],
       PasswordRecovery: ["Recover your account", "Recupera tu cuenta"],
       EmailVerification: ["Request a verification link", "Solicitar un enlace de verificación"],
       AccountTerms: ["Account Terms of Use", "Términos de uso de la cuenta"],
@@ -43,6 +44,10 @@ test("public and admin screens render translated text with stable routes and fie
     assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
     assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
     assert.ok(renderScreen("AdminReferrals", "en").includes("Business affiliates (B2B)"));
+    assert.ok(renderScreen("AdminReferrals", "en").includes("Invite a business to register"));
+    const businessGate = renderScreen("BusinessAffiliateRegistration", "en");
+    assert.ok(businessGate.includes("Invitation code"));
+    assert.ok(!businessGate.includes("Contact person"), "business contact form stays behind the invitation gate");
     assert.ok(renderScreen("AdminReferrals", "es").includes("Afiliados comerciales (B2B)"));
     for (const token of ["{{appointmentDate}}", "{{appointmentTime}}", "{{providerName}}"]) assert.ok(renderScreen("AdminEmailTemplates", "en").includes(token), "appointment placeholders are documented in the template editor");
     for (const language of ["en", "es"]) {

@@ -3,6 +3,7 @@ import LanguageSelector from "./i18n/LanguageSelector.jsx";
 
 import Home from "./pages/Home";
 import Register from "./pages/Register";
+import BusinessAffiliateRegistration from "./pages/BusinessAffiliateRegistration.jsx";
 import Login from "./pages/Login";
 import PasswordRecovery from "./pages/PasswordRecovery.jsx";
 import EmailVerification from "./pages/EmailVerification.jsx";
@@ -38,6 +39,7 @@ export default function App() {
     <><LanguageSelector /><Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/business-affiliate/register" element={<BusinessAffiliateRegistration />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<PasswordRecovery key="forgot" />} />

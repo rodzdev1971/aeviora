@@ -5,6 +5,7 @@ import { apiRequest } from "../util/api.js";
 import { company } from "../util/constants.jsx";
 import { businessAffiliateInvitation } from "../util/referralShare.js";
 import ReferralShareCard from "./ReferralShareCard.jsx";
+import AdminBusinessInvitations from "./AdminBusinessInvitations.jsx";
 
 const blank = { businessName: "", contactName: "", email: "", phone: "", website: "" };
 export default function AdminBusinessAffiliates({ onViewRewards }) {
@@ -41,6 +42,7 @@ export default function AdminBusinessAffiliates({ onViewRewards }) {
     catch { invitationField.current?.focus(); invitationField.current?.select(); setMessage(say("Select and copy the invitation below.", "Selecciona y copia la invitación de abajo.")); }
   }
   return <section aria-labelledby="business-affiliates-heading" className="space-y-5 rounded-3xl border border-aeviora-border bg-aeviora-ivory p-4 sm:p-6">
+    <AdminBusinessInvitations />
     <header><h2 id="business-affiliates-heading" className="font-display text-2xl">{say("Business affiliates (B2B)", "Afiliados comerciales (B2B)")}</h2><p className="mt-2 text-sm leading-7">{say("Register a business to share its own customer referral link and offer. Business affiliates do not need a personal paid membership. Their rewards appear in the same payout ledger below.", "Registra un negocio para compartir su propio enlace y oferta. Los afiliados comerciales no necesitan una membresía personal de pago. Sus bonos aparecen en el mismo registro de pagos de abajo.")}</p></header>
     {error && <p role="alert" className="text-red-700">{error}</p>}{message && <p role="status" className="text-green-800">{message}</p>}
     <form ref={editor} onSubmit={save} className="card"><fieldset disabled={busy} className="space-y-4"><legend className="mb-4 font-semibold">{say(selected ? "Edit business affiliate" : "Register business affiliate", selected ? "Editar afiliado comercial" : "Registrar afiliado comercial")}</legend>

@@ -166,3 +166,15 @@ not send real email. No new dependencies or environment settings are required.
 All three require an active administrator session. Registration calls the same SMTP sending service. Admin send audit entries contain actor and recipient account IDs, not message bodies.
 
 Run `node --test server/tests/email.test.js server/tests/registration.test.js` for simulated email and registration checks. Live provider verification remains a deployment step. Update the account privacy policy with your selected email provider before publishing it.
+
+## Invitation-only business affiliate registration
+
+In **Admin → Affiliates & referral coupons → Invite a business to register**, enter the business name and email, then select **Create and email invitation**. This sends through the existing SMTP configuration. `FRONTEND_ORIGIN` must point to the application’s HTTPS origin (HTTP localhost is allowed outside production).
+
+The business opens `/business-affiliate/register#ACCESS_CODE`, or enters the code at `/business-affiliate/register`, and selects **Access registration**. The route is absent from public navigation; its form and registration API require a valid invitation. The link/code is a private bearer credential: forwarding it grants access to that invitation. The invited email is locked. Business/contact name, optional phone and HTTPS website are collected separately from patient accounts; this does not create a patient login.
+
+Invitations expire after seven days, are single-use, and can be revoked before registration starts. The list shows pending, in-progress, registered and revoked invitations. To replace an invitation, revoke the old pending invitation and create a new one. A failed SMTP operation is clearly reported; the saved invitation’s link/code can be copied for manual delivery. Raw codes are shown only when created and are never stored in the database. SMTP acceptance does not guarantee inbox delivery.
+
+The invitation saves the current default affiliate terms. Completion creates a business affiliate with a unique B2B referral code; existing business identities reuse their affiliate record. Admins continue managing codes, eligibility, commission and payouts in the existing B2B section. Interrupted submissions retain the first submitted business identity for safe retries. Completed invitations cannot reopen registration; contact an administrator if the final response was lost.
+
+Deploy both frontend and backend. MongoDB must allow the `businessinvitations` collection and unique token-hash index to be created. Tests use synthetic storage and mail stubs, and send no live messages.
