@@ -7,6 +7,21 @@ import { manuallyVerifyAccount, verificationStatus } from "../services/emailVeri
 const router = express.Router();
 const adminUserFields =
   "_id firstName lastName email phone accountStatus role createdAt emailVerificationRequired emailVerificationExpiresAt emailVerifiedAt emailVerificationMethod";
+const adminProfileFields = `${adminUserFields} addressLine1 addressLine2 city state zipCode country preferredLanguage communicationPreference timeZone is18OrOlder termsAcceptance privacyAcceptance smsConsent marketingConsent updatedAt`;
+
+router.get("/users/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const user = await User.findById(req.params.id).select(adminProfileFields);
+  if (!user) return res.status(404).json({ message: "Account not found." });
+  await logAudit({
+    req,
+    actorId: req.user.id,
+    actorRole: req.user.role,
+    action: "USER_VIEWED",
+    targetType: "User",
+    targetId: user._id,
+  });
+  return res.json({ user: { ...user.toObject(), verificationStatus: verificationStatus(user) } });
+});
 
 router.get("/users", requireAuth, requireRole("admin"), async (req, res) => {
   const page = Number(req.query.page ?? 1);

@@ -131,6 +131,7 @@ export default function AdminDashboard() {
                   <tr key={account._id} className="border-b border-aeviora-border/70">
                     <td className="px-3 py-4 font-medium">
                       {account.firstName} {account.lastName}
+                      <Link to={`/admin/users/${encodeURIComponent(account._id)}`} className="mt-2 block font-semibold text-aeviora-primary underline">{t("View profile")}</Link>
                     </td>
                     <td className="px-3 py-4">
                       {account.email}
