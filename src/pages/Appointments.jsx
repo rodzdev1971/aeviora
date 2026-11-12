@@ -4,6 +4,7 @@ import { apiRequest } from "../util/api.js";
 import { useLanguage } from "../i18n/useLanguage.js";
 import { getLanguage } from "../i18n/language.js";
 import { appointmentTime, appointmentDate, appointmentClock, scheduleRange } from "../util/appointmentDisplay.js";
+import { US_STATES } from "../../shared/usStates.js";
 
 export default function Appointments() {
   useLanguage();
@@ -18,6 +19,7 @@ export default function Appointments() {
   const [slots, setSlots] = useState([]);
   const [mine, setMine] = useState([]);
   const [mode, setMode] = useState("");
+  const [patientState, setPatientState] = useState("");
   const [loading, setLoading] = useState(true);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -54,6 +56,7 @@ export default function Appointments() {
     return () => controller.abort();
   }, [providerId, selectedDate, zone, revision]);
   const provider = providers.find((item) => item._id === providerId);
+  const eligibleProviders = providers.filter((item) => item.active && item.authorizedStates?.includes(patientState));
   const available = selectedDate ? slots.filter((slot) => !mode || slot.mode === mode) : [];
   function refresh() { setError(""); setSlots([]); setDatesLoading(Boolean(providerId)); setSlotsLoading(Boolean(providerId && selectedDate)); setSelected(null); setRevision((value) => value + 1); }
   async function action(slot, operation) {
@@ -61,7 +64,9 @@ export default function Appointments() {
     if (operation === "cancel" && !window.confirm(say("Cancel this appointment?", "¿Cancelar esta cita?"))) return;
     setBusy(true); setError(""); setMessage("");
     try {
-      await apiRequest(`/api/appointments/providers/${slot.providerId}/slots/${slot._id}/${operation}`, { method: "POST" });
+      await apiRequest(`/api/appointments/providers/${slot.providerId}/slots/${slot._id}/${operation}`, {
+        method: "POST", ...(operation === "book" ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patientState }) } : {}),
+      });
       setMessage(operation === "book" ? say("Your appointment is confirmed. Visit details are in My appointments below.", "Tu cita está confirmada. Los detalles están en Mis citas a continuación.") : say("Appointment cancelled.", "Cita cancelada."));
       refresh();
     } catch (failure) { setError(failure.message); setSelected(null); setSlots([]); setDatesLoading(Boolean(providerId)); setSlotsLoading(Boolean(providerId && selectedDate)); setRevision((value) => value + 1); }
@@ -74,10 +79,14 @@ export default function Appointments() {
     {message && <p role="status" className="rounded-xl bg-green-50 p-4 text-green-900">{message}</p>}
     <section className="card space-y-5" aria-labelledby="available-slots">
       <h2 id="available-slots" className="font-display text-2xl">{say("Available appointments", "Citas disponibles")}</h2>
+      <label className="label block max-w-xl">{say("State where you will attend the appointment", "Estado donde estarás durante la cita")}<select required className="input mt-2" value={patientState} disabled={loading || busy} onChange={(event) => {
+        setPatientState(event.target.value); setProviderId(""); setDate(""); setDates([]); setSlots([]); setSelected(null); setDatesLoading(false); setSlotsLoading(false); setError("");
+      }}><option value="">{say("Choose your consultation state", "Elige el estado de tu consulta")}</option>{US_STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label>
+      <p className="text-sm text-aeviora-slate">{say("For telehealth, select the state where you will physically be during the visit. For in-person care, select the visit location's state.", "Para teleconsulta, selecciona el estado donde estarás físicamente durante la visita. Para atención presencial, selecciona el estado del lugar de la visita.")}</p>
       <div className="grid gap-4 sm:grid-cols-3">
-        <label className="label">{say("Professional", "Profesional")}<select className="input mt-2" value={providerId} disabled={loading || busy} onChange={(event) => {
+        <label className="label">{say("Professional", "Profesional")}<select className="input mt-2" value={providerId} disabled={loading || busy || !patientState} onChange={(event) => {
           setProviderId(event.target.value); setDate(""); setDates([]); setSelected(null); setSlots([]); setSlotsLoading(false); setDatesLoading(Boolean(event.target.value)); setError("");
-        }}><option value="">{say("Choose a provider", "Elige un profesional")}</option>{providers.filter((item) => item.active).map((item) => <option key={item._id} value={item._id}>{item.name} · {item.specialty}</option>)}</select></label>
+        }}><option value="">{say("Choose a provider", "Elige un profesional")}</option>{eligibleProviders.map((item) => <option key={item._id} value={item._id}>{item.name} · {item.specialty}</option>)}</select></label>
         <label className="label">{say("Visit type", "Tipo de visita")}<select className="input mt-2" value={mode} disabled={!providerId || busy} onChange={(event) => {
           setMode(event.target.value); setDate(""); setDates([]); setSelected(null); setSlots([]); setSlotsLoading(false); setDatesLoading(Boolean(providerId)); setError("");
         }}><option value="">{say("All types", "Todos los tipos")}</option><option value="telehealth">{say("Telehealth", "Teleconsulta")}</option><option value="in_person">{say("In person", "Presencial")}</option></select></label>
@@ -88,7 +97,8 @@ export default function Appointments() {
       <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-aeviora-slate">{say("All dates and times shown in", "Todas las fechas y horas se muestran en")} <strong>{zone}</strong>. {say("Choose a date to see that day's available times.", "Elige una fecha para ver los horarios disponibles de ese día.")}</p><button type="button" disabled={busy || loading || datesLoading} onClick={refresh} className="text-sm underline disabled:opacity-50">{say("Refresh availability", "Actualizar disponibilidad")}</button></div>
       {provider && <div className="rounded-xl bg-aeviora-ivory p-4"><h3 className="font-semibold">{provider.name}{provider.credentials && `, ${provider.credentials}`}</h3><p className="text-sm">{provider.specialty}</p><p className="mt-2 whitespace-pre-line text-sm text-aeviora-slate">{provider.bio}</p></div>}
       {loading || datesLoading || (selectedDate && slotsLoading) ? <p role="status">{say("Loading appointments…", "Cargando citas…")}</p>
-        : !providers.filter((item) => item.active).length ? <p>{say("No providers are available yet. Please check back soon.", "Aún no hay profesionales disponibles. Vuelve pronto.")}</p>
+        : !patientState ? <p role="status">{say("Choose your consultation state to find authorized providers.", "Elige el estado de tu consulta para encontrar profesionales autorizados.")}</p>
+        : !eligibleProviders.length ? <p>{say("No providers are currently available for this state. Contact the office for help.", "No hay profesionales disponibles para este estado. Contacta a la oficina.")}</p>
         : !providerId ? <p className="text-sm text-aeviora-slate">{say("Select a provider to see available dates.", "Selecciona un profesional para ver las fechas disponibles.")}</p>
         : !dates.length ? <p role="status">{say("No available dates for this visit type. Try another visit type or provider.", "No hay fechas disponibles para este tipo de visita. Prueba otro tipo de visita o profesional.")}</p>
         : !selectedDate ? <p className="text-sm text-aeviora-slate">{say("Choose an appointment date above to see the available times.", "Elige arriba una fecha para ver los horarios disponibles.")}</p>
@@ -98,7 +108,7 @@ export default function Appointments() {
     </section>
     <section className="space-y-4" aria-labelledby="my-appointments"><h2 id="my-appointments" className="flex items-center gap-2 font-display text-2xl"><CalendarDays aria-hidden="true" />{say("My appointments", "Mis citas")}</h2><p className="text-sm text-aeviora-slate">{say("Upcoming visits and the last 90 days. Confirmation and cancellation updates appear here.", "Próximas visitas y últimos 90 días. Las confirmaciones y cancelaciones aparecen aquí.")}</p>
       {!loading && !mine.length && <p className="card">{say("You have no appointments yet.", "Aún no tienes citas.")}</p>}
-      {mine.map((slot) => <article key={slot._id} className="card"><div className="flex flex-wrap justify-between gap-3"><h3 className="font-semibold">{slot.providerName}</h3><span className="text-sm font-semibold">{status(slot)}</span></div><p className="mt-2">{appointmentTime(slot, zone, language)} ({zone})</p><p className="mt-2 text-sm">{slot.mode === "telehealth" ? say("Telehealth", "Teleconsulta") : slot.location}</p>{slot.status === "cancelled" && <p className="mt-2 text-sm text-aeviora-slate">{slot.cancelledBy === "admin" ? say("Cancelled by the office. Choose a new available time or contact the office.", "Cancelada por la oficina. Elige otro horario disponible o contacta a la oficina.") : say("You cancelled this appointment.", "Cancelaste esta cita.")}</p>}<div className="mt-4 flex flex-wrap gap-3">{slot.status === "booked" && new Date(slot.endsAt) > new Date() && slot.meetingUrl && <a href={slot.meetingUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">{say("Open telehealth room", "Abrir sala de teleconsulta")}</a>}{slot.status === "booked" && new Date(slot.startsAt) > new Date() && <button type="button" disabled={busy} onClick={() => action(slot, "cancel")} className="btn-secondary disabled:opacity-50">{say("Cancel appointment", "Cancelar cita")}</button>}</div></article>)}
+      {mine.map((slot) => <article key={slot._id} className="card"><div className="flex flex-wrap justify-between gap-3"><h3 className="font-semibold">{slot.providerName}</h3><span className="text-sm font-semibold">{status(slot)}</span></div><p className="mt-2">{appointmentTime(slot, zone, language)} ({zone})</p><p className="mt-2 text-sm">{slot.mode === "telehealth" ? say("Telehealth", "Teleconsulta") : slot.location}</p>{slot.status === "cancelled" && <p className="mt-2 text-sm text-aeviora-slate">{["admin", "provider"].includes(slot.cancelledBy) ? say("Cancelled by the office. Choose a new available time or contact the office.", "Cancelada por la oficina. Elige otro horario disponible o contacta a la oficina.") : say("You cancelled this appointment.", "Cancelaste esta cita.")}</p>}<div className="mt-4 flex flex-wrap gap-3">{slot.status === "booked" && new Date(slot.endsAt) > new Date() && slot.meetingUrl && <a href={slot.meetingUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">{say("Open telehealth room", "Abrir sala de teleconsulta")}</a>}{slot.status === "booked" && new Date(slot.startsAt) > new Date() && <button type="button" disabled={busy} onClick={() => action(slot, "cancel")} className="btn-secondary disabled:opacity-50">{say("Cancel appointment", "Cancelar cita")}</button>}</div></article>)}
     </section>
   </section>;
 }

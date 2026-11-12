@@ -1,4 +1,8 @@
 import { z } from "zod";
+import { US_STATE_CODES } from "./usStates.js";
+
+export const authorizedStatesInput = z.array(z.enum(US_STATE_CODES)).max(51)
+  .refine((states) => new Set(states).size === states.length, "Choose each state only once.");
 
 export const timeZoneInput = z.string().trim().max(80).refine((value) => {
   try { new Intl.DateTimeFormat("en", { timeZone: value }); return Boolean(value); } catch { return false; }
@@ -8,7 +12,9 @@ export const providerInput = z.strictObject({
   specialty: z.string().trim().min(2).max(120), bio: z.string().trim().max(1000).default(""),
   email: z.string().trim().toLowerCase().email().max(254), phone: z.string().trim().max(40).default(""),
   timeZone: timeZoneInput.default("America/New_York"), active: z.boolean().default(true),
+  authorizedStates: authorizedStatesInput.default([]),
 });
+export const providerSelfInput = z.strictObject({ authorizedStates: authorizedStatesInput, revision: z.number().int().min(0) });
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 export const availabilityRemovalInput = z.discriminatedUnion("scope", [
   z.strictObject({ scope: z.literal("day"), date: z.iso.date() }),

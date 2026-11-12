@@ -30,7 +30,7 @@ export default function Directory() {
   }
   return <div className="mx-auto max-w-6xl space-y-5">
     <h1 className="font-display text-3xl">{t("Patient & User Directory")}</h1>
-    <p>{t("Find an account by name, email, or phone, then select it to view contact actions.")}</p>
+    <p>{t(user.role === "provider" ? "Only patients with appointments assigned to you appear here. Search by name, email, or phone." : "Find an account by name, email, or phone, then select it to view contact actions.")}</p>
     {message && <p role="status" className="text-green-800">{t(message)}</p>}
     {selected && user.role === "admin" ? <form onSubmit={save} className="card">
       <h2 className="font-display text-2xl">{t("Update profile: ")}{selected.firstName} {selected.lastName}</h2>

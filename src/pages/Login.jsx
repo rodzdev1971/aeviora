@@ -5,7 +5,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { apiRequest } from "../util/api";
 import { loginDestination } from "../util/loginDestination.js";
 
-export default function Login() {
+export default function Login({ providerLogin = false }) {
   useLanguage();
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,8 +18,8 @@ export default function Login() {
     setSubmitting(true);
     setError("");
     try {
-      await apiRequest("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), password: data.get("password") }) });
-      navigate(loginDestination(location.state?.from), { replace: true });
+      const { user } = await apiRequest(providerLogin ? "/api/auth/provider-login" : "/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), password: data.get("password") }) });
+      navigate(user.role === "provider" ? "/provider" : loginDestination(location.state?.from), { replace: true });
     } catch (error) { setError(error.message || "Unable to sign in."); }
     finally { setSubmitting(false); }
   }
@@ -34,9 +34,10 @@ export default function Login() {
           <p className="text-xs uppercase tracking-[0.25em] text-aeviora-gold">{t("Secure Portal")}</p>
         </Link>
 
-        <h1 className="font-display text-3xl">{t("Account Login")}</h1>
-        <p className="mt-2 text-sm text-gray-600">{t("Access your wellness records and patient information.")}</p>
-        {error ? <p className='text-red-400 font-semibold'>{t(error)}</p> : ''}
+        <h1 className="font-display text-3xl">{t(providerLogin ? "Provider login" : "Account Login")}</h1>
+        <p className="mt-2 text-sm text-gray-600">{t(providerLogin ? "Manage your availability, authorized states, and patient appointments." : "Access your wellness records and patient information.")}</p>
+        {providerLogin && <p className="mt-3 text-sm text-gray-600">{t("Register and verify your account, then ask an administrator to link it to your provider profile.")}</p>}
+        {error ? <p role="alert" className='text-red-700 font-semibold'>{t(error)}</p> : ''}
         <form onSubmit={handleLogin} className="mt-8 grid gap-5">
           <div>
             <label htmlFor="loginEmail" className="label">{t("Email Address")}</label>
@@ -59,6 +60,7 @@ export default function Login() {
         </div>
         <Link to="/verify-email" className="mt-5 block text-sm text-aeviora-primary underline">{t("Need a verification email?")}</Link>
         <Link to="/business-affiliate/login" className="mt-4 block text-sm text-aeviora-primary underline">{t("Business affiliate sign in")}</Link>
+        <Link to={providerLogin ? "/login" : "/provider/login"} className="mt-4 block text-sm text-aeviora-primary underline">{t(providerLogin ? "Patient login" : "Provider login")}</Link>
       </div>
     </main>
   );

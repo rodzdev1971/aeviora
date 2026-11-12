@@ -29,7 +29,7 @@ export default function ProtectedRoute({ requiredRole }) {
     return (
       <p role="status" className="p-8">{t("Checking your account…")}</p>
     );
-  if (status === "unauthorized") return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
+  if (status === "unauthorized") return <Navigate to={location.pathname.startsWith("/provider") ? "/provider/login" : "/login"} state={{ from: location.pathname + location.search }} replace />;
   if (status === "forbidden") return <Navigate to="/dashboard" replace />;
   return <Outlet context={{ user }} />;
 }

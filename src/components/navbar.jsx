@@ -19,6 +19,7 @@ export default function Navbar() {
           <a href="/#memberships" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">{t("Memberships")}</a>
           <a href="/#therapies" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">{t("Therapy Topics")}</a>
           <Link to="/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">{t("Login")}</Link>
+          <Link to="/provider/login" className="text-sm text-aeviora-softSage hover:text-aeviora-gold">{t("Provider login")}</Link>
           <Link to="/register" className="btn-secondary">{t("Sign up for free")}</Link>
         </nav>
 

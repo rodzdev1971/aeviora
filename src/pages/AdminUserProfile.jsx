@@ -28,7 +28,7 @@ function DetailSection({ title, rows }) {
   </section>;
 }
 
-export default function AdminUserProfile() {
+export default function AdminUserProfile({ providerView = false }) {
   useLanguage();
   const { userId } = useParams();
   const [result, setResult] = useState(null);
@@ -36,18 +36,18 @@ export default function AdminUserProfile() {
 
   useEffect(() => {
     const controller = new AbortController();
-    apiRequest(`/api/admin/users/${encodeURIComponent(userId)}`, { signal: controller.signal })
+    apiRequest(`${providerView ? "/api/users" : "/api/admin/users"}/${encodeURIComponent(userId)}`, { signal: controller.signal })
       .then(({ user }) => { if (!controller.signal.aborted) setResult({ userId, retry, user }); })
       .catch((error) => { if (!controller.signal.aborted) setResult({ userId, retry, error: error.message }); });
     return () => controller.abort();
-  }, [userId, retry]);
+  }, [userId, retry, providerView]);
 
   const current = result?.userId === userId && result?.retry === retry ? result : null;
   const profile = current?.user;
 
   return <div className="mx-auto max-w-5xl space-y-6">
     <header className="border-b border-aeviora-border pb-5">
-      <Link to="/admin" className="text-sm font-semibold text-aeviora-primary underline">{t("Back to accounts")}</Link>
+      <Link to={providerView ? "/provider" : "/admin"} className="text-sm font-semibold text-aeviora-primary underline">{t(providerView ? "Back to provider workspace" : "Back to accounts")}</Link>
       <h1 className="mt-3 font-display text-3xl">{t("User profile")}</h1>
       {profile && <p className="mt-2 break-words text-lg">{profile.firstName} {profile.lastName}</p>}
     </header>
@@ -67,7 +67,7 @@ export default function AdminUserProfile() {
         ["ZIP code", profile.zipCode],
         ["Country", profile.country],
       ]} />
-      <DetailSection title="Account information" rows={[
+      {!providerView && <DetailSection title="Account information" rows={[
         ["Account ID", profile._id],
         ["Status", t(profile.accountStatus)],
         ["Role", t(profile.role)],
@@ -76,13 +76,13 @@ export default function AdminUserProfile() {
         ["Verification method", t(({ admin: "Verified by admin", email: "Email" })[profile.emailVerificationMethod] || "Not recorded")],
         ["Created", dateLabel(profile.createdAt)],
         ["Last updated", dateLabel(profile.updatedAt)],
-      ]} />
+      ]} />}
       <DetailSection title="Preferences" rows={[
         ["Preferred language", t(({ en: "English", es: "Spanish" })[profile.preferredLanguage] || "Not provided")],
         ["Communication preference", t(({ email: "Email", sms: "SMS", both: "Email and SMS" })[profile.communicationPreference] || "Not provided")],
         ["Time zone", profile.timeZone],
       ]} />
-      <DetailSection title="Consent records" rows={[
+      {!providerView && <DetailSection title="Consent records" rows={[
         ["18 or older confirmed", t(profile.is18OrOlder === true ? "Yes" : "Not recorded")],
         ["Terms accepted", dateLabel(profile.termsAcceptance?.acceptedAt)],
         ["Terms version", profile.termsAcceptance?.version],
@@ -92,7 +92,7 @@ export default function AdminUserProfile() {
         ["SMS consent recorded", dateLabel(profile.smsConsent?.recordedAt)],
         ["Marketing consent", consentLabel(profile.marketingConsent)],
         ["Marketing consent recorded", dateLabel(profile.marketingConsent?.recordedAt)],
-      ]} />
+      ]} />}
     </div>}
   </div>;
 }

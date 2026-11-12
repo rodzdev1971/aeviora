@@ -1117,5 +1117,17 @@
   "Privacy policy accepted": "Aceptación de la política de privacidad",
   "Privacy policy version": "Versión de la política de privacidad",
   "SMS consent recorded": "Registro del consentimiento de SMS",
-  "Marketing consent recorded": "Registro del consentimiento de marketing"
+  "Marketing consent recorded": "Registro del consentimiento de marketing",
+  "Provider login": "Acceso de profesionales",
+  "Patient login": "Acceso de pacientes",
+  "Provider workspace": "Espacio del profesional",
+  "Back to provider workspace": "Volver al espacio del profesional",
+  "Manage your availability, authorized states, and patient appointments.": "Gestiona tu disponibilidad, estados autorizados y citas de pacientes.",
+  "Register and verify your account, then ask an administrator to link it to your provider profile.": "Registra y verifica tu cuenta, luego pide a un administrador que la conecte a tu perfil profesional.",
+  "Provider access has not been enabled for this account. Contact the administrator.": "Esta cuenta no tiene acceso de profesional. Contacta al administrador.",
+  "Only patients with appointments assigned to you appear here. Search by name, email, or phone.": "Aquí solo aparecen pacientes con citas asignadas a ti. Busca por nombre, correo o teléfono.",
+  "Provider access required.": "Se requiere acceso de profesional.",
+  "You cannot manage this provider's schedule.": "No puedes gestionar la agenda de este profesional.",
+  "Choose a provider authorized for the state where you will attend the appointment.": "Elige un profesional autorizado para el estado donde estarás durante la cita.",
+  "Use a patient account to book a consultation.": "Usa una cuenta de paciente para reservar una consulta."
 }

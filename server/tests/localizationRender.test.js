@@ -12,6 +12,9 @@ test("public and admin screens render translated text with stable routes and fie
     const cases = {
       Home: ["Make wellness part of your everyday life.", "Haz del bienestar parte de tu vida diaria."],
       Login: ["Account Login", "Acceso a la cuenta"],
+      ProviderLogin: ["Provider login", "Acceso de profesionales"],
+      ProviderWorkspace: ["My availability &amp; consultations", "Mi disponibilidad y consultas"],
+      ProviderStateSettings: ["My consultation states", "Mis estados de consulta"],
       Register: ["Create your free account", "Crea tu cuenta gratuita"],
       BusinessAffiliateRegistration: ["Business affiliate registration", "Registro de afiliado comercial"],
       BusinessAffiliateLogin: ["Business affiliate sign in", "Acceso de afiliado comercial"],

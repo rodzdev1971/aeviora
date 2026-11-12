@@ -24,6 +24,7 @@ import AdminReferrals from "../../../src/pages/AdminReferrals.jsx";
 import AdminFormLinks from "../../../src/pages/AdminFormLinks.jsx";
 import ReferralShareCard from "../../../src/components/ReferralShareCard.jsx";
 import AvailabilityRemoval from "../../../src/components/AvailabilityRemoval.jsx";
+import { ProviderStateSettings } from "../../../src/components/ProviderAccessSettings.jsx";
 import LanguageSelector from "../../../src/i18n/LanguageSelector.jsx";
 import { setLanguage, getLanguage } from "../../../src/i18n/language.js";
 export { apiRequest } from "../../../src/util/api.js";
@@ -32,10 +33,10 @@ export function renderReferralShare(language) {
   return renderToStaticMarkup(<ReferralShareCard affiliate={{ code: "AEV-SYNTHETIC", discountPercent: 10, commissionPercent: 20 }} link="https://example.com/register?ref=AEV-SYNTHETIC" />);
 }
 
-const screens = { Home, Login, Register, BusinessAffiliateRegistration, BusinessAffiliateLogin, BusinessAffiliateDashboard, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals, AdminFormLinks };
+const screens = { Home, Login, ProviderLogin: Login, ProviderWorkspace: AdminAppointments, ProviderStateSettings, Register, BusinessAffiliateRegistration, BusinessAffiliateLogin, BusinessAffiliateDashboard, PasswordRecovery, EmailVerification, AccountTerms, AccountPrivacy, AdminFees, AdminBenefits, AdminMemberships, AdminEmailTemplates, Directory, DashboardLayout, Appointments, AdminAppointments, AvailabilityRemoval, AdminMetrics, Referrals, AdminReferrals, AdminFormLinks };
 export function renderScreen(name, language) {
   setLanguage(language);
   const Screen = screens[name];
-  const props = name === "AvailabilityRemoval" ? { provider: { _id: "synthetic", name: "Test Provider", timeZone: "America/New_York" }, busy: false, remove: async () => {}, say: (en, es) => getLanguage() === "es" ? es : en } : {};
+  const props = name === "ProviderLogin" ? { providerLogin: true } : name === "ProviderWorkspace" ? { providerWorkspace: true } : ["AvailabilityRemoval", "ProviderStateSettings"].includes(name) ? { provider: { _id: "synthetic", name: "Test Provider", timeZone: "America/New_York", authorizedStates: ["FL"], revision: 0 }, busy: false, remove: async () => {}, save: async () => {}, say: (en, es) => getLanguage() === "es" ? es : en } : {};
   return renderToStaticMarkup(<MemoryRouter><LanguageSelector /><Routes><Route element={<Outlet context={{ user: { id: "synthetic", role: "admin", firstName: "Test" } }} />}><Route path="*" element={<Screen {...props} />} /></Route></Routes></MemoryRouter>);
 }

@@ -37,6 +37,7 @@ export default function DashboardLayout() {
   // }
 
   const links = [
+    ...(user?.role === "provider" ? [{ label: "Provider workspace", href: "/provider", icon: <CalendarDays size={18} /> }] : []),
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { label: "Appointments", href: "/appointments", icon: <CalendarDays size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },

@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/users.js";
+import Provider from "../models/appointmentProviders.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { logAudit } from "../utils/auditLogger.js";
 import {
@@ -13,6 +14,11 @@ import {
 const router = express.Router();
 const publicFields =
   "_id firstName lastName email phone addressLine1 addressLine2 city state zipCode country preferredLanguage communicationPreference timeZone is18OrOlder termsAcceptance privacyAcceptance smsConsent marketingConsent accountStatus role createdAt updatedAt";
+const providerPatientFields = "_id firstName lastName email phone addressLine1 addressLine2 city state zipCode country preferredLanguage communicationPreference timeZone accountStatus role createdAt updatedAt";
+async function assignedPatientIds(userId) {
+  const providers = await Provider.find({ userId }).select("+slots").lean();
+  return [...new Set(providers.flatMap((provider) => provider.slots.filter((slot) => slot.status === "booked" && slot.userId).map((slot) => slot.userId)))];
+}
 
 router.get("/me", requireAuth, async (req, res) => {
   const user = await User.findById(req.user.id).select(publicFields);
@@ -37,9 +43,10 @@ router.get("/", requireAuth, requireRole("provider", "admin"), async (req, res) 
     const literal = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return { $or: ["firstName", "lastName", "email", "phone"].map((field) => ({ [field]: { $regex: literal, $options: "i" } })) };
   }) } : {};
+  if (req.user.role === "provider") filter._id = { $in: await assignedPatientIds(req.user.id) };
   const users = await User.find(filter)
     .where("role").in(["patient", "user"])
-    .select(publicFields)
+    .select(req.user.role === "provider" ? providerPatientFields : publicFields)
     .sort({ createdAt: -1 })
     .limit(100);
   await logAudit({
@@ -122,6 +129,16 @@ router.post("/me/password", requireAuth, async (req, res) => {
     metadata: { result: "completed" },
   });
   return res.json({ message: "Password changed successfully." });
+});
+
+router.get("/:id", requireAuth, requireRole("provider", "admin"), async (req, res) => {
+  if (req.user.role === "provider" && !(await assignedPatientIds(req.user.id)).includes(req.params.id)) {
+    return res.status(404).json({ message: "Patient account not found." });
+  }
+  const user = await User.findById(req.params.id).select(providerPatientFields);
+  if (!user) return res.status(404).json({ message: "Patient account not found." });
+  await logAudit({ req, actorId: req.user.id, actorRole: req.user.role, action: "USER_VIEWED", targetType: "User", targetId: user._id });
+  return res.json({ user });
 });
 
 router.patch("/:id", requireAuth, requireRole("admin"), async (req, res) => {

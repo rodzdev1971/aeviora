@@ -46,6 +46,7 @@ export default function App() {
       <Route path="/business-affiliate/login" element={<BusinessAffiliateLogin />} />
       <Route path="/business-affiliate/dashboard" element={<BusinessAffiliateDashboard />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/provider/login" element={<Login providerLogin />} />
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<PasswordRecovery key="forgot" />} />
       <Route path="/reset-password" element={<PasswordRecovery key="reset" reset />} />
@@ -66,6 +67,10 @@ export default function App() {
             <Route path="memberships" element={<MembershipPlans />} />
             <Route path="referrals" element={<Referrals />} />
             <Route path="memberships/:planId/payment" element={<MembershipCheckout />} />
+            <Route element={<ProtectedRoute requiredRole="provider" />}>
+              <Route path="provider" element={<AdminAppointments providerWorkspace />} />
+              <Route path="provider/patients/:userId" element={<AdminUserProfile providerView />} />
+            </Route>
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="admin" element={<AdminDashboard />} />
               <Route path="admin/users/:userId" element={<AdminUserProfile />} />

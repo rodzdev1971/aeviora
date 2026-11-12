@@ -9,9 +9,9 @@ import { createAppointmentRouter } from "../routes/appointmentRoutes.js";
 import { dateInputValue, scheduleRange, appointmentDate, appointmentClock, scheduleDays } from "../../src/util/appointmentDisplay.js";
 
 const now = new Date("2026-10-14T12:00:00Z");
-const profile = () => ({ name: "Test Professional", credentials: "MD", specialty: "General care", email: "office@example.com", phone: "+12025550123", bio: "Synthetic provider", timeZone: "America/New_York", active: true });
+const profile = () => ({ name: "Test Professional", credentials: "MD", specialty: "General care", email: "office@example.com", phone: "+12025550123", bio: "Synthetic provider", timeZone: "America/New_York", active: true, authorizedStates: ["FL"] });
 const windowInput = (patch = {}) => ({ start: "2026-11-10T09:00", end: "2026-11-10T10:00", mode: "telehealth", meetingUrl: "https://example.com/private-room", ...patch });
-const patient = { id: "synthetic-patient", role: "patient", firstName: "Test", lastName: "Patient", email: "patient@example.com" };
+const patient = { id: "synthetic-patient", role: "patient", firstName: "Test", lastName: "Patient", email: "patient@example.com", state: "FL" };
 const admin = { ...patient, id: "synthetic-admin", role: "admin" };
 function store() {
   const id = randomUUID();
@@ -345,8 +345,9 @@ test("HTTP endpoints enforce roles, booking ownership, strict payloads, private 
   const path = `/providers/${s.id}/slots/${available.slots[0]._id}`;
   assert.equal((await request(path + "/block", "POST")).status, 403);
   assert.equal((await request(path + "/book", "POST", { userId: "forged" })).status, 400);
-  assert.equal((await request(path + "/book", "POST")).status, 200);
-  assert.equal((await request(path + "/book", "POST", undefined, "patient", "other")).status, 409);
+  assert.equal((await request(path + "/book", "POST")).status, 400, "booking requires the consultation state");
+  assert.equal((await request(path + "/book", "POST", { patientState: "FL" })).status, 200);
+  assert.equal((await request(path + "/book", "POST", { patientState: "FL" }, "patient", "other")).status, 409);
   const mine = await (await request("/mine")).json();
   assert.equal(mine.appointments.length, 1); assert.match(mine.appointments[0].meetingUrl, /^https:/);
   assert.equal((await (await request("/mine", "GET", undefined, "patient", "other")).json()).appointments.length, 0);

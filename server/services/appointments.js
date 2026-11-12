@@ -7,7 +7,8 @@ export class AppointmentError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 const fail = (message, status = 409) => { throw new AppointmentError(status, message); };
-export const publicProvider = (provider) => Object.fromEntries(["_id", "name", "credentials", "specialty", "bio", "phone", "timeZone", "active"].map((key) => [key, provider[key]]));
+export const publicProvider = (provider) => Object.fromEntries(["_id", "name", "credentials", "specialty", "bio", "phone", "timeZone", "active", "authorizedStates"].map((key) => [key, provider[key]]));
+export const managesProvider = (provider, user) => user.role === "admin" || (user.role === "provider" && provider.userId === user.id);
 export function visibleSlot(provider, slot, user, admin = false) {
   const own = slot.userId === user.id;
   return {
@@ -15,7 +16,7 @@ export function visibleSlot(provider, slot, user, admin = false) {
     timeZone: provider.timeZone, startsAt: slot.startsAt, endsAt: slot.endsAt, mode: slot.mode, location: slot.location,
     status: slot.status, phone: provider.phone,
     ...((admin || (own && slot.status === "booked")) ? { meetingUrl: slot.meetingUrl } : {}),
-    ...(own || admin ? { cancelledBy: slot.cancelledBy, cancelledAt: slot.cancelledAt } : {}),
+    ...(own || admin ? { cancelledBy: slot.cancelledBy, cancelledAt: slot.cancelledAt, patientState: slot.patientState } : {}),
     ...(admin ? { patientName: slot.patientName, patientEmail: slot.patientEmail, userId: slot.userId } : {}),
   };
 }
@@ -52,7 +53,7 @@ export function addAvailability(provider, input, now = new Date()) {
 }
 
 export function removeAvailability(provider, input, revision, user) {
-  if (user.role !== "admin") fail("Administrator access required.", 403);
+  if (!managesProvider(provider, user)) fail("You cannot manage this provider's schedule.", 403);
   if (provider.revision !== revision) fail("The schedule changed. Preview the removal again before confirming.");
   let selection;
   try { selection = availabilityRemovalSelection(provider.slots, input, provider.timeZone); }
@@ -62,10 +63,10 @@ export function removeAvailability(provider, input, revision, user) {
   return { removedCount: ids.size };
 }
 
-export function changeSlot(provider, slotId, action, user, now = new Date()) {
+export function changeSlot(provider, slotId, action, user, now = new Date(), patientState = user.state) {
   const slot = provider.slots.find((item) => item._id === slotId);
   if (!slot) fail("Appointment slot not found.", 404);
-  const admin = user.role === "admin";
+  const admin = managesProvider(provider, user);
   if (action !== "book" && action !== "cancel" && !admin) fail("Administrator access required.", 403);
   if (action === "cancel" && !admin && slot.userId !== user.id) fail("Appointment not found.", 404);
   if (action === "cancel" && slot.status === "cancelled") return { slotId };
@@ -78,10 +79,12 @@ export function changeSlot(provider, slotId, action, user, now = new Date()) {
   if (action === "book") {
     if (slot.status === "booked" && slot.userId === user.id) return { slotId };
     if (!provider.active || slot.status !== "available") fail("This slot is no longer available. Choose another time.");
-    Object.assign(slot, { status: "booked", userId: user.id, patientName: `${user.firstName} ${user.lastName}`.trim(), patientEmail: user.email, bookedAt: now });
+    if (!["patient", "user"].includes(user.role)) fail("Use a patient account to book a consultation.", 403);
+    if (!patientState || !provider.authorizedStates?.includes(patientState)) fail("Choose a provider authorized for the state where you will attend the appointment.", 400);
+    Object.assign(slot, { status: "booked", userId: user.id, patientName: `${user.firstName} ${user.lastName}`.trim(), patientEmail: user.email, patientState, bookedAt: now });
   } else if (action === "cancel") {
     if (slot.status !== "booked") fail("Only booked appointments can be cancelled.");
-    Object.assign(slot, { status: "cancelled", cancelledAt: now, cancelledBy: admin ? "admin" : "patient" });
+    Object.assign(slot, { status: "cancelled", cancelledAt: now, cancelledBy: admin ? user.role : "patient" });
     // A fresh ID preserves the cancelled booking and prevents stale cancellation requests from touching a new reservation.
     if (!admin && provider.active && provider.slots.length < scheduleCapacity) provider.slots.push(replacement(slot));
   } else if (action === "block") {

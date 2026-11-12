@@ -63,7 +63,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post(["/login", "/provider-login"], async (req, res) => {
 
   // return res.json({
   //     message: "Login successful.",
@@ -107,6 +107,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
+    if (req.path === "/provider-login" && user.role !== "provider") {
+      return res.status(403).json({ message: "Provider access has not been enabled for this account. Contact the administrator." });
+    }
     if (user.emailVerificationRequired && !user.emailVerifiedAt && ["pending", "active"].includes(user.accountStatus)) {
       return res.status(403).json({ message: verificationStatus(user) === "not_verified"
         ? "Your registration is not verified. The 24-hour verification period has ended. Request a new verification link or contact Aeviora Wellness."

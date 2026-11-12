@@ -46,6 +46,7 @@ export default function PatientDirectory({ role, onEdit, refreshKey }) {
         <p className="break-words text-sm text-aeviora-slate">{selected.email} · {selected.phone}</p>
         <div className="mt-4 flex flex-wrap gap-3">
           {role === "admin" && <Link to={`/admin/users/${encodeURIComponent(selected._id)}`} className="btn-secondary">{t("View profile")}</Link>}
+          {role === "provider" && <Link to={`/provider/patients/${encodeURIComponent(selected._id)}`} className="btn-secondary">{t("View profile")}</Link>}
           {role === "admin" ? <button type="button" disabled={composing || selected.accountStatus === "deleted"} onClick={() => setComposing(true)} className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"><Mail size={16} aria-hidden="true" />{t("Compose email")}</button> : <a href={`mailto:${selected.email}`} className="btn-outline">{t("Email")}</a>}
           <a href={`tel:${selected.phone}`} className="btn-outline inline-flex items-center gap-2"><Phone size={16} aria-hidden="true" />{t("Call")}</a>
           {role === "admin" && <button type="button" disabled={composing} onClick={() => onEdit(selected)} className="btn-secondary">{t("Update profile")}</button>}
