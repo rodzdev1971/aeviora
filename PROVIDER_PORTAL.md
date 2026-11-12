@@ -21,6 +21,25 @@ Successful provider login (including through the ordinary login page) opens
 No shared or default passwords are created. Password recovery uses the existing
 account recovery flow. Linking does not read or migrate legacy patient records.
 
+## Deactivate a provider
+
+An administrator clears **Active — allow new bookings** and selects **Save
+provider**. This hides availability, returns the linked account to the `patient`
+role, and invalidates its existing sessions. The person signs in at `/login` for
+normal patient access. Their account remains active; provider appointment
+management, consultation states, and assigned-patient access are removed.
+Existing bookings and cancellation history remain available to administrators.
+
+The account link is retained for history and recovery. To restore provider
+permissions, activate and save the profile, then enter the linked account's email
+under **Provider login access** to grant access again. Activating the profile
+alone does not restore provider permissions. Access cannot be granted while the
+provider is inactive.
+
+If saving reports an error after deactivation, reload and save the inactive
+profile again to retry the account-role update. Inactive providers cannot manage
+their schedule or view assigned patient profiles even if that update fails.
+
 ## Provider workspace
 
 - Providers can publish one-time or weekly availability in their profile's time

@@ -8,7 +8,7 @@ export class AppointmentError extends Error {
 }
 const fail = (message, status = 409) => { throw new AppointmentError(status, message); };
 export const publicProvider = (provider) => Object.fromEntries(["_id", "name", "credentials", "specialty", "bio", "phone", "timeZone", "active", "authorizedStates"].map((key) => [key, provider[key]]));
-export const managesProvider = (provider, user) => user.role === "admin" || (user.role === "provider" && provider.userId === user.id);
+export const managesProvider = (provider, user) => user.role === "admin" || (user.role === "provider" && provider.active && provider.userId === user.id);
 export function visibleSlot(provider, slot, user, admin = false) {
   const own = slot.userId === user.id;
   return {

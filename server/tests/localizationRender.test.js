@@ -15,6 +15,8 @@ test("public and admin screens render translated text with stable routes and fie
       ProviderLogin: ["Provider login", "Acceso de profesionales"],
       ProviderWorkspace: ["My availability &amp; consultations", "Mi disponibilidad y consultas"],
       ProviderStateSettings: ["My consultation states", "Mis estados de consulta"],
+      ProviderLoginAccess: ["Provider login access", "Acceso del profesional"],
+      InactiveProviderLoginAccess: ["Provider login access", "Acceso del profesional"],
       Register: ["Create your free account", "Crea tu cuenta gratuita"],
       BusinessAffiliateRegistration: ["Business affiliate registration", "Registro de afiliado comercial"],
       BusinessAffiliateLogin: ["Business affiliate sign in", "Acceso de afiliado comercial"],
@@ -46,6 +48,12 @@ test("public and admin screens render translated text with stable routes and fie
       assert.deepEqual(attributes(es), attributes(en), `${name}: routes and field identifiers are unchanged`);
       assert.equal(renderScreen(name, "en"), en, `${name}: switching back restores English`);
     }
+    const activeAccess = renderScreen("ProviderLoginAccess", "en");
+    const inactiveAccess = renderScreen("InactiveProviderLoginAccess", "en");
+    assert.ok(activeAccess.includes('name="email"'), "active linked providers can have access explicitly restored");
+    assert.ok(activeAccess.includes("Reactivating the profile alone does not restore access."));
+    assert.ok(!inactiveAccess.includes('name="email"'), "inactive providers cannot be granted access from the UI");
+    assert.ok(inactiveAccess.includes("Their account has normal patient access."));
     assert.ok(renderScreen("AdminEmailTemplates", "en").includes("Saved form links &amp; QR codes"), "the templates editor includes the saved-form selector");
     assert.ok(renderScreen("AdminEmailTemplates", "es").includes("Enlaces y códigos QR guardados"));
     assert.ok(renderScreen("AdminReferrals", "en").includes("Business affiliates (B2B)"));

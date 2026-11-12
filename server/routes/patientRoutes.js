@@ -16,7 +16,7 @@ const publicFields =
   "_id firstName lastName email phone addressLine1 addressLine2 city state zipCode country preferredLanguage communicationPreference timeZone is18OrOlder termsAcceptance privacyAcceptance smsConsent marketingConsent accountStatus role createdAt updatedAt";
 const providerPatientFields = "_id firstName lastName email phone addressLine1 addressLine2 city state zipCode country preferredLanguage communicationPreference timeZone accountStatus role createdAt updatedAt";
 async function assignedPatientIds(userId) {
-  const providers = await Provider.find({ userId }).select("+slots").lean();
+  const providers = await Provider.find({ userId, active: true }).select("+slots").lean();
   return [...new Set(providers.flatMap((provider) => provider.slots.filter((slot) => slot.status === "booked" && slot.userId).map((slot) => slot.userId)))];
 }
 

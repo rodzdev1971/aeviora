@@ -19,6 +19,16 @@ export function createAppointmentRouter({ providers = Provider, users = User, re
   async function record(req, action, targetId) {
     await audit({ req, actorId: req.user.id, actorRole: req.user.role, action, targetType: "AppointmentProvider", targetId });
   }
+  async function revokeProviderAccess(req, provider) {
+    if (!provider.userId) return;
+    const result = await users.updateOne(
+      { _id: provider.userId, role: { $in: ["provider"] } },
+      { $set: { role: "patient" }, $inc: { sessionVersion: 1 } },
+    );
+    if (result.matchedCount) await audit({ req, actorId: req.user.id, actorRole: req.user.role,
+      action: "PROVIDER_ACCESS_REVOKED", targetType: "User", targetId: provider.userId,
+      metadata: { providerId: provider._id } });
+  }
   const adminFields = "_id name credentials specialty bio email phone timeZone active revision userId authorizedStates";
   async function manage(req, res, next) {
     if (req.user.role === "admin") return authorize(req, res, next);
@@ -28,7 +38,7 @@ export function createAppointmentRouter({ providers = Provider, users = User, re
     next();
   }
   router.get("/workspace", requireRole("provider"), async (req, res) => {
-    const list = await providers.find({ userId: req.user.id }).select(adminFields).sort({ name: 1 }).lean();
+    const list = await providers.find({ userId: req.user.id, active: true }).select(adminFields).sort({ name: 1 }).lean();
     res.json({ providers: list });
   });
   router.post("/providers/:providerId/access", authorize, async (req, res) => {
@@ -42,6 +52,7 @@ export function createAppointmentRouter({ providers = Provider, users = User, re
     if (existing && existing._id !== req.params.providerId) return res.status(409).json({ message: "This account is already linked to another provider." });
     try {
       await changeSchedule(req.params.providerId, (provider) => {
+        if (!provider.active) throw new AppointmentError(409, "Activate this provider before granting provider access.");
         if (provider.userId && provider.userId !== account._id) throw new AppointmentError(409, "This provider already has a linked login account.");
         return { changes: { userId: account._id } };
       }, repository);
@@ -51,6 +62,11 @@ export function createAppointmentRouter({ providers = Provider, users = User, re
     }
     const updated = await users.updateOne({ _id: account._id, role: { $in: ["patient", "user", "provider"] }, accountStatus: "active" }, { $set: { role: "provider" }, $inc: { sessionVersion: 1 } });
     if (!updated.matchedCount) throw new AppointmentError(409, "The account changed. Review its status and try again.");
+    const linkedProvider = await repository.load(req.params.providerId);
+    if (!linkedProvider?.active) {
+      await revokeProviderAccess(req, { _id: req.params.providerId, userId: account._id });
+      throw new AppointmentError(409, "Activate this provider before granting provider access.");
+    }
     await audit({ req, actorId: req.user.id, actorRole: req.user.role, action: "PROVIDER_ACCESS_GRANTED", targetType: "User", targetId: account._id, metadata: { providerId: req.params.providerId } });
     res.json({ message: "Provider login linked. Sign in again using the provider login page." });
   });
@@ -76,6 +92,7 @@ export function createAppointmentRouter({ providers = Provider, users = User, re
       if (provider.revision !== revision) throw new AppointmentError(409, "The provider changed. Reload their details before saving.");
       return { changes: data };
     }, repository);
+    if (req.user.role === "admin" && data.active === false) await revokeProviderAccess(req, result.provider);
     await record(req, "APPOINTMENT_PROVIDER_UPDATED", req.params.providerId);
     res.json({ provider: { ...publicProvider(result.provider), email: result.provider.email, revision: result.provider.revision } });
   });

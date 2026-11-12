@@ -29,11 +29,11 @@ export function ProviderStateSettings({ provider, busy, save, say }) {
 export function ProviderLoginAccess({ provider, busy, link, say }) {
   return <section className="card space-y-4">
     <h2 className="font-display text-2xl">{say("Provider login access", "Acceso del profesional")}</h2>
-    {provider.userId ? <p role="status">{say("A login account is connected to this provider. They can sign in at /provider/login with their own account password.", "Este profesional tiene una cuenta conectada. Puede ingresar en /provider/login con la contraseña de su cuenta.")}</p> : <form className="space-y-4" onSubmit={(event) => {
+    {!provider.active ? <p role="status">{say("This provider is inactive. Their account has normal patient access. Activate the profile and grant provider access again to restore appointment management.", "Este profesional está inactivo. Su cuenta tiene acceso normal de paciente. Activa el perfil y vuelve a otorgar acceso de profesional para restaurar la gestión de citas.")}</p> : <form className="space-y-4" onSubmit={(event) => {
       event.preventDefault();
       link(new FormData(event.currentTarget).get("email"));
     }}>
-      <p className="text-sm text-aeviora-slate">{say("Have the provider register and verify an account first. Link their active account here to grant provider access. Existing sessions will be signed out.", "Pide al profesional que se registre y verifique su cuenta. Conecta aquí su cuenta activa para otorgarle acceso. Se cerrarán sus sesiones existentes.")}</p>
+      <p className="text-sm text-aeviora-slate">{provider.userId ? say("A login account is linked. Enter that account's email to grant or restore provider access. Reactivating the profile alone does not restore access. Existing sessions will be signed out.", "Hay una cuenta conectada. Ingresa el correo de esa cuenta para otorgar o restaurar acceso de profesional. Reactivar solo el perfil no restaura el acceso. Se cerrarán las sesiones existentes.") : say("Have the provider register and verify an account first. Link their active account here to grant provider access. Existing sessions will be signed out.", "Pide al profesional que se registre y verifique su cuenta. Conecta aquí su cuenta activa para otorgarle acceso. Se cerrarán sus sesiones existentes.")}</p>
       <fieldset disabled={busy} className="space-y-3">
         <label className="label">{say("Registered provider email", "Correo registrado del profesional")}<input name="email" type="email" required maxLength={254} className="input mt-2" autoComplete="off" /></label>
         <button type="submit" className="btn-primary">{say("Link account and grant provider access", "Conectar cuenta y otorgar acceso")}</button>

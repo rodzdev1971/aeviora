@@ -25,7 +25,7 @@ test("state validation rejects unknown/duplicate states and provider self-servic
   }
 });
 
-test("provider login, ownership, state enforcement, account linking and assigned-patient privacy", async (t) => {
+test("provider login, ownership, state enforcement, account linking, deactivation and assigned-patient privacy", async (t) => {
   const oldSecret = process.env.JWT_ACCESS_SECRET;
   process.env.JWT_ACCESS_SECRET = "synthetic-provider-portal-secret";
   t.after(() => { if (oldSecret === undefined) delete process.env.JWT_ACCESS_SECRET; else process.env.JWT_ACCESS_SECRET = oldSecret; });
@@ -70,8 +70,10 @@ test("provider login, ownership, state enforcement, account linking and assigned
   t.mock.method(AuditLog, "create", async (entry) => { audits.push(entry); });
   t.mock.method(User, "findById", (id) => ({ select: async (fields) => project(accounts.find((user) => user._id === id), fields) }));
   t.mock.method(User, "findOne", ({ email }) => ({ select: async () => accounts.find((user) => user.email === email) || null }));
+  let failRevocation = false;
   t.mock.method(User, "updateOne", async (filter, update) => {
-    const account = accounts.find((user) => user._id === filter._id && filter.role.$in.includes(user.role) && user.accountStatus === filter.accountStatus);
+    if (failRevocation && update.$set.role === "patient") throw new Error("Synthetic account update failure");
+    const account = accounts.find((user) => user._id === filter._id && filter.role.$in.includes(user.role) && (!filter.accountStatus || user.accountStatus === filter.accountStatus));
     if (!account) return { matchedCount: 0 };
     Object.assign(account, update.$set); account.sessionVersion += update.$inc.sessionVersion;
     return { matchedCount: 1 };
@@ -92,6 +94,10 @@ test("provider login, ownership, state enforcement, account linking and assigned
   app.use("/api/auth", authRoutes);
   app.use("/api/users", patientRoutes);
   app.use("/api/appointments", createAppointmentRouter({ providers, repository, now: () => now }));
+  app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+    res.status(500).json({ message: "The request could not be completed." });
+  });
   const server = app.listen(0, "127.0.0.1"); await new Promise((resolve) => server.once("listening", resolve));
   t.after(() => new Promise((resolve) => { server.closeAllConnections(); server.close(resolve); }));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -172,4 +178,65 @@ test("provider login, ownership, state enforcement, account linking and assigned
   assert.equal((await login("new-provider@example.com")).status, 200);
   assert.ok(audits.some((entry) => entry.action === "PROVIDER_ACCESS_GRANTED" && entry.targetId === "new-provider"));
   assert.ok(audits.some((entry) => entry.action === "USER_VIEWED" && entry.targetId === "patient"));
+
+  const ownerAccount = accounts.find((user) => user._id === "owner");
+  const profileBody = (active) => ({ name: own.name, specialty: own.specialty, email: own.email,
+    timeZone: own.timeZone, authorizedStates: own.authorizedStates, active, revision: records.get(own._id).revision });
+  const originalAppointments = structuredClone(records.get(own._id).slots);
+  const beforeDeactivation = jwt.sign({ userId: "owner", sessionVersion: ownerAccount.sessionVersion }, process.env.JWT_ACCESS_SECRET);
+  const staleChange = { ...profileBody(false), revision: 0 };
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: staleChange })).status, 409);
+  assert.equal(ownerAccount.role, "provider", "stale admin edits cannot revoke access");
+  assert.equal((await request(ownPath, { method: "PUT", body: profileBody(false) })).status, 400);
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: profileBody(false) })).status, 200);
+  assert.equal(ownerAccount.role, "patient");
+  assert.equal(ownerAccount.accountStatus, "active", "the person's patient account remains usable");
+  assert.equal(ownerAccount.sessionVersion, 1);
+  assert.equal(records.get(own._id).active, false);
+  assert.deepEqual(records.get(own._id).slots, originalAppointments);
+  const revokedSession = await fetch(base + "/api/appointments/workspace", { headers: { Cookie: `accessToken=${beforeDeactivation}` } });
+  assert.equal(revokedSession.status, 401);
+  assert.equal((await request("/api/appointments/workspace")).status, 403);
+  assert.equal((await request("/api/users")).status, 403);
+  assert.equal((await request("/api/users/patient")).status, 403);
+  for (const path of ["/availability", "/availability/removal-preview", "/availability/remove"]) {
+    assert.equal((await request(ownPath + path, { method: "POST", body: windowInput })).status, 403);
+  }
+  assert.equal((await request(`${ownPath}/slots/${availableId}/cancel`, { method: "POST" })).status, 404);
+  assert.equal((await login("owner@example.com")).status, 403);
+  const patientSignIn = await request("/api/auth/login", { user: null, method: "POST", body: { email: "owner@example.com", password: "Synthetic-Password-123!" } });
+  assert.equal(patientSignIn.status, 200);
+  assert.equal((await patientSignIn.json()).user.role, "patient");
+  assert.equal((await request("/api/users/me")).status, 200);
+  assert.equal((await request("/api/appointments/mine")).status, 200);
+  const ownAccessPath = ownPath + "/access";
+  assert.equal((await request(ownAccessPath, { user: "admin", method: "POST", body: { email: "owner@example.com" } })).status, 409);
+  assert.equal(ownerAccount.role, "patient");
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: profileBody(true) })).status, 200);
+  assert.equal(ownerAccount.role, "patient", "reactivating a profile does not restore provider permissions");
+  assert.equal((await request("/api/appointments/workspace")).status, 403);
+  assert.equal((await request(ownAccessPath, { user: "admin", method: "POST", body: { email: "owner@example.com" } })).status, 200);
+  assert.equal(ownerAccount.role, "provider");
+  assert.equal((await request(ownPath + "/slots")).status, 200);
+
+  failRevocation = true;
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: profileBody(false) })).status, 500);
+  assert.equal(records.get(own._id).active, false, "an account-write failure must still leave the provider inactive");
+  assert.equal(ownerAccount.role, "provider");
+  assert.deepEqual((await (await request("/api/appointments/workspace")).json()).providers, []);
+  assert.deepEqual((await (await request("/api/users")).json()).users, []);
+  assert.equal((await request("/api/users/patient")).status, 404);
+  assert.equal((await request(ownPath + "/slots")).status, 400);
+  assert.equal((await request(ownPath + "/availability", { method: "POST", body: windowInput })).status, 403);
+  assert.equal((await request(`${ownPath}/slots/${availableId}/cancel`, { method: "POST" })).status, 404);
+  failRevocation = false;
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: profileBody(false) })).status, 200);
+  assert.equal(ownerAccount.role, "patient", "saving the inactive profile retries role revocation");
+  const sessionVersion = ownerAccount.sessionVersion;
+  assert.equal((await request(ownPath, { user: "admin", method: "PUT", body: profileBody(false) })).status, 200);
+  assert.equal(ownerAccount.sessionVersion, sessionVersion, "revocation is idempotent");
+  assert.deepEqual(records.get(own._id).slots, originalAppointments);
+  const revoked = audits.filter((entry) => entry.action === "PROVIDER_ACCESS_REVOKED" && entry.targetId === "owner");
+  assert.equal(revoked.length, 2);
+  assert.ok(revoked.every((entry) => entry.actorRole === "admin" && entry.metadata.providerId === own._id));
 });

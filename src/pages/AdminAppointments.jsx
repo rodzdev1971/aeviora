@@ -24,7 +24,7 @@ function ProviderForm({ provider, busy, save, say }) {
       <label className="label sm:col-span-2">{say("Short professional bio", "Breve biografía profesional")}<textarea name="bio" rows={3} maxLength={1000} className="input mt-2" defaultValue={provider?.bio || ""} /></label>
       <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="active" defaultChecked={provider?.active ?? true} />{say("Active — allow new bookings", "Activo — permitir nuevas reservas")}</label>
       <StateSelection states={provider?.authorizedStates} say={say} />
-      <p className="text-xs leading-5 text-aeviora-slate sm:col-span-2">{say("Use America/New_York, America/Chicago, America/Denver, America/Los_Angeles or another IANA zone. Deactivating hides availability but preserves existing appointments. Provider profiles do not create login accounts.", "Usa America/New_York, America/Chicago, America/Denver, America/Los_Angeles u otra zona IANA. Desactivar oculta disponibilidad pero conserva las citas existentes. Los perfiles no crean cuentas de acceso.")}</p>
+      <p className="text-xs leading-5 text-aeviora-slate sm:col-span-2">{say("Use America/New_York, America/Chicago, America/Denver, America/Los_Angeles or another IANA zone. Deactivating hides availability, removes provider access, signs the linked account out, and returns it to normal patient access. Existing appointments are preserved. Provider profiles do not create login accounts.", "Usa America/New_York, America/Chicago, America/Denver, America/Los_Angeles u otra zona IANA. Desactivar oculta disponibilidad, elimina el acceso de profesional, cierra las sesiones de la cuenta conectada y la devuelve al acceso normal de paciente. Se conservan las citas existentes. Los perfiles no crean cuentas de acceso.")}</p>
       <button type="submit" className="btn-primary sm:col-span-2">{busy ? say("Saving…", "Guardando…") : say("Save provider", "Guardar profesional")}</button>
     </fieldset>
   </form>;
@@ -141,7 +141,7 @@ export default function AdminAppointments({ providerWorkspace = false }) {
     finally { setBusy(false); }
   }
   async function save(data) {
-    const result = await run(() => apiRequest(`/api/appointments/providers${provider ? `/${provider._id}` : ""}`, { method: provider ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }), say("Provider saved.", "Profesional guardado."));
+    const result = await run(() => apiRequest(`/api/appointments/providers${provider ? `/${provider._id}` : ""}`, { method: provider ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }), data.active === false ? say("Provider deactivated. Provider access was removed; the linked account can sign in as a patient.", "Profesional desactivado. Se eliminó su acceso de profesional; la cuenta conectada puede iniciar sesión como paciente.") : say("Provider saved.", "Profesional guardado."));
     if (result) { setProviderId(result.provider._id); setSlotsLoading(true); }
   }
   function slotAction(slot, operation) {
