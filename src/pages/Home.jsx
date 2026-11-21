@@ -6,6 +6,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import TherapyInterestQuiz from "../components/TherapyInterestQuiz.jsx";
 import { protocols } from "../util/constants";
+import wellnessCouple from "../assets/wellness-couple-looking-up.png";
 
 export default function Home() {
   useLanguage();
@@ -16,7 +17,12 @@ export default function Home() {
       <main>
         <section className="bg-aeviora-primaryDark px-6 py-16 text-white sm:py-20">
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div>
+            <div className="relative isolate">
+              <img
+                src={wellnessCouple}
+                alt=""
+                className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-contain object-center opacity-50"
+              />
               <p className="text-xs font-semibold uppercase text-aeviora-lightGold">{t("Wellness memberships & preventive care")}</p>
               <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">{t("Make wellness part of your everyday life.")}</h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-gray-200">{t("Join Aeviora Wellness to explore membership plans with discounted prices on eligible wellness and preventive care services. Discover therapies, learn about your options, and take the next step toward making ongoing wellness more accessible.")}</p>
@@ -32,10 +38,12 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="border-l-2 border-aeviora-gold px-6 py-2">
-              <h2 className="font-display text-2xl">{t("Discover therapies. Access member pricing.")}</h2>
-              <p className="mt-3 text-sm leading-6 text-gray-200">{t("Bring your wellness interests and your budget together. Explore laboratory testing, diagnostic services, and wellness therapies, with member pricing on services included in your selected plan.")}</p>
-            </aside>
+            <div>
+              <aside className="border-l-2 border-aeviora-gold px-6 py-2">
+                <h2 className="font-display text-2xl">{t("Discover therapies. Access member pricing.")}</h2>
+                <p className="mt-3 text-sm leading-6 text-gray-200">{t("Bring your wellness interests and your budget together. Explore laboratory testing, diagnostic services, and wellness therapies, with member pricing on services included in your selected plan.")}</p>
+              </aside>
+            </div>
           </div>
         </section>
 
