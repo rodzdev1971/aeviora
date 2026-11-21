@@ -21,7 +21,7 @@ export default function Home() {
               <img
                 src={wellnessCouple}
                 alt=""
-                className="pointer-events-none absolute inset-0 -z-10 h-full w-full scale-140 object-contain object-center opacity-75"
+                className="pointer-events-none absolute inset-0 -z-10 h-full w-full scale-120 object-contain object-center opacity-50"
               />
               <p className="text-xs font-semibold uppercase text-aeviora-lightGold">{t("Wellness memberships & preventive care")}</p>
               <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight sm:text-5xl">{t("Make wellness part of your everyday life.")}</h1>
