@@ -103,6 +103,7 @@ export default function Home() {
               >{t("Sign up for free ")}<ArrowRight aria-hidden="true" size={17} />
               </Link>
             </div>
+            <Link to="/Neuorology" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-aeviora-primary underline underline-offset-4 hover:text-aeviora-primaryDark">{t("Explore neurological peptides")}<ArrowRight aria-hidden="true" size={15} /></Link>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {protocols.map((therapy) => (
                 <article
@@ -135,3 +136,4 @@ export default function Home() {
     </div>
   );
 }
+

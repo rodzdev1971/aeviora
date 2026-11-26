@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import LanguageSelector from "./i18n/LanguageSelector.jsx";
 
 import Home from "./pages/Home";
+import Neurology from "./pages/Neurology.jsx";
 import Register from "./pages/Register";
 import BusinessAffiliateRegistration from "./pages/BusinessAffiliateRegistration.jsx";
 import BusinessAffiliateLogin from "./pages/BusinessAffiliateLogin.jsx";
@@ -41,6 +42,7 @@ export default function App() {
 
     <><LanguageSelector /><Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/Neuorology" element={<Neurology />} />
       <Route path="/register" element={<Register />} />
       <Route path="/business-affiliate/register" element={<BusinessAffiliateRegistration />} />
       <Route path="/business-affiliate/login" element={<BusinessAffiliateLogin />} />
@@ -90,3 +92,4 @@ export default function App() {
     </Routes></>
   );
 }
+
